@@ -1,0 +1,194 @@
+dependencies {
+	compile project(':gov.nasa.jpl.imce.oml.model')
+	compile 'javax.inject:javax.inject:1'
+	compile 'junit:junit:4.12'
+
+	runtime "org.eclipse.emf:org.eclipse.emf.mwe2.launch:2.8.3"
+}
+
+compileJava.options.encoding = 'utf-8'
+
+configurations {
+	xtextLanguages {
+		extendsFrom compile
+	}
+	compile.transitive = true
+	testCompile.transitive = true
+}
+
+xtend {
+	generator {
+		//whether to generate @SuppressWarnings("all"), enabled by default
+		suppressWarningsAnnotation = false
+		//whether to generate the @Generated annotation, disabled by default
+		generatedAnnotation {
+			comment = "/*\n * Copyright 2016 California Institute of Technology (\\\"Caltech\\\").\n * U.S. Government sponsorship acknowledged.\n *\n * Licensed under the Apache License, Version 2.0 (the \\\"License\\\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \\\"AS IS\\\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */"
+			includeDate = true
+		}
+	}
+	debugger {
+		//how to install debug info into generated Java code
+		//SMAP adds Xtend debug info on top of Java
+		//PRIMARY makes Xtend the only debug info (throws away Java line numbers)
+		//default is SMAP for Java projects and PRIMARY for Android
+		sourceInstaller = 'SMAP' //or 'PRIMARY' or 'NONE'
+		//whether to hide synthetic variables in the debugger
+		hideSyntheticVariables = true
+	}
+	validator {
+		//adjust severity of issues
+		//available levels are error, warning, info and ignore
+		error 'org.eclipse.xtend.core.validation.IssueCodes.unused_private_member'
+		// These issue IDs can be found in your Eclipse project's .settings/org.eclipse.xtend.core.Xtend.prefs
+		// after enabling Project > Properties > Xtend > Errors/Warnings: [X] Enable project specific settings
+	}
+}
+
+sourceSets {
+	main {
+		java.srcDirs = ['src', 'xtend-gen']
+		resources.srcDirs = []
+		xtendOutputDir = 'xtend-gen'
+	}
+}
+
+task OMLLoadTest(type: JavaExec, dependsOn: jar) {
+	description 'Test loading the OML Spec'
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLLoadTest.xtend')
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLUtilities.xtend')
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/gov/nasa/jpl/imce/oml/model/extensions/OMLXcorePackages.xtend').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLCommon.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLTerminologies.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLGraphs.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLBundles.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLDescriptions.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLExtents.xcore').toFile()
+	
+	// This will produce a lot of error messages due this bug:
+	// https://bugs.eclipse.org/bugs/show_bug.cgi?id=511875
+	// The error messages can be filtered by uncommenting the next line.
+	// standardOutput = new ByteArrayOutputStream()
+	
+	classpath sourceSets.main.runtimeClasspath
+	
+	main = "gov.nasa.jpl.imce.oml.generators.OMLLoadTest"
+	
+	doLast {
+		project.logger.warn("# OMLLoadTest: Finished")
+	}
+}
+
+task generateDoc(type: JavaExec, dependsOn: jar) {
+	description 'Generates documentation files for OML'
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLSpecificationDocGenerator.xtend')
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLUtilities.xtend')
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/gov/nasa/jpl/imce/oml/model/extensions/OMLXcorePackages.xtend').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLCommon.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLTerminologies.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLGraphs.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLBundles.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLDescriptions.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLExtents.xcore').toFile()
+	outputs.dir rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.specification.doc/docs').toFile()
+	
+	// Suppress output as a temporary workaround for this bug:
+	// https://bugs.eclipse.org/bugs/show_bug.cgi?id=511875
+	standardOutput = new ByteArrayOutputStream()
+	
+	classpath sourceSets.main.runtimeClasspath
+	
+	main = "gov.nasa.jpl.imce.oml.generators.OMLSpecificationDocGenerator"
+	args += rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.specification.doc/docs').toFile().absolutePath
+	
+	doLast {
+		project.logger.warn("# generateOMLSpecificationDoc: Finished")
+	}
+}
+
+task generateTables(type: JavaExec, dependsOn: generateDoc) {
+	description 'Generates multi-language APIs & libraries for the OML tabular interchange representation for Java, JavaScript and Scala'
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLSpecificationTablesGenerator.xtend')
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLUtilities.xtend')
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/gov/nasa/jpl/imce/oml/model/extensions/OMLXcorePackages.xtend').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLCommon.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLTerminologies.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLGraphs.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLBundles.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLDescriptions.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLExtents.xcore').toFile()
+	outputs.dir rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.tables/shared/src/main/scala/gov/nasa/jpl/imce/oml/tables').toFile()
+	outputs.dir rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.tables/shared/src/main/scala/gov/nasa/jpl/imce/oml/provenance/oti').toFile()
+	
+	// Suppress output as a temporary workaround for this bug:
+	// https://bugs.eclipse.org/bugs/show_bug.cgi?id=511875
+	standardOutput = new ByteArrayOutputStream()
+	
+	classpath sourceSets.main.runtimeClasspath
+	
+	main = "gov.nasa.jpl.imce.oml.generators.OMLSpecificationTablesGenerator"
+	args += rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.tables').toFile().absolutePath
+	
+	doLast {
+		project.logger.warn("# generateOMLSpecificationTables: Finished")
+	}
+}
+
+task generateResolverAPI(type: JavaExec, dependsOn: generateTables) {
+	description 'Generates the OML Resolver Scala API'
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLSpecificationResolverAPIGenerator.xtend')
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLUtilities.xtend')
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/gov/nasa/jpl/imce/oml/model/extensions/OMLXcorePackages.xtend').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLCommon.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLTerminologies.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLGraphs.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLBundles.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLDescriptions.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLExtents.xcore').toFile()
+	outputs.dir rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.tables/shared/src/main/scala/gov/nasa/jpl/imce/oml/resolver/api').toFile()
+	
+	// Suppress output as a temporary workaround for this bug:
+	// https://bugs.eclipse.org/bugs/show_bug.cgi?id=511875
+	standardOutput = new ByteArrayOutputStream()
+	
+	classpath sourceSets.main.runtimeClasspath
+	
+	main = "gov.nasa.jpl.imce.oml.generators.OMLSpecificationResolverAPIGenerator"
+	args += rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.tables').toFile()
+	
+	doLast {
+		project.logger.warn("# generateOMLResolverAPI: Finished")
+	}
+}
+
+task generateResolverLibrary(type: JavaExec, dependsOn: generateResolverAPI) {
+	description 'Generates the OML Resolver Scala API'
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLSpecificationResolverLibraryGenerator.xtend')
+	inputs.file new File('src/gov/nasa/jpl/imce/oml/generators/OMLUtilities.xtend')
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/gov/nasa/jpl/imce/oml/model/extensions/OMLXcorePackages.xtend').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLCommon.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLTerminologies.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLGraphs.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLBundles.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLDescriptions.xcore').toFile()
+	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLExtents.xcore').toFile()
+	outputs.dir rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.tables/shared/src/main/scala/gov/nasa/jpl/imce/oml/resolver/impl').toFile()
+	
+	// Suppress output as a temporary workaround for this bug:
+	// https://bugs.eclipse.org/bugs/show_bug.cgi?id=511875
+	standardOutput = new ByteArrayOutputStream()
+	
+	classpath sourceSets.main.runtimeClasspath
+	
+	main = "gov.nasa.jpl.imce.oml.generators.OMLSpecificationResolverLibraryGenerator"
+	args += rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.resolver').toFile().absolutePath
+	
+	doLast {
+		project.logger.warn("# generateOMLResolverLibrary: Finished")
+	}
+}
+ 
+build.dependsOn generateResolverLibrary
+
+//this is an eclipse plugin project
+eclipseClasspath.enabled=false
+cleanEclipseClasspath.enabled=false
