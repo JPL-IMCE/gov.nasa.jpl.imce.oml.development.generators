@@ -24,6 +24,7 @@ import java.util.List
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
 
+
 class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	
 	static def main(String[] args) {
