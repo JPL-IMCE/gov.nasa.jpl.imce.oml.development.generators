@@ -89,7 +89,7 @@ task generateDoc(type: JavaExec, dependsOn: jar) {
 	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLBundles.xcore').toFile()
 	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLDescriptions.xcore').toFile()
 	inputs.file rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.model/src/main/resources/model/OMLExtents.xcore').toFile()
-	outputs.dir rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.specification.doc/docs').toFile()
+	outputs.dir rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.doc/docs').toFile()
 	
 	// Suppress output as a temporary workaround for this bug:
 	// https://bugs.eclipse.org/bugs/show_bug.cgi?id=511875
@@ -98,7 +98,7 @@ task generateDoc(type: JavaExec, dependsOn: jar) {
 	classpath sourceSets.main.runtimeClasspath
 	
 	main = "gov.nasa.jpl.imce.oml.generators.OMLSpecificationDocGenerator"
-	args += rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.specification.doc/docs').toFile().absolutePath
+	args += rootDir.toPath().resolve('gov.nasa.jpl.imce.oml.doc/docs').toFile().absolutePath
 	
 	doLast {
 		project.logger.warn("# generateOMLSpecificationDoc: Finished")
@@ -188,7 +188,3 @@ task generateResolverLibrary(type: JavaExec, dependsOn: generateResolverAPI) {
 }
  
 build.dependsOn generateResolverLibrary
-
-//this is an eclipse plugin project
-eclipseClasspath.enabled=false
-cleanEclipseClasspath.enabled=false

@@ -22,14 +22,13 @@ import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.util.List
 import org.eclipse.emf.ecore.EClass
-import org.eclipse.emf.ecore.EPackage
 
 class OMLSpecificationDocGenerator extends OMLUtilities {
 
 	static def main(String[] args) {
 		if (1 != args.length) {
 			System.err.println(
-				"usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.specification.doc project")
+				"usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.doc project")
 			System.exit(1)
 		}
 
@@ -40,24 +39,15 @@ class OMLSpecificationDocGenerator extends OMLUtilities {
 		val targetPath = Paths.get(targetDir)
 		targetPath.toFile.mkdirs
 
-		generateGlossaryFile(
-			#[c, t, g, b, d], 
-			targetPath.toAbsolutePath.toString
-		)
-	}
+		val ePackages = #[c, t, g, b, d]
+		val glossaryEntries = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isGlossary].sortBy[name]
 
-	def generateGlossaryFile(List<EPackage> ePackages, String targetFolder) {
-		val glossaryFile = new FileOutputStream(new File(targetFolder + File::separator + "GLOSSARY.md"))
-		
-		try {
-			val glossaryEntries = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isGlossary].sortBy[name]
+		val entriesByAbstraction = glossaryEntries.groupBy[isAbstract]
+		val schemaEntries = entriesByAbstraction.get(false).filter[isSchema]
+		val apiEntries = entriesByAbstraction.get(false).filter[isAPI && !isSchema]
+		val ooEntries = entriesByAbstraction.get(false).filter[isOO]
 
-			val entriesByAbstraction = glossaryEntries.groupBy[isAbstract]
-			val schemaEntries = entriesByAbstraction.get(false).filter[isSchema]
-			val apiEntries = entriesByAbstraction.get(false).filter[isAPI && !isSchema]
-			val ooEntries = entriesByAbstraction.get(false).filter[isOO]
-
-			val b1 = new StringBuffer('''
+		val buffer = new StringBuffer('''
 				{% include "./external-links.md" %}
 				# OML Glossary Summary
 				
@@ -88,38 +78,58 @@ class OMLSpecificationDocGenerator extends OMLUtilities {
 				  augment the normalized OMF APIs for the in-memory processing of OMF information
 				  extracted from parsing the OML tabular interchange representation.
 				
-				# OML Glossary of «entriesByAbstraction.get(true).size» Abstract Definitions {#oml-abstract-glossary}
 				''')
 			
-			val b2 = entriesByAbstraction.get(true).fold(
-				b1,
-				[buffer, eClass|generateClassGlossaryContents(buffer, eClass)]
-			)
 			
-			b2.append("\n"+'''# OML Glossary of «entriesByAbstraction.get(false).size» Concrete Definitions {#oml-concrete-glossary}''' +"\n")
-			b2.append("\n"+'''# OML Glossary of «schemaEntries.size» Schema Concrete Definitions {#oml-schema-concrete-glossary}''' +"\n")
+		val glossaryFile = new FileOutputStream(new File(targetPath.toAbsolutePath.toString + File::separator + "GLOSSARY.md"))
+		
+		try {
 			
-			val b3 = schemaEntries.sortWith(new OMLTableCompare()).fold(
-				b2,
-				[buffer, eClass|generateClassGlossaryContents(buffer, eClass)])
-
-			b3.append("\n"+'''# OML Glossary of «apiEntries.size» Functional API Concrete Definitions {#oml-functional-concrete-glossary}''' +"\n")
+			generateGlossaryFile("Common", c.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("Terminologies", t.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("Graphs", g.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("Bundles", b.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("Descriptions", d.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
 			
-			val b4 = apiEntries.fold(
-				b3,
-				[buffer, eClass|generateClassGlossaryContents(buffer, eClass)])
-
-			b4.append("\n"+'''# OML Glossary of «ooEntries.size» EMF/CDO API Concrete Definitions {#oml-emf-cdo-concrete-glossary}''' +"\n")
-			
-			val b5 = ooEntries.fold(
-				b4,
-				[buffer, eClass|generateClassGlossaryContents(buffer, eClass)])
-
-			glossaryFile.write(b5.toString.bytes)
+			glossaryFile.write(buffer.toString.bytes)
 			
 		} finally {
-			glossaryFile.close
+			glossaryFile.close()
 		}
+	}
+
+	def generateGlossaryFile(String group, List<EClass> entries, StringBuffer buffer) {
+		val entriesByAbstraction = entries.groupBy[isAbstract]
+		val abstractEntries = entriesByAbstraction.get(true)
+		val concreteEntries = entriesByAbstraction.get(false)
+		val schemaEntries = concreteEntries.filter[isSchema]
+		val apiEntries = concreteEntries.filter[isAPI && !isSchema]
+		val ooEntries = concreteEntries.filter[isOO]
+		
+		buffer.append("\n"+'''# OML «group» Glossary{#oml-«group.toLowerCase»-glossary}''')
+			
+		if (null !== abstractEntries && !abstractEntries.empty) {
+			buffer.append("\n"+'''* OML «group» Glossary of «abstractEntries.size» Abstract Definitions{#oml-«group.toLowerCase»-abstract-glossary}''')
+			abstractEntries.forEach [ eClass | generateClassGlossaryContents(buffer, eClass) ]
+		}
+		
+		buffer.append("\n"+'''* OML «group» Glossary of «concreteEntries.size» Concrete Definitions{#oml-«group.toLowerCase»-concrete-glossary}''' +"\n")
+		
+		if (null !== schemaEntries && !schemaEntries.empty) {
+			buffer.append("\n"+'''* OML «group» Glossary of «schemaEntries.size» Schema Concrete Definitions{#oml-«group.toLowerCase»-schema-concrete-glossary}''' +"\n")
+			schemaEntries.sortWith(new OMLTableCompare()).forEach [ eClass | generateClassGlossaryContents(buffer, eClass) ]
+		}
+		
+		if (null !== apiEntries && !apiEntries.empty) {
+			buffer.append("\n"+'''* OML «group» Glossary of «apiEntries.size» Functional API Concrete Definitions{#oml-«group.toLowerCase»-functional-concrete-glossary}''' +"\n")
+			apiEntries.forEach [ eClass | generateClassGlossaryContents(buffer, eClass) ]
+		}
+		
+		if (null !== ooEntries && !ooEntries.empty) {
+ 			buffer.append("\n"+'''* OML «group» Glossary of «ooEntries.size» EMF/CDO API Concrete Definitions{#oml-«group.toLowerCase»-emf-cdo-concrete-glossary}''' +"\n")
+			ooEntries.forEach [ eClass | generateClassGlossaryContents(buffer, eClass)] 
+		}
+			
 	}
 
 	def StringBuffer generateClassGlossaryContents(StringBuffer buffer, EClass eClass) {
