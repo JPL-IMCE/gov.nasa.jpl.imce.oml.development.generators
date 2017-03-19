@@ -85,11 +85,11 @@ class OMLSpecificationDocGenerator extends OMLUtilities {
 		
 		try {
 			
-			generateGlossaryFile("Common", c.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
-			generateGlossaryFile("Terminologies", t.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
-			generateGlossaryFile("Graphs", g.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
-			generateGlossaryFile("Bundles", b.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
-			generateGlossaryFile("Descriptions", d.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("1", "Common", c.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("2", "Terminologies", t.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("3", "Graphs", g.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("4", "Bundles", b.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
+			generateGlossaryFile("5", "Descriptions", d.EClassifiers.filter(EClass).filter[isGlossary].sortBy[name], buffer)
 			
 			glossaryFile.write(buffer.toString.bytes)
 			
@@ -98,36 +98,42 @@ class OMLSpecificationDocGenerator extends OMLUtilities {
 		}
 	}
 
-	def generateGlossaryFile(String group, List<EClass> entries, StringBuffer buffer) {
+	def generateGlossaryFile(String n, String group, List<EClass> entries, StringBuffer buffer) {
 		val entriesByAbstraction = entries.groupBy[isAbstract]
 		val abstractEntries = entriesByAbstraction.get(true)
 		val concreteEntries = entriesByAbstraction.get(false)
 		val schemaEntries = concreteEntries.filter[isSchema]
 		val apiEntries = concreteEntries.filter[isAPI && !isSchema]
 		val ooEntries = concreteEntries.filter[isOO]
+		var counter = 1
+		var subcounter = 1
 		
-		buffer.append("\n"+'''# OML «group» Glossary{#oml-«group.toLowerCase»-glossary}''')
+		buffer.append("\n"+'''# «n» OML «group» Glossary {#oml-«group.toLowerCase»-glossary}''')
 			
 		if (null !== abstractEntries && !abstractEntries.empty) {
-			buffer.append("\n"+'''* OML «group» Glossary of «abstractEntries.size» Abstract Definitions{#oml-«group.toLowerCase»-abstract-glossary}''')
+			buffer.append("\n"+'''# «n».«counter» OML «group» Glossary of «abstractEntries.size» Abstract Definitions {#oml-«group.toLowerCase»-abstract-glossary}''')
 			abstractEntries.forEach [ eClass | generateClassGlossaryContents(buffer, eClass) ]
+			counter += 1
 		}
 		
-		buffer.append("\n"+'''* OML «group» Glossary of «concreteEntries.size» Concrete Definitions{#oml-«group.toLowerCase»-concrete-glossary}''' +"\n")
+		buffer.append("\n"+'''# «n».«counter» OML «group» Glossary of «concreteEntries.size» Concrete Definitions {#oml-«group.toLowerCase»-concrete-glossary}''' +"\n")
 		
 		if (null !== schemaEntries && !schemaEntries.empty) {
-			buffer.append("\n"+'''* OML «group» Glossary of «schemaEntries.size» Schema Concrete Definitions{#oml-«group.toLowerCase»-schema-concrete-glossary}''' +"\n")
+			buffer.append("\n"+'''# «n».«counter».«subcounter» OML «group» Glossary of «schemaEntries.size» Schema Concrete Definitions {#oml-«group.toLowerCase»-schema-concrete-glossary}''' +"\n")
 			schemaEntries.sortWith(new OMLTableCompare()).forEach [ eClass | generateClassGlossaryContents(buffer, eClass) ]
+			subcounter += 1
 		}
 		
 		if (null !== apiEntries && !apiEntries.empty) {
-			buffer.append("\n"+'''* OML «group» Glossary of «apiEntries.size» Functional API Concrete Definitions{#oml-«group.toLowerCase»-functional-concrete-glossary}''' +"\n")
+			buffer.append("\n"+'''# «n».«counter».«subcounter» OML «group» Glossary of «apiEntries.size» Functional API Concrete Definitions {#oml-«group.toLowerCase»-functional-concrete-glossary}''' +"\n")
 			apiEntries.forEach [ eClass | generateClassGlossaryContents(buffer, eClass) ]
+			subcounter += 1
 		}
 		
 		if (null !== ooEntries && !ooEntries.empty) {
- 			buffer.append("\n"+'''* OML «group» Glossary of «ooEntries.size» EMF/CDO API Concrete Definitions{#oml-«group.toLowerCase»-emf-cdo-concrete-glossary}''' +"\n")
+ 			buffer.append("\n"+'''# «n».«counter».«subcounter» OML «group» Glossary of «ooEntries.size» EMF/CDO API Concrete Definitions {#oml-«group.toLowerCase»-emf-cdo-concrete-glossary}''' +"\n")
 			ooEntries.forEach [ eClass | generateClassGlossaryContents(buffer, eClass)] 
+			subcounter += 1
 		}
 			
 	}
