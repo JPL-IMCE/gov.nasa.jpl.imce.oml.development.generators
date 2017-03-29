@@ -253,14 +253,14 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 	'''
 	
 	def generateJS(EPackage ePackage, String targetJSFolder) {
-		for(eClass : ePackage.EClassifiers.filter(EClass).filter[isFunctionalAPI && hasOptionalAttributes])  {
+		for(eClass : ePackage.EClassifiers.filter(EClass).filter[isFunctionalAPI && hasSchemaOptionalAttributes])  {
 			val classFile = new FileOutputStream(new File(targetJSFolder + File::separator + eClass.name + "JS.scala"))
 			classFile.write(generateJSClassFile(eClass).bytes)
 		}
 	}
 	
 	def generateJVM(EPackage ePackage, String targetJVMFolder) {
-		for(eClass : ePackage.EClassifiers.filter(EClass).filter[isFunctionalAPI && hasOptionalAttributes])  {
+		for(eClass : ePackage.EClassifiers.filter(EClass).filter[isFunctionalAPI && hasSchemaOptionalAttributes])  {
 			val classFile = new FileOutputStream(new File(targetJVMFolder + File::separator + eClass.name + "Java.scala"))
 			classFile.write(generateJVMClassFile(eClass).bytes)
 		}
@@ -291,7 +291,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  = new scala.Ordering[«eClass.name»] {
 		  	def compare(x: «eClass.name», y: «eClass.name»)
 		  	: scala.Int
-		  	= «FOR keyFeature: eClass.orderingKeys»x.«keyFeature.columnName».compareTo(y.«keyFeature.columnName») match {
+		  	= «FOR keyFeature: eClass.orderingKeys»«keyFeature.orderingTableType» match {
 		  	 	case c_«keyFeature.columnName» if 0 != c_«keyFeature.columnName» => c_«keyFeature.columnName»
 		  	 	case 0 => «ENDFOR»«FOR keyFeature: eClass.orderingKeys BEFORE "0 }" SEPARATOR " }"»«ENDFOR»
 		  }
@@ -311,27 +311,27 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import scala.Predef._
 		
 		/**
-		  «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes»
 		  * @param «attr.columnName»[«attr.lowerBound»,«attr.upperBound»]
 		  «ENDFOR» 
 		  */
-		«IF ! eClass.hasOptionalAttributes»
+		«IF ! eClass.hasSchemaOptionalAttributes»
 		@JSExport
 		«ENDIF»
 		case class «eClass.name»
 		(
-		  «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes SEPARATOR ","»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ","»
 		  @(JSExport @field) «attr.columnName»: «attr.constructorTypeName»
 		  «ENDFOR»
 		) {
-		«IF eClass.hasOptionalAttributes»
+		«IF eClass.hasSchemaOptionalAttributes»
 		  @JSExport
 		  def this(
-		  «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes.filter(a | a.lowerBound > 0) SEPARATOR ",\n" AFTER ")"»  «attr.columnName»: «attr.constructorTypeName»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | a.lowerBound > 0) SEPARATOR ",\n" AFTER ")"»  «attr.columnName»: «attr.constructorTypeName»«ENDFOR»
 		  = this(
-		  «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes SEPARATOR ",\n" AFTER ")\n"»«IF attr.lowerBound > 0»    «attr.columnName»«ELSE»    None /* «attr.columnName» */«ENDIF»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ",\n" AFTER ")\n"»«IF attr.lowerBound > 0»    «attr.columnName»«ELSE»    None /* «attr.columnName» */«ENDIF»«ENDFOR»
 		
-		  «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes.filter(a | a.lowerBound == 0) SEPARATOR ""»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | a.lowerBound == 0) SEPARATOR ""»
 		  def with«attr.columnName.toFirstUpper»(l: «attr.scalaTableTypeName»)	 
 		  : «eClass.name»
 		  = copy(«attr.columnName»=Some(l))
@@ -340,11 +340,11 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		«ENDIF»
 		  override val hashCode
 		  : scala.Int 
-		  = «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes BEFORE "(" SEPARATOR ", " AFTER ").##"»«attr.columnName»«ENDFOR»
+		  = «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes BEFORE "(" SEPARATOR ", " AFTER ").##"»«attr.columnName»«ENDFOR»
 		  
 		  override def equals(other: scala.Any): scala.Boolean = other match {
 		  	case that: «eClass.name» =>
-		  	  «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes SEPARATOR " &&"»
+		  	  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR " &&"»
 		  	  (this.«attr.columnName» == that.«attr.columnName»)
 		      «ENDFOR»
 		    case _ =>
@@ -390,17 +390,17 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		
 		@JSExport
 		object «eClass.name»JS {
-		  «IF eClass.hasOptionalAttributes»
+		  «IF eClass.hasSchemaOptionalAttributes»
 		  
 		  @JSExport
 		  def js«eClass.name»(
-		    «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes SEPARATOR ","»
+		    «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ","»
 		    «attr.columnName»: «attr.jsTypeName»
 		    «ENDFOR»
 		  )
 		  : «eClass.name»
 		  = «eClass.name»(
-		    «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes SEPARATOR ","»
+		    «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ","»
 		    «attr.jsArgName»
 		    «ENDFOR»
 		  )
@@ -418,16 +418,16 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import scala.compat.java8.OptionConverters._
 		
 		object «eClass.name»Java {
-		  «IF eClass.hasOptionalAttributes»
+		  «IF eClass.hasSchemaOptionalAttributes»
 		  
 		  def java«eClass.name»(
-		    «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes SEPARATOR ","»
+		    «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ","»
 		    «attr.columnName»: «attr.javaTypeName»
 		    «ENDFOR»
 		  )
 		  : «eClass.name»
 		  = «eClass.name»(
-		    «FOR attr : eClass.functionalAPIOrOrderingKeyAttributes SEPARATOR ","»
+		    «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ","»
 		    «attr.javaArgName»
 		    «ENDFOR»
 		  )

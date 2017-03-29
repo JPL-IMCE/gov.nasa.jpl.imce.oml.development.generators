@@ -79,13 +79,52 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		
 		package object «packageQName.substring(packageQName.lastIndexOf('.')+1)» {
 			
+		
+		  import scala.{Option,None,Some}
+		  
+		  def lookupTerminologyBox(extent: Extent, uuid: Option[java.util.UUID])
+		  : Option[TerminologyBox]
+		  = extent.lookupModule(uuid).flatMap { 
+		  	case tbox: TerminologyBox => Some(tbox)
+		  	case _ => None
+		  }
+		  
+		  def lookupTerminologyGraph(extent: Extent, uuid: Option[java.util.UUID])
+		  : Option[TerminologyGraph]
+		  = extent.lookupModule(uuid).flatMap { 
+		    case tgraph: TerminologyGraph => Some(tgraph)
+		    case _ => None
+		  }
+		
+		  def lookupBundle(extent: Extent, uuid: Option[java.util.UUID])
+		  : Option[Bundle]
+		  = extent.lookupModule(uuid).flatMap { 
+		  	case bundle: Bundle => Some(bundle)
+		  	case _ => None
+		  }
+		
+		  def lookupDescriptionBox(extent: Extent, uuid: Option[java.util.UUID])
+		  : Option[DescriptionBox]
+		  = extent.lookupModule(uuid).flatMap { 
+		    case dbox: DescriptionBox => Some(dbox)
+		    case _ => None
+		  }
+		
+		  implicit def UUIDOrdering
+		  : scala.Ordering[java.util.UUID]
+		  = new scala.Ordering[java.util.UUID] {
+		    def compare(x: java.util.UUID, y:java.util.UUID)
+		    : scala.Int
+		    = x.compareTo(y)
+		  }
+
 		  «FOR eClass: ePackages.map[FunctionalAPIClasses].flatten.filter[!orderingKeys.isEmpty].sortBy[name]»
-		  implicit def «eClass.name.toFirstLower»Ordering
+		  implicit def «eClass.orderingClassName»
 		  : scala.Ordering[«eClass.name»]
 		  = new scala.Ordering[«eClass.name»] {
 		  	def compare(x: «eClass.name», y: «eClass.name»)
 		  	: scala.Int
-		  	= «FOR keyFeature: eClass.orderingKeys»«IF (keyFeature.isClassFeature)»«keyFeature.EType.name.toFirstLower»Ordering.compare(x.«keyFeature.name»,y.«keyFeature.name»)«ELSE»x.«keyFeature.columnName».compareTo(y.«keyFeature.columnName»)«ENDIF» match {
+		  	= «FOR keyFeature: eClass.orderingKeys»«IF (keyFeature.isClassFeature)»«keyFeature.orderingClassType».compare(x.«keyFeature.name»,y.«keyFeature.name»)«ELSE»«keyFeature.orderingAttributeType»«ENDIF» match {
 		  	 	case c_«keyFeature.name» if 0 != c_«keyFeature.name» => c_«keyFeature.name»
 		  	 	case 0 => «ENDFOR»«FOR keyFeature: eClass.orderingKeys BEFORE "0 }" SEPARATOR " }"»«ENDFOR»
 		  }

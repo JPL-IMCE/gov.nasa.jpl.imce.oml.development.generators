@@ -44,8 +44,46 @@ class OMLUtilities extends OMLXcorePackages {
 		decl+" "+op.name+"\n  ("+args+")"
 	}
 	
+	static def String orderingClassName(EClass eClass) {
+		if (eClass.orderingKeys.exists[f | f.container || f.lowerBound == 0] || eClass.name == "AnnotationEntry")
+			'''«eClass.name.toFirstLower»Ordering(implicit e: Extent)'''
+		else
+			'''«eClass.name.toFirstLower»Ordering'''
+	}
+	
+	static def String orderingTableType(ETypedElement feature) {
+		if (feature.lowerBound == 0) {
+			if (feature.EType.name == "UUID")
+				'''scala.Ordering.Option[UUID](scala.Ordering.String).compare(x.«feature.columnName»,y.«feature.columnName»)'''
+			else
+				throw new IllegalArgumentException("Implemented support for orderingAttributeType for: "+feature)
+		} else
+			'''x.«feature.columnName».compareTo(y.«feature.columnName»)'''
+	}
+	
+	static def String orderingAttributeType(ETypedElement feature) {
+		if (feature.lowerBound == 0) {
+			if (feature.EType.name == "UUID")
+				'''scala.Ordering.Option[java.util.UUID](UUIDOrdering).compare(x.«feature.columnName»(e),y.«feature.columnName»(e))'''
+			else
+				throw new IllegalArgumentException("Implemented support for orderingAttributeType for: "+feature)
+		} else {
+			val fname = feature.columnName
+			val kname = if (fname == "uuid") "uuid()" else fname
+			'''x.«kname».compareTo(y.«kname»)'''	
+		}
+	}
+	
+	static def String orderingClassType(ETypedElement feature) {
+		if (feature.container) {
+			"scala.Ordering.Option[java.util.UUID](UUIDOrdering)"
+		} else
+			feature.EType.name.toFirstLower+"Ordering"
+	}
+	
 	static def String queryResolverType(ETypedElement feature, String typePrefix) {
 		val type = feature.EType
+		val isContainer = feature.container
 		val scalaType = feature.scalaResolverTypeName
 		switch type {
 			case type instanceof EDataType: 
@@ -76,6 +114,8 @@ class OMLUtilities extends OMLXcorePackages {
 					else
 						"scala.Option["+typePrefix+type.name+"]"
 				}
+				else if (isContainer)
+					"scala.Option[java.util.UUID] /* reference to a "+typePrefix+type.name+" */"
 				else
 					typePrefix+type.name
 			default:
@@ -198,14 +238,10 @@ class OMLUtilities extends OMLXcorePackages {
 		.filter[isOrderingKey]
 	} 
 	
-	static def Boolean hasOptionalAttributes(EClass eClass) {
-		eClass.functionalAPIOrOrderingKeyAttributes.exists(a | a.lowerBound == 0)
-	}
-	
 	static def Iterable<ETypedElement> functionalAPIOrOrderingKeyAttributes(EClass eClass) {
 		eClass
 		.functionalAPIOrOrderingKeyFeatures
-		.filter[!isInterface && (isAttributeOrReferenceOrContainer || isOrderingKey)]
+		.filter[!isInterface && (isFunctionalAttributeOrReferenceExceptContainer || isOrderingKey)]
 	}
 	
 	static def Iterable<ETypedElement> functionalAPIOrOrderingKeyFeatures(EClass eClass) {
@@ -221,6 +257,28 @@ class OMLUtilities extends OMLXcorePackages {
 		sorted
 	}
 	
+	static def Boolean hasSchemaOptionalAttributes(EClass eClass) {
+		eClass.schemaAPIOrOrderingKeyAttributes.exists(a | a.lowerBound == 0)
+	}
+	
+	static def Iterable<ETypedElement> schemaAPIOrOrderingKeyAttributes(EClass eClass) {
+		eClass
+		.schemaAPIOrOrderingKeyFeatures
+		.filter[!isInterface && (isSchemaAttributeOrReferenceOrContainer || isOrderingKey)]
+	}
+	
+	static def Iterable<ETypedElement> schemaAPIOrOrderingKeyFeatures(EClass eClass) {
+		val Set<ETypedElement> features = eClass
+		.selfAndAllSupertypes
+		.map[ETypedElements]
+		.flatten
+		.toSet
+		
+		val sorted = features
+		.sortWith(new OMLFeatureCompare())
+		
+		sorted
+	}
 	static def Iterable<ETypedElement> ETypedElements(EClass eClass) {
 		val features = new HashSet<ETypedElement>()
 		features.addAll(eClass.EStructuralFeatures.filter[isFunctionalAPIOrOrderingKey])
@@ -243,7 +301,7 @@ class OMLUtilities extends OMLXcorePackages {
 	}
 	
 	static def Iterable<EStructuralFeature> APIStructuralFeatures(EClass eClass) {
-		eClass.EStructuralFeatures.filter[isAPI]
+		eClass.EStructuralFeatures.filter[isAPI] //.filter[isFunctionalAttributeOrReferenceOrContainer || isOrderingKey]
 	}
     
 	static def Boolean isRootHierarchyClass(EClass eClass) {
@@ -258,14 +316,6 @@ class OMLUtilities extends OMLXcorePackages {
 		eClass.EOperations.filter[isAPI]
 	}
     
-	static def Boolean isAttributeOrReferenceOrContainer(EStructuralFeature f) {
-		switch f {
-			EReference: 
-				! f.containment
-			default: true
-		}
-	}
-	
 	static def Iterable<EStructuralFeature> getSortedDerivedAttributeSignature(EClass eClass) {
 		eClass
 		.getSortedAttributeSignature
@@ -372,7 +422,20 @@ class OMLUtilities extends OMLXcorePackages {
     	  false
     }
      
-	static def Boolean isAttributeOrReferenceOrContainer(ETypedElement f) {
+	static def Boolean isContainer(ETypedElement f) {
+		switch f {
+			EReference: 
+				f.container
+			default: 
+				false
+		}
+	}
+	
+	static def Boolean isFunctionalAttributeOrReferenceExceptContainer(ETypedElement f) {
+		!isContainer(f)
+	}
+	
+	static def Boolean isSchemaAttributeOrReferenceOrContainer(ETypedElement f) {
 		switch f {
 			EReference: 
 				f.isSchema && ! f.containment
