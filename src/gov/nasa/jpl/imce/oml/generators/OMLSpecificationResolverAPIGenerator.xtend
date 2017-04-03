@@ -62,10 +62,14 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		} finally {
 			factoryFile.close
 		}
-		for(eClass : ePackages.map[EClassifiers].flatten.filter(EClass).filter[isAPI])  {
+		val eClasses = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isAPI]
+		for(eClass : eClasses)  {
 			val classFile = new FileOutputStream(new File(targetFolder + File::separator + eClass.name + ".scala"))
 			try {
-				classFile.write(generateClassFile(eClass).bytes)	
+				if (eClass.isExtentContainer)		
+					classFile.write(generateExtentContainerClassFile(eClass, eClasses).bytes)	
+				else
+					classFile.write(generateClassFile(eClass).bytes)	
 			} finally {
 				classFile.close
 			}
@@ -79,36 +83,6 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		
 		package object «packageQName.substring(packageQName.lastIndexOf('.')+1)» {
 			
-		
-		  import scala.{Option,None,Some}
-		  
-		  def lookupTerminologyBox(extent: Extent, uuid: Option[java.util.UUID])
-		  : Option[TerminologyBox]
-		  = extent.lookupModule(uuid).flatMap { 
-		  	case tbox: TerminologyBox => Some(tbox)
-		  	case _ => None
-		  }
-		  
-		  def lookupTerminologyGraph(extent: Extent, uuid: Option[java.util.UUID])
-		  : Option[TerminologyGraph]
-		  = extent.lookupModule(uuid).flatMap { 
-		    case tgraph: TerminologyGraph => Some(tgraph)
-		    case _ => None
-		  }
-		
-		  def lookupBundle(extent: Extent, uuid: Option[java.util.UUID])
-		  : Option[Bundle]
-		  = extent.lookupModule(uuid).flatMap { 
-		  	case bundle: Bundle => Some(bundle)
-		  	case _ => None
-		  }
-		
-		  def lookupDescriptionBox(extent: Extent, uuid: Option[java.util.UUID])
-		  : Option[DescriptionBox]
-		  = extent.lookupModule(uuid).flatMap { 
-		    case dbox: DescriptionBox => Some(dbox)
-		    case _ => None
-		  }
 		
 		  implicit def UUIDOrdering
 		  : scala.Ordering[java.util.UUID]
@@ -143,19 +117,129 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  // «eClass.name»
 		  
 		  def create«eClass.name»
-		  «FOR attr : eClass.getSortedAttributeSignatureExceptDerived BEFORE "(" SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
-		  : «eClass.name»
+		  «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer)"( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		  «IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
 		  
-		  «FOR attr: eClass.lookupCopyConstructorArguments»
-		  def copy«eClass.name»_«attr.name»
-		  ( that: «eClass.name»,
-		    «attr.name»: «attr.queryResolverType('')» )
-		  : «eClass.name»
-		  
-		  «ENDFOR»
 		  «ENDFOR»
 		}
 	'''
+	
+	def String generateExtentContainerClassFile(EClass eClass, Iterable<EClass> allEClasses) {
+		val extManaged = allEClasses.filter[isExtentManaged]
+		val containers = allEClasses.map[EStructuralFeatures].flatten.filter[isContainment]
+		
+		val containerTypes = containers.map[EClassContainer].toSet.toList.sortBy[name]
+		val containedTypes = containers.map[EType].toSet.toList.sortBy[name]
+		
+		
+	'''
+		«copyright»
+		package gov.nasa.jpl.imce.oml.resolver.api
+		
+		import scala.collection.immutable.{Map, HashMap, Set}
+		import scala.{Option,None,Some}
+		 
+		«FOR ct : containerTypes BEFORE "// Container types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.EPackage.name».«ct.name»«ENDFOR»
+		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.EPackage.name».«ct.name»«ENDFOR»
+		«eClass.doc("")»case class «eClass.name»
+		(«FOR em : extManaged BEFORE " " SEPARATOR ",\n  " AFTER ",\n"»«em.tableVariableName»: Map[java.util.UUID, «em.name»] = HashMap.empty[java.util.UUID, «em.name»]«ENDFOR»
+		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.name»: Map[«c.EClassContainer.name», Set[«c.EType.name»]] = HashMap.empty[«c.EClassContainer.name», Set[«c.EType.name»]]«ENDFOR»
+		«FOR c : containers.filter[name != "annotations"] BEFORE "\n  " SEPARATOR ",\n  " AFTER "\n"»«c.EType.name.toFirstLower»ByUUID: Map[java.util.UUID, «c.EType.name»] = HashMap.empty[java.util.UUID, «c.EType.name»]«ENDFOR»
+		) {
+			
+		  def lookupTerminologyBox(uuid: Option[java.util.UUID])
+		  : Option[TerminologyBox]
+		  = uuid.fold[Option[TerminologyBox]](None) { lookupTerminologyBox }
+		  
+		  def lookupTerminologyBox(uuid: java.util.UUID)
+		  : Option[TerminologyBox]
+		  = for {
+		  	m <- modules.get(uuid)
+		  	result <- m match {
+		      case tbox: TerminologyBox => Some(tbox)
+		  	  case _ => None
+		  	}
+		  } yield result
+		  
+		  def lookupTerminologyGraph(uuid: Option[java.util.UUID])
+		  : Option[TerminologyGraph]
+		  = uuid.fold[Option[TerminologyGraph]](None) { lookupTerminologyGraph }
+		
+		  def lookupTerminologyGraph(uuid: java.util.UUID)
+		  : Option[TerminologyGraph]
+		  = for {
+		    m <- modules.get(uuid)
+		    result <- m match {
+		      case tg: TerminologyGraph => Some(tg)
+		      case _ => None
+		    }
+		  } yield result
+		
+		  def lookupBundle(uuid: Option[java.util.UUID])
+		  : Option[Bundle]
+		  = uuid.fold[Option[Bundle]](None) { lookupBundle }
+		  
+		  def lookupBundle(uuid: java.util.UUID)
+		  : Option[Bundle]
+		  = for {
+		    m <- modules.get(uuid)
+		    result <- m match {
+		      case b: Bundle => Some(b)
+		  	  case _ => None
+		    }
+		  } yield result
+		
+		  def lookupDescriptionBox(uuid: Option[java.util.UUID])
+		  : Option[DescriptionBox]
+		  = uuid.fold[Option[DescriptionBox]](None) { lookupDescriptionBox }
+		
+		  def lookupDescriptionBox(uuid: java.util.UUID)
+		  : Option[DescriptionBox]
+		  = for {
+		    m <- modules.get(uuid)
+		    result <- m match {
+		      case dbox: DescriptionBox => Some(dbox)
+		  	  case _ => None
+		    }
+		  } yield result
+		
+		  «FOR em : extManaged SEPARATOR "\n  " AFTER "\n"»
+		  def lookup«em.name»(uuid: Option[java.util.UUID])
+		  : Option[«em.name»]
+		  = uuid.fold[Option[«em.name»]](None) { lookup«em.name» } 
+		  
+		  def lookup«em.name»(uuid: java.util.UUID)
+		  : Option[«em.name»]
+		  = «em.tableVariableName».get(uuid)
+		  «ENDFOR»
+
+		  «FOR c : containers SEPARATOR "\n  " AFTER "\n"»
+		  def lookup«c.name.toFirstUpper»(key: Option[«c.EClassContainer.name»])
+		  : Set[«c.EType.name»]
+		  = key.fold[Set[«c.EType.name»]](Set.empty[«c.EType.name»]) { lookup«c.name.toFirstUpper» }
+		  
+		  def lookup«c.name.toFirstUpper»(key: «c.EClassContainer.name»)
+		  : Set[«c.EType.name»]
+		  = «c.name».getOrElse(key, Set.empty[«c.EType.name»])
+		  «IF (c.EType.name != "Annotation")»
+		  
+		  def lookup«c.EType.name»(uuid: Option[java.util.UUID])
+		  : Option[«c.EType.name»]
+		  = uuid.fold[Option[«c.EType.name»]](None) { lookup«c.EType.name» } 
+		  
+		  def lookup«c.EType.name»(uuid: java.util.UUID)
+		  : Option[«c.EType.name»]
+		  = «c.EType.name.toFirstLower»ByUUID.get(uuid)
+	  	  «ENDIF»
+		  «ENDFOR»
+		
+		  def lookupElement(uuid: java.util.UUID)
+		  : Option[Element]
+		  = lookupModule(uuid)«FOR c : containers.filter[name != "annotations"] BEFORE " orElse\n  " SEPARATOR " orElse\n  " AFTER "\n"»lookup«c.EType.name»(uuid)«ENDFOR»
+		
+		}
+	'''
+	}
 	
 	def String generateClassFile(EClass eClass) '''
 		«copyright»

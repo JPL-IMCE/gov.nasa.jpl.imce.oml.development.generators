@@ -20,6 +20,7 @@ package gov.nasa.jpl.imce.oml.generators
 import java.util.Comparator
 import java.util.HashSet
 import java.util.Set
+import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EDataType
 import org.eclipse.emf.ecore.ENamedElement
@@ -41,11 +42,12 @@ class OMLUtilities extends OMLXcorePackages {
 		val kind = "def"
 		val decl = if (null !== op.getEAnnotation("http://imce.jpl.nasa.gov/oml/Override")) "override "+kind else kind
 		val args = '''«FOR p : op.EParameters SEPARATOR ",\n  "»«p.name»: «p.queryResolverType(typePrefix)»«ENDFOR»'''
-		decl+" "+op.name+"\n  ("+args+")"
+		val impl = '''«IF (op.isImplicitExtent)»(implicit extent: Extent)«ENDIF»'''
+		decl+" "+op.name+"\n  ("+args+")"+impl
 	}
 	
 	static def String orderingClassName(EClass eClass) {
-		if (eClass.orderingKeys.exists[f | f.container || f.lowerBound == 0] || eClass.name == "AnnotationEntry")
+		if (eClass.orderingKeys.exists[f | f.container || f.lowerBound == 0] || eClass.name == "AnnotationEntry" || eClass.name == "Annotation")
 			'''«eClass.name.toFirstLower»Ordering(implicit e: Extent)'''
 		else
 			'''«eClass.name.toFirstLower»Ordering'''
@@ -64,7 +66,7 @@ class OMLUtilities extends OMLXcorePackages {
 	static def String orderingAttributeType(ETypedElement feature) {
 		if (feature.lowerBound == 0) {
 			if (feature.EType.name == "UUID")
-				'''scala.Ordering.Option[java.util.UUID](UUIDOrdering).compare(x.«feature.columnName»(e),y.«feature.columnName»(e))'''
+				'''scala.Ordering.Option[java.util.UUID](UUIDOrdering).compare(x.«feature.columnName»(),y.«feature.columnName»())'''
 			else
 				throw new IllegalArgumentException("Implemented support for orderingAttributeType for: "+feature)
 		} else {
@@ -83,7 +85,7 @@ class OMLUtilities extends OMLXcorePackages {
 	
 	static def String queryResolverType(ETypedElement feature, String typePrefix) {
 		val type = feature.EType
-		val isContainer = feature.container
+		//val isContainer = feature.container
 		val scalaType = feature.scalaResolverTypeName
 		switch type {
 			case type instanceof EDataType: 
@@ -114,8 +116,8 @@ class OMLUtilities extends OMLXcorePackages {
 					else
 						"scala.Option["+typePrefix+type.name+"]"
 				}
-				else if (isContainer)
-					"scala.Option[java.util.UUID] /* reference to a "+typePrefix+type.name+" */"
+//				else if (isContainer)
+//					"scala.Option[java.util.UUID] /* reference to a "+typePrefix+type.name+" */"
 				else
 					typePrefix+type.name
 			default:
@@ -301,7 +303,7 @@ class OMLUtilities extends OMLXcorePackages {
 	}
 	
 	static def Iterable<EStructuralFeature> APIStructuralFeatures(EClass eClass) {
-		eClass.EStructuralFeatures.filter[isAPI] //.filter[isFunctionalAttributeOrReferenceOrContainer || isOrderingKey]
+		eClass.EStructuralFeatures.filter[isAPI && isFunctionalAttributeOrReferenceExceptContainer]
 	}
     
 	static def Boolean isRootHierarchyClass(EClass eClass) {
@@ -320,6 +322,14 @@ class OMLUtilities extends OMLXcorePackages {
 		eClass
 		.getSortedAttributeSignature
 		.filter[derived]
+	}
+	
+	static def Iterable<EStructuralFeature> getSortedAttributeFactorySignature(EClass eClass) {
+		eClass
+		.selfAndAllSupertypes
+		.map[EStructuralFeatures.filter[isAPI && !isContainment && !derived]]
+		.flatten
+		.sortWith(new OMLFeatureCompare())
 	}
 	
 	static def Iterable<EStructuralFeature> getSortedAttributeSignatureExceptDerived(EClass eClass) {
@@ -422,6 +432,16 @@ class OMLUtilities extends OMLXcorePackages {
     	  false
     }
      
+     
+	static def Boolean isContainment(ETypedElement f) {
+		switch f {
+			EReference: 
+				f.containment
+			default: 
+				false
+		}
+	}
+	
 	static def Boolean isContainer(ETypedElement f) {
 		switch f {
 			EReference: 
@@ -432,7 +452,7 @@ class OMLUtilities extends OMLXcorePackages {
 	}
 	
 	static def Boolean isFunctionalAttributeOrReferenceExceptContainer(ETypedElement f) {
-		!isContainer(f)
+		!f.isContainer && !f.isContainment
 	}
 	
 	static def Boolean isSchemaAttributeOrReferenceOrContainer(ETypedElement f) {
@@ -477,8 +497,20 @@ class OMLUtilities extends OMLXcorePackages {
     		null === e.getEAnnotation("http://imce.jpl.nasa.gov/oml/NotFunctionalAPI")
     }
     
+    static def Boolean isExtentContainer(ENamedElement e) {
+    	null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentContainer")
+    }
+    
+    static def Boolean isExtentManaged(ENamedElement e) {
+    	null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentManaged")
+    }
+    
     static def Boolean isGlossary(ENamedElement e) {
     	null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/Glossary")
+    }
+    
+    static def Boolean isImplicitExtent(ENamedElement e) {
+    	null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/ImplicitExtent")
     }
     
     static def Boolean isScala(ENamedElement e) {
@@ -511,9 +543,23 @@ class OMLUtilities extends OMLXcorePackages {
 	static def String pluralize(String s) {
 	  if (s.endsWith("y")) { 
 	  	s.substring(0, s.length-1)+"ies"
+	  } else if (s.endsWith("x")) { 
+	  	s+"es"
 	  } else {
 	  	s+"s"
 	  }	 
+	}
+	
+	static def String tableVariableName(EClass eClass) {
+	  val n = eClass.name
+	  if (n.startsWith("IRI")) {
+	  	"iri" + pluralize(n.substring(3))
+	  } else {
+	  	val m = Pattern.compile("^(\\p{Upper}+)(\\w+)$").matcher(n)
+	  	if (!m.matches())
+	  		throw new IllegalArgumentException("tableVariableName needs a class whose name begins with uppercase characters: " + eClass.name)
+	 	m.group(1).toLowerCase + pluralize(m.group(2))
+	  }
 	}
 	
 	static class OMLTableCompare implements Comparator<EClass> {

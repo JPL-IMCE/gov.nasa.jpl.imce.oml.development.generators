@@ -92,7 +92,9 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		
 		import gov.nasa.jpl.imce.oml._
 		
-		«IF (eClass.abstract)»trait «ELSE»case class «ENDIF»«eClass.classDeclaration»
+		«IF (eClass.abstract)»trait «ELSE»import scala.Predef.ArrowAssoc
+		
+		case class «ENDIF»«eClass.classDeclaration»
 		{
 		«FOR op : eClass.ScalaOperations»  «op.doc("  ")»«op.queryResolverName('resolver.api.')»
 		  : «op.queryResolverType('resolver.api.')»

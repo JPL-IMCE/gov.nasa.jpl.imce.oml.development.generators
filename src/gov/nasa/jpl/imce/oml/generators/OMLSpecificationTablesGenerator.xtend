@@ -21,7 +21,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.util.List
-import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EDataType
 import org.eclipse.emf.ecore.EEnum
@@ -229,18 +228,6 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 	
 	static def String tableReaderName(EClass eClass)
 	  '''read«pluralize(eClass.name)»'''
-	
-	static def String tableVariableName(EClass eClass) {
-	  val n = eClass.name
-	  if (n.startsWith("IRI")) {
-	  	"iri" + pluralize(n.substring(3))
-	  } else {
-	  	val m = Pattern.compile("^(\\p{Upper}+)(\\w+)$").matcher(n)
-	  	if (!m.matches())
-	  		throw new IllegalArgumentException("tableVariableName needs a class whose name begins with uppercase characters: " + eClass.name)
-	 	m.group(1).toLowerCase + pluralize(m.group(2))
-	  }
-	}
 	
 	static def String tableVariable(EClass eClass)
 	'''«eClass.tableVariableName» : Seq[«eClass.name»] = Seq.empty'''
