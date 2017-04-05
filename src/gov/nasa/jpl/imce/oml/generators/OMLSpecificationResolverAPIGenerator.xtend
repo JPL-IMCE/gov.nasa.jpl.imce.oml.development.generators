@@ -23,7 +23,8 @@ import java.nio.file.Paths
 import java.util.List
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
-
+import org.eclipse.emf.ecore.EStructuralFeature
+import org.eclipse.emf.common.util.BasicEList
 
 class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	
@@ -107,18 +108,134 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		}
 	'''
 	
+	
+	static def Boolean isUUIDFeature(EStructuralFeature sf) {
+		null !== sf.EClassType?.lookupUUIDFeature
+	}
+	
+    static def Boolean isUUIDDerived(EClass e) {
+    		null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/DerivedUUID")
+    }
+    
+    static def EStructuralFeature lookupUUIDNamespaceFeature(EClass e) {
+    		val ns = e.selfAndAllSupertypes.map[getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("namespace")].filterNull
+    		e.getSortedAttributeFactorySignature.findFirst[name == ns?.head]
+    }
+    
+    static def Iterable<EStructuralFeature> lookupUUIDNamespaceFactors(EClass e) {
+    		e.selfAndAllSupertypes.map[ eClass |
+    			val factors = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("factors")
+    			if (null === factors)
+    				new BasicEList<EStructuralFeature>()
+    			else {
+ 	   			val factoredFeatures = factors.split(",")
+ 	   			eClass.getSortedAttributeFactorySignature.filter[s | factoredFeatures.exists[f | f == s.name]]
+ 	   		}
+ 	   	].flatten
+    }
+    
+	def String factoryPreamble(EClass eClass) {
+		val p1 = if (eClass.isExtentContainer) "( " else "( extent: Extent,\n "
+		val p2 = if (null === eClass.lookupUUIDFeature) p1 else p1 + " uuid: java.util.UUID,\n "
+		p2
+	}
+	
+	def String factoryMethod(EClass eClass) {
+		val uuid = eClass.lookupUUIDFeature
+		if (null === uuid)
+			factoryMethodWithoutUUID(eClass)
+		else {
+			val uuidNS = eClass.lookupUUIDNamespaceFeature
+			val uuidFactors = eClass.lookupUUIDNamespaceFactors
+			if (null !== uuidNS && null !== uuidFactors) 
+				factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidFactors)
+			else if (eClass.isUUIDDerived)
+				factoryMethodWithDerivedUUID(eClass)
+			else
+				factoryMethodWithImplicitlyDerivedUUID(eClass)
+		}
+	}
+	
+	def String factoryMethodWithoutUUID(EClass eClass) {
+		'''
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		'''
+	}
+	
+	def String factoryMethodWithUUIDGenerator(EClass eClass, EStructuralFeature uuidNS, Iterable<EStructuralFeature> uuidFactors) {
+		'''
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		= «IF (uuidFactors.empty)»{«ELSE»{
+		  import scala.Predef.ArrowAssoc«ENDIF»
+		  val uuid: java.util.UUID = namespaceUUID(«uuidNS.name».toString«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		}
+		
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		'''
+	}
+	
+	def String factoryMethodWithDerivedUUID(EClass eClass) {
+		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature] SEPARATOR ", "» "«attr.name»" -> «attr.name».uuid«ENDFOR»'''
+		
+		'''
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		= {
+		  import scala.Predef.ArrowAssoc
+		  val uuid: java.util.UUID = derivedUUID("«eClass.name»", «pairs»)
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		}
+		
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		'''
+	}
+	
+	def String factoryMethodWithImplicitlyDerivedUUID(EClass eClass) {
+		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature] SEPARATOR ", "» "«attr.name»" -> «attr.name».uuid«ENDFOR»'''
+		
+		'''
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		= {
+		  import scala.Predef.ArrowAssoc
+		  val implicitUUID: java.util.UUID = derivedUUID("«eClass.name»", «pairs»)
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "implicitUUID, " else "extent, implicitUUID, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		}
+		
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		'''
+	}
+	
 	def String generateFactoryFile(List<EPackage> ePackages, String packageQName) '''
 		«copyright»
 		package «packageQName»
 		
 		trait OMLResolvedFactory {
-			
+		  
+		  import scala.Predef.String
+		  
+		  def namespaceUUID(namespace: String, factors: scala.Tuple2[String,String]*)
+		  : java.util.UUID
+		  
+		  def derivedUUID(topic: String, factors: scala.Tuple2[String,java.util.UUID]*)
+		  : java.util.UUID
+		  
 		  «FOR eClass: ePackages.map[FunctionalAPIClasses].flatten.filter[!isAbstract].sortBy[name]»
 		  // «eClass.name»
-		  
-		  def create«eClass.name»
-		  «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer)"( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
-		  «IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		  «eClass.factoryMethod»
 		  
 		  «ENDFOR»
 		}

@@ -49,7 +49,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 	def generate(List<EPackage> ePackages, String targetFolder) {
 		val factoryFile = new FileOutputStream(new File(targetFolder + File::separator + "OMLResolvedFactoryImpl.scala"))
 		factoryFile.write(generateFactoryFile(ePackages, "gov.nasa.jpl.imce.oml.resolver.impl").bytes)
-		for(eClass : ePackages.map[FunctionalAPIClasses].flatten)  {
+		for(eClass : ePackages.map[FunctionalAPIClasses].flatten.filter[!isExtentContainer])  {
 			val classFile = new FileOutputStream(new File(targetFolder + File::separator + eClass.name + ".scala"))
 			classFile.write(generateClassFile(eClass).bytes)
 		}

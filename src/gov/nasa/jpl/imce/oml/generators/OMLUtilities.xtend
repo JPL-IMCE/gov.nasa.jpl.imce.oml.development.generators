@@ -39,11 +39,19 @@ import gov.nasa.jpl.imce.oml.model.extensions.OMLXcorePackages
 class OMLUtilities extends OMLXcorePackages {
 
 	static def String queryResolverName(EOperation op, String typePrefix) {
-		val kind = "def"
-		val decl = if (null !== op.getEAnnotation("http://imce.jpl.nasa.gov/oml/Override")) "override "+kind else kind
-		val args = '''«FOR p : op.EParameters SEPARATOR ",\n  "»«p.name»: «p.queryResolverType(typePrefix)»«ENDFOR»'''
-		val impl = '''«IF (op.isImplicitExtent)»(implicit extent: Extent)«ENDIF»'''
-		decl+" "+op.name+"\n  ("+args+")"+impl
+		if (null != op.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal")) {
+			if (!op.EParameters.empty)
+				throw new IllegalArgumentException("@OverrideVal is not applicable to an operation with formal parameters")
+			if (op.isImplicitExtent)
+				throw new IllegalArgumentException("@ImplicitExtent is not applicable to an @OverrideVal operation")
+			"override val "+op.name
+		} else {
+			val kind = "def"
+			val decl = if (null !== op.getEAnnotation("http://imce.jpl.nasa.gov/oml/Override")) "override "+kind else kind
+			val args = '''«FOR p : op.EParameters SEPARATOR ",\n  "»«p.name»: «p.queryResolverType(typePrefix)»«ENDFOR»'''
+			val impl = '''«IF (op.isImplicitExtent)»(implicit extent: Extent)«ENDIF»'''
+			decl+" "+op.name+"\n  ("+args+")"+impl
+		}
 	}
 	
 	static def String orderingClassName(EClass eClass) {
@@ -66,13 +74,11 @@ class OMLUtilities extends OMLXcorePackages {
 	static def String orderingAttributeType(ETypedElement feature) {
 		if (feature.lowerBound == 0) {
 			if (feature.EType.name == "UUID")
-				'''scala.Ordering.Option[java.util.UUID](UUIDOrdering).compare(x.«feature.columnName»(),y.«feature.columnName»())'''
+				'''scala.Ordering.Option[java.util.UUID](UUIDOrdering).compare(x.«feature.columnName»,y.«feature.columnName»)'''
 			else
 				throw new IllegalArgumentException("Implemented support for orderingAttributeType for: "+feature)
 		} else {
-			val fname = feature.columnName
-			val kname = if (fname == "uuid") "uuid()" else fname
-			'''x.«kname».compareTo(y.«kname»)'''	
+			'''x.«feature.columnName».compareTo(y.«feature.columnName»)'''	
 		}
 	}
 	
@@ -327,9 +333,15 @@ class OMLUtilities extends OMLXcorePackages {
 	static def Iterable<EStructuralFeature> getSortedAttributeFactorySignature(EClass eClass) {
 		eClass
 		.selfAndAllSupertypes
-		.map[EStructuralFeatures.filter[isAPI && !isContainment && !derived]]
+		.map[EStructuralFeatures.filter[isAPI && !isContainment && !derived && !isUUID]]
 		.flatten
 		.sortWith(new OMLFeatureCompare())
+	}
+	
+	static def EStructuralFeature lookupUUIDFeature(EClass eClass) {
+		eClass
+		.getSortedAttributeSignature
+		.findFirst[isUUID]
 	}
 	
 	static def Iterable<EStructuralFeature> getSortedAttributeSignatureExceptDerived(EClass eClass) {
@@ -416,6 +428,10 @@ class OMLUtilities extends OMLXcorePackages {
 		else '''// N/A'''
 	}
     
+    static def Boolean isUUID(EStructuralFeature e) {
+    		e.name == "uuid"
+    }
+    
 	static def Boolean isFunctionalAPIOrOrderingKey(ENamedElement e) {
 	 	e.isFunctionalAPI || e.isOrderingKey
 	}
@@ -461,6 +477,16 @@ class OMLUtilities extends OMLXcorePackages {
 				f.isSchema && ! f.containment
 			default: 
 				f.isSchema
+		}
+	}
+	
+	static def EClass EClassType(ETypedElement f) {
+		val c = f.EType
+		switch c {
+			EClass:
+				c
+			default:
+				null
 		}
 	}
 	
