@@ -24,7 +24,6 @@ import java.util.List
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EStructuralFeature
-import org.eclipse.emf.common.util.BasicEList
 
 class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	
@@ -108,31 +107,6 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		}
 	'''
 	
-	
-	static def Boolean isUUIDFeature(EStructuralFeature sf) {
-		null !== sf.EClassType?.lookupUUIDFeature
-	}
-	
-    static def Boolean isUUIDDerived(EClass e) {
-    		null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/DerivedUUID")
-    }
-    
-    static def EStructuralFeature lookupUUIDNamespaceFeature(EClass e) {
-    		val ns = e.selfAndAllSupertypes.map[getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("namespace")].filterNull
-    		e.getSortedAttributeFactorySignature.findFirst[name == ns?.head]
-    }
-    
-    static def Iterable<EStructuralFeature> lookupUUIDNamespaceFactors(EClass e) {
-    		e.selfAndAllSupertypes.map[ eClass |
-    			val factors = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("factors")
-    			if (null === factors)
-    				new BasicEList<EStructuralFeature>()
-    			else {
- 	   			val factoredFeatures = factors.split(",")
- 	   			eClass.getSortedAttributeFactorySignature.filter[s | factoredFeatures.exists[f | f == s.name]]
- 	   		}
- 	   	].flatten
-    }
     
 	def String factoryPreamble(EClass eClass) {
 		val p1 = if (eClass.isExtentContainer) "( " else "( extent: Extent,\n "
@@ -223,15 +197,12 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		«copyright»
 		package «packageQName»
 		
+		import gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator
+		
 		trait OMLResolvedFactory {
 		  
-		  import scala.Predef.String
-		  
-		  def namespaceUUID(namespace: String, factors: scala.Tuple2[String,String]*)
-		  : java.util.UUID
-		  
-		  def derivedUUID(topic: String, factors: scala.Tuple2[String,java.util.UUID]*)
-		  : java.util.UUID
+		  val oug: OMLUUIDGenerator
+		  import oug._
 		  
 		  «FOR eClass: ePackages.map[FunctionalAPIClasses].flatten.filter[!isAbstract].sortBy[name]»
 		  // «eClass.name»
@@ -254,73 +225,40 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		package gov.nasa.jpl.imce.oml.resolver.api
 		
 		import scala.collection.immutable.{Map, HashMap, Set}
-		import scala.{Option,None,Some}
+		import scala.{Option,None}
 		 
 		«FOR ct : containerTypes BEFORE "// Container types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.EPackage.name».«ct.name»«ENDFOR»
 		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.EPackage.name».«ct.name»«ENDFOR»
 		«eClass.doc("")»case class «eClass.name»
-		(«FOR em : extManaged BEFORE " " SEPARATOR ",\n  " AFTER ",\n"»«em.tableVariableName»: Map[java.util.UUID, «em.name»] = HashMap.empty[java.util.UUID, «em.name»]«ENDFOR»
+		(«FOR em : extManaged.filter[!isAbstract] BEFORE " " SEPARATOR ",\n  " AFTER ",\n"»«em.tableVariableName»: Map[java.util.UUID, «em.name»] = HashMap.empty[java.util.UUID, «em.name»]«ENDFOR»
 		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.name»: Map[«c.EClassContainer.name», Set[«c.EType.name»]] = HashMap.empty[«c.EClassContainer.name», Set[«c.EType.name»]]«ENDFOR»
+		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.EClassContainer.name.toFirstLower»Of«c.EType.name»: Map[«c.EType.name», «c.EClassContainer.name»] = HashMap.empty[«c.EType.name», «c.EClassContainer.name»]«ENDFOR»
 		«FOR c : containers.filter[name != "annotations"] BEFORE "\n  " SEPARATOR ",\n  " AFTER "\n"»«c.EType.name.toFirstLower»ByUUID: Map[java.util.UUID, «c.EType.name»] = HashMap.empty[java.util.UUID, «c.EType.name»]«ENDFOR»
 		) {
-			
+		  «FOR c : containers»
+		  def with«c.EType.name»(«c.EClassContainer.name.toFirstLower»: «c.EClassContainer.name», «c.EType.name.toFirstLower»: «c.EType.name»)
+		  : Map[«c.EClassContainer.name», Set[«c.EType.name»]] 
+		  = «c.name».updated(«c.EClassContainer.name.toFirstLower», «c.name».getOrElse(«c.EClassContainer.name.toFirstLower», Set.empty[«c.EType.name»]) + «c.EType.name.toFirstLower»)
+		  
+		  «ENDFOR»
+				
+		  def lookupModule(uuid: Option[java.util.UUID])
+		  : Option[Module]
+		  = uuid.fold[Option[Module]](None) { lookupModule }
+		  
+		  def lookupModule(uuid: java.util.UUID)
+		  : Option[Module]
+		  = lookupTerminologyBox(uuid) orElse lookupDescriptionBox(uuid)
+		  
 		  def lookupTerminologyBox(uuid: Option[java.util.UUID])
 		  : Option[TerminologyBox]
 		  = uuid.fold[Option[TerminologyBox]](None) { lookupTerminologyBox }
 		  
 		  def lookupTerminologyBox(uuid: java.util.UUID)
 		  : Option[TerminologyBox]
-		  = for {
-		  	m <- modules.get(uuid)
-		  	result <- m match {
-		      case tbox: TerminologyBox => Some(tbox)
-		  	  case _ => None
-		  	}
-		  } yield result
-		  
-		  def lookupTerminologyGraph(uuid: Option[java.util.UUID])
-		  : Option[TerminologyGraph]
-		  = uuid.fold[Option[TerminologyGraph]](None) { lookupTerminologyGraph }
+		  = lookupTerminologyGraph(uuid) orElse lookupBundle(uuid)
 		
-		  def lookupTerminologyGraph(uuid: java.util.UUID)
-		  : Option[TerminologyGraph]
-		  = for {
-		    m <- modules.get(uuid)
-		    result <- m match {
-		      case tg: TerminologyGraph => Some(tg)
-		      case _ => None
-		    }
-		  } yield result
-		
-		  def lookupBundle(uuid: Option[java.util.UUID])
-		  : Option[Bundle]
-		  = uuid.fold[Option[Bundle]](None) { lookupBundle }
-		  
-		  def lookupBundle(uuid: java.util.UUID)
-		  : Option[Bundle]
-		  = for {
-		    m <- modules.get(uuid)
-		    result <- m match {
-		      case b: Bundle => Some(b)
-		  	  case _ => None
-		    }
-		  } yield result
-		
-		  def lookupDescriptionBox(uuid: Option[java.util.UUID])
-		  : Option[DescriptionBox]
-		  = uuid.fold[Option[DescriptionBox]](None) { lookupDescriptionBox }
-		
-		  def lookupDescriptionBox(uuid: java.util.UUID)
-		  : Option[DescriptionBox]
-		  = for {
-		    m <- modules.get(uuid)
-		    result <- m match {
-		      case dbox: DescriptionBox => Some(dbox)
-		  	  case _ => None
-		    }
-		  } yield result
-		
-		  «FOR em : extManaged SEPARATOR "\n  " AFTER "\n"»
+		  «FOR em : extManaged.filter[!isAbstract] SEPARATOR "\n  " AFTER "\n"»
 		  def lookup«em.name»(uuid: Option[java.util.UUID])
 		  : Option[«em.name»]
 		  = uuid.fold[Option[«em.name»]](None) { lookup«em.name» } 

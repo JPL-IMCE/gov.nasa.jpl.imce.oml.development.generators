@@ -21,6 +21,7 @@ import java.util.Comparator
 import java.util.HashSet
 import java.util.Set
 import java.util.regex.Pattern
+import org.eclipse.emf.common.util.BasicEList
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EDataType
 import org.eclipse.emf.ecore.ENamedElement
@@ -39,7 +40,7 @@ import gov.nasa.jpl.imce.oml.model.extensions.OMLXcorePackages
 class OMLUtilities extends OMLXcorePackages {
 
 	static def String queryResolverName(EOperation op, String typePrefix) {
-		if (null != op.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal")) {
+		if (null !== op.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal")) {
 			if (!op.EParameters.empty)
 				throw new IllegalArgumentException("@OverrideVal is not applicable to an operation with formal parameters")
 			if (op.isImplicitExtent)
@@ -49,7 +50,7 @@ class OMLUtilities extends OMLXcorePackages {
 			val kind = "def"
 			val decl = if (null !== op.getEAnnotation("http://imce.jpl.nasa.gov/oml/Override")) "override "+kind else kind
 			val args = '''«FOR p : op.EParameters SEPARATOR ",\n  "»«p.name»: «p.queryResolverType(typePrefix)»«ENDFOR»'''
-			val impl = '''«IF (op.isImplicitExtent)»(implicit extent: Extent)«ENDIF»'''
+			val impl = '''«IF (op.isImplicitExtent)»(implicit extent: «typePrefix»Extent)«ENDIF»'''
 			decl+" "+op.name+"\n  ("+args+")"+impl
 		}
 	}
@@ -362,6 +363,32 @@ class OMLUtilities extends OMLXcorePackages {
 		eClass.getSortedAttributeSignature.filter[isCopyConstructorArgument]
 	}
 	
+	
+	static def Boolean isUUIDFeature(EStructuralFeature sf) {
+		null !== sf.EClassType?.lookupUUIDFeature
+	}
+	
+    static def Boolean isUUIDDerived(EClass e) {
+    		null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/DerivedUUID")
+    }
+    
+    static def EStructuralFeature lookupUUIDNamespaceFeature(EClass e) {
+    		val ns = e.selfAndAllSupertypes.map[getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("namespace")].filterNull
+    		e.getSortedAttributeFactorySignature.findFirst[name == ns?.head]
+    }
+    
+    static def Iterable<EStructuralFeature> lookupUUIDNamespaceFactors(EClass e) {
+    		e.selfAndAllSupertypes.map[ eClass |
+    			val factors = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("factors")
+    			if (null === factors)
+    				new BasicEList<EStructuralFeature>()
+    			else {
+ 	   			val factoredFeatures = factors.split(",")
+ 	   			eClass.getSortedAttributeFactorySignature.filter[s | factoredFeatures.exists[f | f == s.name]]
+ 	   		}
+ 	   	].flatten
+    }
+    
 	static def Boolean isCopyConstructorArgument(EStructuralFeature attribute) {
 		null !== attribute.getEAnnotation("http://imce.jpl.nasa.gov/oml/CopyConstructor")
 	}
@@ -527,8 +554,10 @@ class OMLUtilities extends OMLXcorePackages {
     	null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentContainer")
     }
     
-    static def Boolean isExtentManaged(ENamedElement e) {
-    	null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentManaged")
+    static def Boolean isExtentManaged(EClass e) {
+    		e.selfAndAllSupertypes.exists[eClass |
+    			null !== eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentManaged")
+    		]
     }
     
     static def Boolean isGlossary(ENamedElement e) {
