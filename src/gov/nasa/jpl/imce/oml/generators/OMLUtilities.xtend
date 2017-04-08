@@ -596,13 +596,14 @@ class OMLUtilities extends OMLXcorePackages {
 	}
 
 	static def String pluralize(String s) {
-	  if (s.endsWith("y")) { 
+	  if (s.endsWith("y"))
 	  	s.substring(0, s.length-1)+"ies"
-	  } else if (s.endsWith("x")) { 
+	  else if (s.endsWith("x"))
 	  	s+"es"
-	  } else {
+	  else if (s.endsWith("s"))
+	  	s
+	  else
 	  	s+"s"
-	  }	 
 	}
 	
 	static def String tableVariableName(EClass eClass) {
