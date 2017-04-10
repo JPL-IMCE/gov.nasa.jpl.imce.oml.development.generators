@@ -139,13 +139,14 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	}
 	
 	def String factoryMethodWithUUIDGenerator(EClass eClass, EStructuralFeature uuidNS, Iterable<EStructuralFeature> uuidFactors) {
+		val uuidConv = if (null !== uuidNS.EClassType?.lookupUUIDFeature) ".uuid" else ""
 		'''
 		def create«eClass.name»
 		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
 		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
 		= «IF (uuidFactors.empty)»{«ELSE»{
 		  import scala.Predef.ArrowAssoc«ENDIF»
-		  val uuid: java.util.UUID = namespaceUUID(«uuidNS.name».toString«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
+		  val uuid: java.util.UUID = namespaceUUID(«uuidNS.name»«uuidConv».toString«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
 		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
 		}
 		

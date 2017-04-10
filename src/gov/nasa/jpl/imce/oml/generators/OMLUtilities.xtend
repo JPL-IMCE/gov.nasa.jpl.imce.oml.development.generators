@@ -429,11 +429,15 @@ class OMLUtilities extends OMLXcorePackages {
 				val rS = rF.toScala
 				
 				if (!exp.actualArguments.empty)
-					throw new IllegalArgumentException(".toScala can only handle an XMemberFeatureCall for calling an operation with 0 arguments.")
+					throw new IllegalArgumentException(
+					".toScala can only handle an XMemberFeatureCall for calling an operation with 0 arguments: "+
+					exp.toString()+" in: "+exp.eResource.URI)
 				
 				val tF = exp.feature
 				if (tF.eIsProxy)
-					throw new IllegalArgumentException("Cannot resolve an XMemberFeatureCall because the feature is a proxy; expression="+exp.toString()+" in: "+exp.eResource.URI)
+					throw new IllegalArgumentException(
+					"Cannot resolve an XMemberFeatureCall because the feature is a proxy; expression="+
+					exp.toString()+" in: "+exp.eResource.URI)
 				
 				val tS = tF.simpleName
 			    val s = rS+"."+tS+"()"
@@ -441,7 +445,10 @@ class OMLUtilities extends OMLXcorePackages {
 			}
 
 			default:
-				exp.toString + "/* default(debug) */"
+				if (null === exp)
+					"null /* ERROR!!! */"
+				else
+					exp.toString + "/* default(debug) */"
 		}
 		result
 	}
@@ -479,7 +486,7 @@ class OMLUtilities extends OMLXcorePackages {
 	static def Boolean isContainment(ETypedElement f) {
 		switch f {
 			EReference: 
-				f.containment
+				f.containment && f.isAPI
 			default: 
 				false
 		}
@@ -488,7 +495,7 @@ class OMLUtilities extends OMLXcorePackages {
 	static def Boolean isContainer(ETypedElement f) {
 		switch f {
 			EReference: 
-				f.container
+				f.container && f.isAPI
 			default: 
 				false
 		}

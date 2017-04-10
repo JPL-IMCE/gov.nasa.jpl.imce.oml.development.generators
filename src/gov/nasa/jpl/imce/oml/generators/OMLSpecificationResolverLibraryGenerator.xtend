@@ -280,17 +280,12 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		{
 		«IF (eClass.abstract)»«FOR f : eClass.APIStructuralFeatures SEPARATOR "\n  " AFTER "\n  "»«f.doc("  ")»override val «f.name»: «f.queryResolverType('resolver.api.')»«ENDFOR»«ENDIF»
 				
-		«FOR op : eClass.ScalaOperations»  «op.doc("  ")»«op.queryResolverName('resolver.api.')»
+		«FOR op : eClass.ScalaOperations.filter[null === getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal")]»  «op.doc("  ")»«op.queryResolverName('resolver.api.')»
 		  : «op.queryResolverType('resolver.api.')»
 		  = «op.queryBody»
 		  
 		«ENDFOR»		  
 		
-		«FOR sf : eClass.getSortedDerivedAttributeSignature»  «sf.doc("  ")»override val «sf.name»
-		  : «sf.queryResolverType('resolver.api.')»
-		  = «sf.queryBody»
-		  
-		«ENDFOR»	
 		
 		«IF (eClass.isSpecializationOfRootClass)»
 		
@@ -320,7 +315,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 	static def String classDeclaration(EClass eClass) '''
 		«eClass.name»«IF (!eClass.abstract)» private[impl] 
 		(
-		 «FOR attr : eClass.getSortedAttributeSignatureExceptDerived SEPARATOR ","»
+		 «FOR attr : eClass.getSortedAttributeSignature SEPARATOR ","»
 		 override val «attr.name»: «attr.queryResolverType('resolver.api.')»
 		 «ENDFOR»
 		)«ENDIF»
