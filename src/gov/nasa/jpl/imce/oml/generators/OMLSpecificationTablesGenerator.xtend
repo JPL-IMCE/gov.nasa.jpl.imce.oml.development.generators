@@ -303,7 +303,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		package «packageQName»
 		
 		import scala.annotation.meta.field
-		import scala.scalajs.js.annotation.JSExport
+		import scala.scalajs.js.annotation.{JSExport,JSExportTopLevel}
 		import scala._
 		import scala.Predef._
 		
@@ -313,7 +313,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «ENDFOR» 
 		  */
 		«IF ! eClass.hasSchemaOptionalAttributes»
-		@JSExport
+		@JSExportTopLevel("«eClass.name»")
 		«ENDIF»
 		case class «eClass.name»
 		(
@@ -322,7 +322,6 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «ENDFOR»
 		) {
 		«IF eClass.hasSchemaOptionalAttributes»
-		  @JSExport
 		  def this(
 		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | a.lowerBound > 0) SEPARATOR ",\n" AFTER ")"»  «attr.columnName»: «attr.constructorTypeName»«ENDFOR»
 		  = this(
@@ -336,11 +335,11 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «ENDFOR»
 		«ENDIF»
 		«IF uuidWithoutContainer»
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithoutContainer)\n  @JSExport\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID("+uuidNS.name+".toString"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","» "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithoutContainer)\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID("+uuidNS.name+".toString"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","» "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithGenerator»
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithGenerator)   \n  @JSExport\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID("+uuidNS.name+"UUID"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","», "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithGenerator)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID("+uuidNS.name+"UUID"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","», "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithContainer»
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithContainer)   \n  @JSExport\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID(\""+eClass.name+"\""»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : pairs», "«f.name»" -> «f.name»UUID«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID(\""+eClass.name+"\""»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : pairs», "«f.name»" -> «f.name»UUID«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ENDIF»
 		
 		  override val hashCode
@@ -358,7 +357,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  
 		}
 		
-		@JSExport
+		@JSExportTopLevel("«eClass.name»Helper")
 		object «eClass.name»Helper {
 		
 		  val TABLE_JSON_FILENAME 
@@ -392,13 +391,12 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		 
 		package gov.nasa.jpl.imce.oml.tables
 		
-		import scala.scalajs.js.annotation.JSExport
+		import scala.scalajs.js.annotation.JSExportTopLevel
 		
-		@JSExport
+		@JSExportTopLevel("«eClass.name»JS")
 		object «eClass.name»JS {
 		  «IF eClass.hasSchemaOptionalAttributes»
 		  
-		  @JSExport
 		  def js«eClass.name»(
 		    «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ","»
 		    «attr.columnName»: «attr.jsTypeName»
