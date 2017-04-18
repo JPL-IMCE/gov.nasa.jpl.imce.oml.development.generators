@@ -345,6 +345,13 @@ class OMLUtilities extends OMLXcorePackages {
 		.findFirst[isUUID]
 	}
 	
+	static def ETypedElement lookupUUIDTypedElement(EClass eClass) {
+		val typedElements = new BasicEList<ETypedElement>()
+		typedElements.addAll(eClass.getSortedAttributeSignature)
+		typedElements.addAll(eClass.selfAndAllSupertypes.filter(EOperation).filter[!isOverride])
+		typedElements.findFirst[isUUID]
+	}
+	
 	static def Iterable<EStructuralFeature> getSortedAttributeSignatureExceptDerived(EClass eClass) {
 		eClass
 		.getSortedAttributeSignature
@@ -363,9 +370,8 @@ class OMLUtilities extends OMLXcorePackages {
 		eClass.getSortedAttributeSignature.filter[isCopyConstructorArgument]
 	}
 	
-	
 	static def Boolean isUUIDFeature(EStructuralFeature sf) {
-		null !== sf.EClassType?.lookupUUIDFeature
+		null !== sf.EClassType?.lookupUUIDTypedElement
 	}
 	
     static def Boolean isUUIDDerived(EClass e) {
@@ -462,7 +468,7 @@ class OMLUtilities extends OMLXcorePackages {
 		else '''// N/A'''
 	}
     
-    static def Boolean isUUID(EStructuralFeature e) {
+    static def Boolean isUUID(ETypedElement e) {
     		e.name == "uuid"
     }
     

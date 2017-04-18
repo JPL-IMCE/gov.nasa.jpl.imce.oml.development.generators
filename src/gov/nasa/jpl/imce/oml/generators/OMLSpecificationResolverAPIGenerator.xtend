@@ -145,6 +145,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
 		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
 		= «IF (uuidFactors.empty)»{«ELSE»{
+			// namespace uuid...
 		  import scala.Predef.ArrowAssoc«ENDIF»
 		  val uuid: java.util.UUID = namespaceUUID(«uuidNS.name»«uuidConv».toString«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
 		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
@@ -164,6 +165,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
 		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
 		= {
+			// derived uuid...
 		  import scala.Predef.ArrowAssoc
 		  val uuid: java.util.UUID = derivedUUID("«eClass.name»", «pairs»)
 		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
@@ -183,6 +185,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
 		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
 		= {
+			// implicitly derived uuid...
 		  import scala.Predef.ArrowAssoc
 		  val implicitUUID: java.util.UUID = derivedUUID("«eClass.name»", «pairs»)
 		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "implicitUUID, " else "extent, implicitUUID, " SEPARATOR ", "» «attr.name»«ENDFOR» )

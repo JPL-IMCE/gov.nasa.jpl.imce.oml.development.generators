@@ -62,12 +62,24 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 	
 	def generate(List<EPackage> ePackages, String targetFolder, String packageQName, String tableName) {
 		val packageFile = new FileOutputStream(new File(targetFolder + File::separator + "package.scala"))
-		packageFile.write(generatePackageFile(ePackages, packageQName).bytes)
+		try {
+			packageFile.write(generatePackageFile(ePackages, packageQName).bytes)
+		} finally {
+			packageFile.close
+		}
 		val tablesFile = new FileOutputStream(new File(targetFolder + File::separator + tableName + ".scala"))
-		tablesFile.write(generateTablesFile(ePackages, packageQName, tableName).bytes)
+		try {
+			tablesFile.write(generateTablesFile(ePackages, packageQName, tableName).bytes)
+		} finally {
+			tablesFile.close
+		}
 		for(eClass : ePackages.map[EClassifiers].flatten.filter(EClass).filter[isFunctionalAPI])  {
 			val classFile = new FileOutputStream(new File(targetFolder + File::separator + eClass.name + ".scala"))
-			classFile.write(generateClassFile(eClass, packageQName).bytes)
+			try {
+				classFile.write(generateClassFile(eClass, packageQName).bytes)
+			} finally {
+				classFile.close
+			}
 		}
 	}
 	
@@ -243,14 +255,22 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 	def generateJS(EPackage ePackage, String targetJSFolder) {
 		for(eClass : ePackage.EClassifiers.filter(EClass).filter[isFunctionalAPI && hasSchemaOptionalAttributes])  {
 			val classFile = new FileOutputStream(new File(targetJSFolder + File::separator + eClass.name + "JS.scala"))
-			classFile.write(generateJSClassFile(eClass).bytes)
+			try {
+				classFile.write(generateJSClassFile(eClass).bytes)
+			} finally {
+				classFile.close
+			}
 		}
 	}
 	
 	def generateJVM(EPackage ePackage, String targetJVMFolder) {
 		for(eClass : ePackage.EClassifiers.filter(EClass).filter[isFunctionalAPI && hasSchemaOptionalAttributes])  {
 			val classFile = new FileOutputStream(new File(targetJVMFolder + File::separator + eClass.name + "Java.scala"))
-			classFile.write(generateJVMClassFile(eClass).bytes)
+			try {
+				classFile.write(generateJVMClassFile(eClass).bytes)
+			} finally {
+				classFile.close
+			}
 		}
 	}
 	
@@ -335,11 +355,14 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «ENDFOR»
 		«ENDIF»
 		«IF uuidWithoutContainer»
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithoutContainer)\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID("+uuidNS.name+".toString"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","» "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithoutContainer)\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID(\n        "+uuidNS.name+".toString"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","»,
+		          "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithGenerator»
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithGenerator)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID("+uuidNS.name+"UUID"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","», "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithGenerator)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID(\n        "+uuidNS.name+"UUID"»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","»,
+		          "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithContainer»
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID(\""+eClass.name+"\""»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : pairs», "«f.name»" -> «f.name»UUID«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID(\n        \""+eClass.name+"\""»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : pairs»,
+		          "«f.name»" -> «f.name»UUID«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ENDIF»
 		
 		  override val hashCode
