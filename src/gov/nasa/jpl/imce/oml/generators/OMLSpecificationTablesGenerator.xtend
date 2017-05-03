@@ -274,6 +274,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	def String generatePackageFile(List<EPackage> ePackages, String packageQName) '''
 		«copyright»
 

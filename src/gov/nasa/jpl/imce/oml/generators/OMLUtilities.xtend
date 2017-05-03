@@ -36,6 +36,7 @@ import org.eclipse.xtext.xbase.XExpression
 import org.eclipse.xtext.xbase.XFeatureCall
 import org.eclipse.xtext.xbase.XMemberFeatureCall
 import gov.nasa.jpl.imce.oml.model.extensions.OMLXcorePackages
+import java.util.ArrayList
 
 class OMLUtilities extends OMLXcorePackages {
 
@@ -384,16 +385,17 @@ class OMLUtilities extends OMLXcorePackages {
     }
     
     static def Iterable<EStructuralFeature> lookupUUIDNamespaceFactors(EClass e) {
-    		e.selfAndAllSupertypes.map[ eClass |
-    			val factors = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("factors")
-    			if (null === factors)
-    				new BasicEList<EStructuralFeature>()
-    			else {
- 	   			val factoredFeatures = factors.split(",")
- 	   			eClass.getSortedAttributeFactorySignature.filter[s | factoredFeatures.exists[f | f == s.name]]
- 	   		}
- 	   	].flatten
-    }
+		e.selfAndAllSupertypes.map [ eClass |
+			val factors = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID")?.details?.get("factors")
+			if (null === factors)
+				new BasicEList<EStructuralFeature>()
+			else {
+				val factoredFeatures = new ArrayList<String>()
+				factoredFeatures.addAll(factors.split(","))
+				eClass.getSortedAttributeFactorySignature.filter[s|factoredFeatures.exists[f|f == s.name]]
+			}
+		].flatten
+	}
     
 	static def Boolean isCopyConstructorArgument(EStructuralFeature attribute) {
 		null !== attribute.getEAnnotation("http://imce.jpl.nasa.gov/oml/CopyConstructor")
@@ -535,6 +537,8 @@ class OMLUtilities extends OMLXcorePackages {
 		switch c {
 			EClass:
 				c
+			default:
+				null
 		}
 	}
 	
@@ -750,6 +754,15 @@ class OMLUtilities extends OMLXcorePackages {
 		"rootUUID",
 		"disjointTaxonomyParentUUID",
 		"disjointLeafUUID",
+		"conceptInstancesUUID",
+		"reifiedRelationshipInstancesUUID",
+		"reifiedRelationshipInstancesDomainsUUID",
+		"reifiedRelationshipInstancesRangesUUID",
+		"unreifiedRelationshipInstancesUUID",
+		"singletonInstanceScalarDataPropertyValuesUUID",
+		"singletonInstanceStructuredDataPropertyValuesUUID",
+		"scalarDataPropertyValuesUUID",
+		"structuredDataPropertyTuplesUUID",
 		"kind",
 		"isAbstract", 
 		"isAsymmetric", 

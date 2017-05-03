@@ -76,7 +76,9 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		}
 	}
 	
-	def String generatePackageFile(List<EPackage> ePackages, String packageQName) '''
+	@SuppressWarnings("unused")
+	def String generatePackageFile(List<EPackage> ePackages, String packageQName) {
+	'''
 		«copyright»
 
 		package «packageQName.substring(0, packageQName.lastIndexOf('.'))»
@@ -106,7 +108,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  «ENDFOR»
 		}
 	'''
-	
+	}
     
 	def String factoryPreamble(EClass eClass) {
 		val p1 = if (eClass.isExtentContainer) "( " else "( extent: Extent,\n "
