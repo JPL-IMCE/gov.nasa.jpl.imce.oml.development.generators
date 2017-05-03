@@ -79,11 +79,15 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       } finally {
         factoryFile.close();
       }
-      final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
-        return it.getEClassifiers();
+      final Function1<EPackage, EList<EClassifier>> _function = new Function1<EPackage, EList<EClassifier>>() {
+        public EList<EClassifier> apply(final EPackage it) {
+          return it.getEClassifiers();
+        }
       };
-      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
-        return OMLUtilities.isAPI(it);
+      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
+        public Boolean apply(final EClass it) {
+          return OMLUtilities.isAPI(it);
+        }
       };
       final Iterable<EClass> eClasses = IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1);
       for (final EClass eClass : eClasses) {
@@ -155,15 +159,21 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
     _builder.newLine();
     _builder.newLine();
     {
-      final Function1<EPackage, Iterable<EClass>> _function = (EPackage it) -> {
-        return OMLUtilities.FunctionalAPIClasses(it);
+      final Function1<EPackage, Iterable<EClass>> _function = new Function1<EPackage, Iterable<EClass>>() {
+        public Iterable<EClass> apply(final EPackage it) {
+          return OMLUtilities.FunctionalAPIClasses(it);
+        }
       };
-      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
-        boolean _isEmpty = IterableExtensions.isEmpty(OMLUtilities.orderingKeys(it));
-        return Boolean.valueOf((!_isEmpty));
+      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
+        public Boolean apply(final EClass it) {
+          boolean _isEmpty = IterableExtensions.isEmpty(OMLUtilities.orderingKeys(it));
+          return Boolean.valueOf((!_isEmpty));
+        }
       };
-      final Function1<EClass, String> _function_2 = (EClass it) -> {
-        return it.getName();
+      final Function1<EClass, String> _function_2 = new Function1<EClass, String>() {
+        public String apply(final EClass it) {
+          return it.getName();
+        }
       };
       List<EClass> _sortBy = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>concat(ListExtensions.<EPackage, Iterable<EClass>>map(ePackages, _function)), _function_1), _function_2);
       for(final EClass eClass : _sortBy) {
@@ -572,8 +582,10 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
     {
       StringConcatenation _builder = new StringConcatenation();
       {
-        final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
-          return OMLUtilities.isUUIDFeature(it);
+        final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
+          public Boolean apply(final EStructuralFeature it) {
+            return OMLUtilities.isUUIDFeature(it);
+          }
         };
         Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function);
         boolean _hasElements = false;
@@ -746,8 +758,10 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
     {
       StringConcatenation _builder = new StringConcatenation();
       {
-        final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
-          return OMLUtilities.isUUIDFeature(it);
+        final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
+          public Boolean apply(final EStructuralFeature it) {
+            return OMLUtilities.isUUIDFeature(it);
+          }
         };
         Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function);
         boolean _hasElements = false;
@@ -940,15 +954,21 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
     _builder.append("  ");
     _builder.newLine();
     {
-      final Function1<EPackage, Iterable<EClass>> _function = (EPackage it) -> {
-        return OMLUtilities.FunctionalAPIClasses(it);
+      final Function1<EPackage, Iterable<EClass>> _function = new Function1<EPackage, Iterable<EClass>>() {
+        public Iterable<EClass> apply(final EPackage it) {
+          return OMLUtilities.FunctionalAPIClasses(it);
+        }
       };
-      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
-        boolean _isAbstract = it.isAbstract();
-        return Boolean.valueOf((!_isAbstract));
+      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
+        public Boolean apply(final EClass it) {
+          boolean _isAbstract = it.isAbstract();
+          return Boolean.valueOf((!_isAbstract));
+        }
       };
-      final Function1<EClass, String> _function_2 = (EClass it) -> {
-        return it.getName();
+      final Function1<EClass, String> _function_2 = new Function1<EClass, String>() {
+        public String apply(final EClass it) {
+          return it.getName();
+        }
       };
       List<EClass> _sortBy = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>concat(ListExtensions.<EPackage, Iterable<EClass>>map(ePackages, _function)), _function_1), _function_2);
       for(final EClass eClass : _sortBy) {
@@ -973,29 +993,43 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
   public String generateExtentContainerClassFile(final EClass eClass, final Iterable<EClass> allEClasses) {
     String _xblockexpression = null;
     {
-      final Function1<EClass, Boolean> _function = (EClass it) -> {
-        return OMLUtilities.isExtentManaged(it);
+      final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
+        public Boolean apply(final EClass it) {
+          return OMLUtilities.isExtentManaged(it);
+        }
       };
       final Iterable<EClass> extManaged = IterableExtensions.<EClass>filter(allEClasses, _function);
-      final Function1<EClass, EList<EStructuralFeature>> _function_1 = (EClass it) -> {
-        return it.getEStructuralFeatures();
+      final Function1<EClass, EList<EStructuralFeature>> _function_1 = new Function1<EClass, EList<EStructuralFeature>>() {
+        public EList<EStructuralFeature> apply(final EClass it) {
+          return it.getEStructuralFeatures();
+        }
       };
-      final Function1<EStructuralFeature, Boolean> _function_2 = (EStructuralFeature it) -> {
-        return OMLUtilities.isContainment(it);
+      final Function1<EStructuralFeature, Boolean> _function_2 = new Function1<EStructuralFeature, Boolean>() {
+        public Boolean apply(final EStructuralFeature it) {
+          return OMLUtilities.isContainment(it);
+        }
       };
       final Iterable<EStructuralFeature> containers = IterableExtensions.<EStructuralFeature>filter(Iterables.<EStructuralFeature>concat(IterableExtensions.<EClass, EList<EStructuralFeature>>map(allEClasses, _function_1)), _function_2);
-      final Function1<EStructuralFeature, EClass> _function_3 = (EStructuralFeature it) -> {
-        return OMLUtilities.EClassContainer(it);
+      final Function1<EStructuralFeature, EClass> _function_3 = new Function1<EStructuralFeature, EClass>() {
+        public EClass apply(final EStructuralFeature it) {
+          return OMLUtilities.EClassContainer(it);
+        }
       };
-      final Function1<EClass, String> _function_4 = (EClass it) -> {
-        return it.getName();
+      final Function1<EClass, String> _function_4 = new Function1<EClass, String>() {
+        public String apply(final EClass it) {
+          return it.getName();
+        }
       };
       final List<EClass> containerTypes = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>toList(IterableExtensions.<EClass>toSet(IterableExtensions.<EStructuralFeature, EClass>map(containers, _function_3))), _function_4);
-      final Function1<EStructuralFeature, EClassifier> _function_5 = (EStructuralFeature it) -> {
-        return it.getEType();
+      final Function1<EStructuralFeature, EClassifier> _function_5 = new Function1<EStructuralFeature, EClassifier>() {
+        public EClassifier apply(final EStructuralFeature it) {
+          return it.getEType();
+        }
       };
-      final Function1<EClassifier, String> _function_6 = (EClassifier it) -> {
-        return it.getName();
+      final Function1<EClassifier, String> _function_6 = new Function1<EClassifier, String>() {
+        public String apply(final EClassifier it) {
+          return it.getName();
+        }
       };
       final List<EClassifier> containedTypes = IterableExtensions.<EClassifier, String>sortBy(IterableExtensions.<EClassifier>toList(IterableExtensions.<EClassifier>toSet(IterableExtensions.<EStructuralFeature, EClassifier>map(containers, _function_5))), _function_6);
       StringConcatenation _builder = new StringConcatenation();
@@ -1059,9 +1093,11 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.newLineIfNotEmpty();
       _builder.append("(");
       {
-        final Function1<EClass, Boolean> _function_7 = (EClass it) -> {
-          boolean _isAbstract = it.isAbstract();
-          return Boolean.valueOf((!_isAbstract));
+        final Function1<EClass, Boolean> _function_7 = new Function1<EClass, Boolean>() {
+          public Boolean apply(final EClass it) {
+            boolean _isAbstract = it.isAbstract();
+            return Boolean.valueOf((!_isAbstract));
+          }
         };
         Iterable<EClass> _filter = IterableExtensions.<EClass>filter(extManaged, _function_7);
         boolean _hasElements_2 = false;
@@ -1151,9 +1187,11 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       }
       _builder.newLineIfNotEmpty();
       {
-        final Function1<EStructuralFeature, Boolean> _function_8 = (EStructuralFeature it) -> {
-          String _name_17 = it.getName();
-          return Boolean.valueOf((!Objects.equal(_name_17, "annotations")));
+        final Function1<EStructuralFeature, Boolean> _function_8 = new Function1<EStructuralFeature, Boolean>() {
+          public Boolean apply(final EStructuralFeature it) {
+            String _name = it.getName();
+            return Boolean.valueOf((!Objects.equal(_name, "annotations")));
+          }
         };
         Iterable<EStructuralFeature> _filter_1 = IterableExtensions.<EStructuralFeature>filter(containers, _function_8);
         boolean _hasElements_5 = false;
@@ -1281,9 +1319,11 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.newLine();
       {
-        final Function1<EClass, Boolean> _function_9 = (EClass it) -> {
-          boolean _isAbstract = it.isAbstract();
-          return Boolean.valueOf((!_isAbstract));
+        final Function1<EClass, Boolean> _function_9 = new Function1<EClass, Boolean>() {
+          public Boolean apply(final EClass it) {
+            boolean _isAbstract = it.isAbstract();
+            return Boolean.valueOf((!_isAbstract));
+          }
         };
         Iterable<EClass> _filter_2 = IterableExtensions.<EClass>filter(extManaged, _function_9);
         boolean _hasElements_6 = false;
@@ -1465,9 +1505,11 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.append("  ");
       _builder.append("= lookupModule(uuid)");
       {
-        final Function1<EStructuralFeature, Boolean> _function_10 = (EStructuralFeature it) -> {
-          String _name_48 = it.getName();
-          return Boolean.valueOf((!Objects.equal(_name_48, "annotations")));
+        final Function1<EStructuralFeature, Boolean> _function_10 = new Function1<EStructuralFeature, Boolean>() {
+          public Boolean apply(final EStructuralFeature it) {
+            String _name = it.getName();
+            return Boolean.valueOf((!Objects.equal(_name, "annotations")));
+          }
         };
         Iterable<EStructuralFeature> _filter_3 = IterableExtensions.<EStructuralFeature>filter(containers, _function_10);
         boolean _hasElements_8 = false;
