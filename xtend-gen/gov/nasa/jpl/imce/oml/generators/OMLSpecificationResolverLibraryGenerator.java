@@ -65,16 +65,12 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
       final FileOutputStream factoryFile = new FileOutputStream(_file);
       try {
         factoryFile.write(this.generateFactoryFile(ePackages, "gov.nasa.jpl.imce.oml.resolver.impl").getBytes());
-        final Function1<EPackage, Iterable<EClass>> _function = new Function1<EPackage, Iterable<EClass>>() {
-          public Iterable<EClass> apply(final EPackage it) {
-            return OMLUtilities.FunctionalAPIClasses(it);
-          }
+        final Function1<EPackage, Iterable<EClass>> _function = (EPackage it) -> {
+          return OMLUtilities.FunctionalAPIClasses(it);
         };
-        final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
-          public Boolean apply(final EClass it) {
-            Boolean _isExtentContainer = OMLUtilities.isExtentContainer(it);
-            return Boolean.valueOf((!(_isExtentContainer).booleanValue()));
-          }
+        final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+          Boolean _isExtentContainer = OMLUtilities.isExtentContainer(it);
+          return Boolean.valueOf((!(_isExtentContainer).booleanValue()));
         };
         Iterable<EClass> _filter = IterableExtensions.<EClass>filter(Iterables.<EClass>concat(ListExtensions.<EPackage, Iterable<EClass>>map(ePackages, _function)), _function_1);
         for (final EClass eClass : _filter) {
@@ -134,20 +130,14 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
     _builder.append("\t ");
     _builder.newLine();
     {
-      final Function1<EPackage, Iterable<EClass>> _function = new Function1<EPackage, Iterable<EClass>>() {
-        public Iterable<EClass> apply(final EPackage it) {
-          return OMLUtilities.FunctionalAPIClasses(it);
-        }
+      final Function1<EPackage, Iterable<EClass>> _function = (EPackage it) -> {
+        return OMLUtilities.FunctionalAPIClasses(it);
       };
-      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf(((!it.isAbstract()) && (!(OMLUtilities.isExtentContainer(it)).booleanValue())));
-        }
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return Boolean.valueOf(((!it.isAbstract()) && (!(OMLUtilities.isExtentContainer(it)).booleanValue())));
       };
-      final Function1<EClass, String> _function_2 = new Function1<EClass, String>() {
-        public String apply(final EClass it) {
-          return it.getName();
-        }
+      final Function1<EClass, String> _function_2 = (EClass it) -> {
+        return it.getName();
       };
       List<EClass> _sortBy = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>concat(ListExtensions.<EPackage, Iterable<EClass>>map(ePackages, _function)), _function_1), _function_2);
       for(final EClass eClass : _sortBy) {
@@ -207,10 +197,8 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
   public String factoryMethodWithoutUUID(final EClass eClass) {
     String _xblockexpression = null;
     {
-      final Function1<EReference, Boolean> _function = new Function1<EReference, Boolean>() {
-        public Boolean apply(final EReference it) {
-          return Boolean.valueOf(it.isContainer());
-        }
+      final Function1<EReference, Boolean> _function = (EReference it) -> {
+        return Boolean.valueOf(it.isContainer());
       };
       final EReference container = IterableExtensions.<EReference>findFirst(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function);
       EReference _eOpposite = null;
@@ -269,11 +257,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         String _name_3 = eClass.getName();
         _builder.append(_name_3, "\t\t");
         {
-          final Function1<EStructuralFeature, Boolean> _function_1 = new Function1<EStructuralFeature, Boolean>() {
-            public Boolean apply(final EStructuralFeature it) {
-              Boolean _isContainer = OMLUtilities.isContainer(it);
-              return Boolean.valueOf((!(_isContainer).booleanValue()));
-            }
+          final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
+            Boolean _isContainer = OMLUtilities.isContainer(it);
+            return Boolean.valueOf((!(_isContainer).booleanValue()));
           };
           Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
           boolean _hasElements_1 = false;
@@ -363,11 +349,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         String _name_12 = eClass.getName();
         _builder_1.append(_name_12, "  ");
         {
-          final Function1<EStructuralFeature, Boolean> _function_2 = new Function1<EStructuralFeature, Boolean>() {
-            public Boolean apply(final EStructuralFeature it) {
-              Boolean _isContainer = OMLUtilities.isContainer(it);
-              return Boolean.valueOf((!(_isContainer).booleanValue()));
-            }
+          final Function1<EStructuralFeature, Boolean> _function_2 = (EStructuralFeature it) -> {
+            Boolean _isContainer = OMLUtilities.isContainer(it);
+            return Boolean.valueOf((!(_isContainer).booleanValue()));
           };
           Iterable<EStructuralFeature> _filter_1 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_2);
           boolean _hasElements_3 = false;
@@ -440,10 +424,8 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
   public String factoryMethodWithUUIDGenerator(final EClass eClass, final EStructuralFeature uuidNS, final Iterable<EStructuralFeature> uuidFactors) {
     String _xblockexpression = null;
     {
-      final Function1<EReference, Boolean> _function = new Function1<EReference, Boolean>() {
-        public Boolean apply(final EReference it) {
-          return Boolean.valueOf(it.isContainer());
-        }
+      final Function1<EReference, Boolean> _function = (EReference it) -> {
+        return Boolean.valueOf(it.isContainer());
       };
       final EReference container = IterableExtensions.<EReference>findFirst(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function);
       EReference _eOpposite = null;
@@ -505,11 +487,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_3 = eClass.getName();
           _builder.append(_name_3, "  ");
           {
-            final Function1<EStructuralFeature, Boolean> _function_1 = new Function1<EStructuralFeature, Boolean>() {
-              public Boolean apply(final EStructuralFeature it) {
-                Boolean _isContainer = OMLUtilities.isContainer(it);
-                return Boolean.valueOf((!(_isContainer).booleanValue()));
-              }
+            final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
+              Boolean _isContainer = OMLUtilities.isContainer(it);
+              return Boolean.valueOf((!(_isContainer).booleanValue()));
             };
             Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
             boolean _hasElements_1 = false;
@@ -598,11 +578,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_8 = eClass.getName();
           _builder_1.append(_name_8, "\t");
           {
-            final Function1<EStructuralFeature, Boolean> _function_2 = new Function1<EStructuralFeature, Boolean>() {
-              public Boolean apply(final EStructuralFeature it) {
-                Boolean _isContainer = OMLUtilities.isContainer(it);
-                return Boolean.valueOf((!(_isContainer).booleanValue()));
-              }
+            final Function1<EStructuralFeature, Boolean> _function_2 = (EStructuralFeature it) -> {
+              Boolean _isContainer = OMLUtilities.isContainer(it);
+              return Boolean.valueOf((!(_isContainer).booleanValue()));
             };
             Iterable<EStructuralFeature> _filter_1 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_2);
             boolean _hasElements_3 = false;
@@ -694,11 +672,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         String _name_17 = eClass.getName();
         _builder_2.append(_name_17, "  ");
         {
-          final Function1<EStructuralFeature, Boolean> _function_3 = new Function1<EStructuralFeature, Boolean>() {
-            public Boolean apply(final EStructuralFeature it) {
-              Boolean _isContainer = OMLUtilities.isContainer(it);
-              return Boolean.valueOf((!(_isContainer).booleanValue()));
-            }
+          final Function1<EStructuralFeature, Boolean> _function_3 = (EStructuralFeature it) -> {
+            Boolean _isContainer = OMLUtilities.isContainer(it);
+            return Boolean.valueOf((!(_isContainer).booleanValue()));
           };
           Iterable<EStructuralFeature> _filter_2 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_3);
           boolean _hasElements_5 = false;
@@ -781,10 +757,8 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
   public String factoryMethodWithDerivedUUID(final EClass eClass) {
     String _xblockexpression = null;
     {
-      final Function1<EReference, Boolean> _function = new Function1<EReference, Boolean>() {
-        public Boolean apply(final EReference it) {
-          return Boolean.valueOf(it.isContainer());
-        }
+      final Function1<EReference, Boolean> _function = (EReference it) -> {
+        return Boolean.valueOf(it.isContainer());
       };
       final EReference container = IterableExtensions.<EReference>findFirst(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function);
       EReference _eOpposite = null;
@@ -846,11 +820,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_3 = eClass.getName();
           _builder.append(_name_3, "  ");
           {
-            final Function1<EStructuralFeature, Boolean> _function_1 = new Function1<EStructuralFeature, Boolean>() {
-              public Boolean apply(final EStructuralFeature it) {
-                Boolean _isContainer = OMLUtilities.isContainer(it);
-                return Boolean.valueOf((!(_isContainer).booleanValue()));
-              }
+            final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
+              Boolean _isContainer = OMLUtilities.isContainer(it);
+              return Boolean.valueOf((!(_isContainer).booleanValue()));
             };
             Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
             boolean _hasElements_1 = false;
@@ -939,11 +911,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_8 = eClass.getName();
           _builder_1.append(_name_8, "    ");
           {
-            final Function1<EStructuralFeature, Boolean> _function_2 = new Function1<EStructuralFeature, Boolean>() {
-              public Boolean apply(final EStructuralFeature it) {
-                Boolean _isContainer = OMLUtilities.isContainer(it);
-                return Boolean.valueOf((!(_isContainer).booleanValue()));
-              }
+            final Function1<EStructuralFeature, Boolean> _function_2 = (EStructuralFeature it) -> {
+              Boolean _isContainer = OMLUtilities.isContainer(it);
+              return Boolean.valueOf((!(_isContainer).booleanValue()));
             };
             Iterable<EStructuralFeature> _filter_1 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_2);
             boolean _hasElements_3 = false;
@@ -1035,11 +1005,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         String _name_17 = eClass.getName();
         _builder_2.append(_name_17, "  ");
         {
-          final Function1<EStructuralFeature, Boolean> _function_3 = new Function1<EStructuralFeature, Boolean>() {
-            public Boolean apply(final EStructuralFeature it) {
-              Boolean _isContainer = OMLUtilities.isContainer(it);
-              return Boolean.valueOf((!(_isContainer).booleanValue()));
-            }
+          final Function1<EStructuralFeature, Boolean> _function_3 = (EStructuralFeature it) -> {
+            Boolean _isContainer = OMLUtilities.isContainer(it);
+            return Boolean.valueOf((!(_isContainer).booleanValue()));
           };
           Iterable<EStructuralFeature> _filter_2 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_3);
           boolean _hasElements_5 = false;
@@ -1122,10 +1090,8 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
   public String factoryMethodWithImplicitlyDerivedUUID(final EClass eClass) {
     String _xblockexpression = null;
     {
-      final Function1<EReference, Boolean> _function = new Function1<EReference, Boolean>() {
-        public Boolean apply(final EReference it) {
-          return Boolean.valueOf(it.isContainer());
-        }
+      final Function1<EReference, Boolean> _function = (EReference it) -> {
+        return Boolean.valueOf(it.isContainer());
       };
       final EReference container = IterableExtensions.<EReference>findFirst(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function);
       EReference _eOpposite = null;
@@ -1187,11 +1153,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_3 = eClass.getName();
           _builder.append(_name_3, "  ");
           {
-            final Function1<EStructuralFeature, Boolean> _function_1 = new Function1<EStructuralFeature, Boolean>() {
-              public Boolean apply(final EStructuralFeature it) {
-                Boolean _isContainer = OMLUtilities.isContainer(it);
-                return Boolean.valueOf((!(_isContainer).booleanValue()));
-              }
+            final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
+              Boolean _isContainer = OMLUtilities.isContainer(it);
+              return Boolean.valueOf((!(_isContainer).booleanValue()));
             };
             Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
             boolean _hasElements_1 = false;
@@ -1280,11 +1244,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_8 = eClass.getName();
           _builder_1.append(_name_8, "\t");
           {
-            final Function1<EStructuralFeature, Boolean> _function_2 = new Function1<EStructuralFeature, Boolean>() {
-              public Boolean apply(final EStructuralFeature it) {
-                Boolean _isContainer = OMLUtilities.isContainer(it);
-                return Boolean.valueOf((!(_isContainer).booleanValue()));
-              }
+            final Function1<EStructuralFeature, Boolean> _function_2 = (EStructuralFeature it) -> {
+              Boolean _isContainer = OMLUtilities.isContainer(it);
+              return Boolean.valueOf((!(_isContainer).booleanValue()));
             };
             Iterable<EStructuralFeature> _filter_1 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_2);
             boolean _hasElements_3 = false;
@@ -1376,11 +1338,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         String _name_17 = eClass.getName();
         _builder_2.append(_name_17, "  ");
         {
-          final Function1<EStructuralFeature, Boolean> _function_3 = new Function1<EStructuralFeature, Boolean>() {
-            public Boolean apply(final EStructuralFeature it) {
-              Boolean _isContainer = OMLUtilities.isContainer(it);
-              return Boolean.valueOf((!(_isContainer).booleanValue()));
-            }
+          final Function1<EStructuralFeature, Boolean> _function_3 = (EStructuralFeature it) -> {
+            Boolean _isContainer = OMLUtilities.isContainer(it);
+            return Boolean.valueOf((!(_isContainer).booleanValue()));
           };
           Iterable<EStructuralFeature> _filter_2 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_3);
           boolean _hasElements_5 = false;
@@ -1515,11 +1475,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
     _builder.append("\t\t");
     _builder.newLine();
     {
-      final Function1<EOperation, Boolean> _function = new Function1<EOperation, Boolean>() {
-        public Boolean apply(final EOperation it) {
-          EAnnotation _eAnnotation = it.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal");
-          return Boolean.valueOf((null == _eAnnotation));
-        }
+      final Function1<EOperation, Boolean> _function = (EOperation it) -> {
+        EAnnotation _eAnnotation = it.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal");
+        return Boolean.valueOf((null == _eAnnotation));
       };
       Iterable<EOperation> _filter = IterableExtensions.<EOperation>filter(OMLUtilities.ScalaOperations(eClass), _function);
       for(final EOperation op : _filter) {

@@ -56,44 +56,30 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
       final Path targetPath = Paths.get(targetDir);
       targetPath.toFile().mkdirs();
       final List<EPackage> ePackages = Collections.<EPackage>unmodifiableList(CollectionLiterals.<EPackage>newArrayList(this.c, this.t, this.g, this.b, this.d));
-      final Function1<EPackage, EList<EClassifier>> _function = new Function1<EPackage, EList<EClassifier>>() {
-        public EList<EClassifier> apply(final EPackage it) {
-          return it.getEClassifiers();
-        }
+      final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
+        return it.getEClassifiers();
       };
-      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return OMLUtilities.isGlossary(it);
-        }
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return OMLUtilities.isGlossary(it);
       };
-      final Function1<EClass, String> _function_2 = new Function1<EClass, String>() {
-        public String apply(final EClass it) {
-          return it.getName();
-        }
+      final Function1<EClass, String> _function_2 = (EClass it) -> {
+        return it.getName();
       };
       final List<EClass> glossaryEntries = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1), _function_2);
-      final Function1<EClass, Boolean> _function_3 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf(it.isAbstract());
-        }
+      final Function1<EClass, Boolean> _function_3 = (EClass it) -> {
+        return Boolean.valueOf(it.isAbstract());
       };
       final Map<Boolean, List<EClass>> entriesByAbstraction = IterableExtensions.<Boolean, EClass>groupBy(glossaryEntries, _function_3);
-      final Function1<EClass, Boolean> _function_4 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return OMLUtilities.isSchema(it);
-        }
+      final Function1<EClass, Boolean> _function_4 = (EClass it) -> {
+        return OMLUtilities.isSchema(it);
       };
       final Iterable<EClass> schemaEntries = IterableExtensions.<EClass>filter(entriesByAbstraction.get(Boolean.valueOf(false)), _function_4);
-      final Function1<EClass, Boolean> _function_5 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf(((OMLUtilities.isAPI(it)).booleanValue() && (!(OMLUtilities.isSchema(it)).booleanValue())));
-        }
+      final Function1<EClass, Boolean> _function_5 = (EClass it) -> {
+        return Boolean.valueOf(((OMLUtilities.isAPI(it)).booleanValue() && (!(OMLUtilities.isSchema(it)).booleanValue())));
       };
       final Iterable<EClass> apiEntries = IterableExtensions.<EClass>filter(entriesByAbstraction.get(Boolean.valueOf(false)), _function_5);
-      final Function1<EClass, Boolean> _function_6 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return OMLUtilities.isOO(it);
-        }
+      final Function1<EClass, Boolean> _function_6 = (EClass it) -> {
+        return OMLUtilities.isOO(it);
       };
       final Iterable<EClass> ooEntries = IterableExtensions.<EClass>filter(entriesByAbstraction.get(Boolean.valueOf(false)), _function_6);
       StringConcatenation _builder = new StringConcatenation();
@@ -207,59 +193,39 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
       File _file = new File(_plus_1);
       final FileOutputStream glossaryFile = new FileOutputStream(_file);
       try {
-        final Function1<EClass, Boolean> _function_7 = new Function1<EClass, Boolean>() {
-          public Boolean apply(final EClass it) {
-            return OMLUtilities.isGlossary(it);
-          }
+        final Function1<EClass, Boolean> _function_7 = (EClass it) -> {
+          return OMLUtilities.isGlossary(it);
         };
-        final Function1<EClass, String> _function_8 = new Function1<EClass, String>() {
-          public String apply(final EClass it) {
-            return it.getName();
-          }
+        final Function1<EClass, String> _function_8 = (EClass it) -> {
+          return it.getName();
         };
         this.generateGlossaryFile("1", "Common", IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(this.c.getEClassifiers(), EClass.class), _function_7), _function_8), buffer);
-        final Function1<EClass, Boolean> _function_9 = new Function1<EClass, Boolean>() {
-          public Boolean apply(final EClass it) {
-            return OMLUtilities.isGlossary(it);
-          }
+        final Function1<EClass, Boolean> _function_9 = (EClass it) -> {
+          return OMLUtilities.isGlossary(it);
         };
-        final Function1<EClass, String> _function_10 = new Function1<EClass, String>() {
-          public String apply(final EClass it) {
-            return it.getName();
-          }
+        final Function1<EClass, String> _function_10 = (EClass it) -> {
+          return it.getName();
         };
         this.generateGlossaryFile("2", "Terminologies", IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(this.t.getEClassifiers(), EClass.class), _function_9), _function_10), buffer);
-        final Function1<EClass, Boolean> _function_11 = new Function1<EClass, Boolean>() {
-          public Boolean apply(final EClass it) {
-            return OMLUtilities.isGlossary(it);
-          }
+        final Function1<EClass, Boolean> _function_11 = (EClass it) -> {
+          return OMLUtilities.isGlossary(it);
         };
-        final Function1<EClass, String> _function_12 = new Function1<EClass, String>() {
-          public String apply(final EClass it) {
-            return it.getName();
-          }
+        final Function1<EClass, String> _function_12 = (EClass it) -> {
+          return it.getName();
         };
         this.generateGlossaryFile("3", "Graphs", IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(this.g.getEClassifiers(), EClass.class), _function_11), _function_12), buffer);
-        final Function1<EClass, Boolean> _function_13 = new Function1<EClass, Boolean>() {
-          public Boolean apply(final EClass it) {
-            return OMLUtilities.isGlossary(it);
-          }
+        final Function1<EClass, Boolean> _function_13 = (EClass it) -> {
+          return OMLUtilities.isGlossary(it);
         };
-        final Function1<EClass, String> _function_14 = new Function1<EClass, String>() {
-          public String apply(final EClass it) {
-            return it.getName();
-          }
+        final Function1<EClass, String> _function_14 = (EClass it) -> {
+          return it.getName();
         };
         this.generateGlossaryFile("4", "Bundles", IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(this.b.getEClassifiers(), EClass.class), _function_13), _function_14), buffer);
-        final Function1<EClass, Boolean> _function_15 = new Function1<EClass, Boolean>() {
-          public Boolean apply(final EClass it) {
-            return OMLUtilities.isGlossary(it);
-          }
+        final Function1<EClass, Boolean> _function_15 = (EClass it) -> {
+          return OMLUtilities.isGlossary(it);
         };
-        final Function1<EClass, String> _function_16 = new Function1<EClass, String>() {
-          public String apply(final EClass it) {
-            return it.getName();
-          }
+        final Function1<EClass, String> _function_16 = (EClass it) -> {
+          return it.getName();
         };
         this.generateGlossaryFile("5", "Descriptions", IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(this.d.getEClassifiers(), EClass.class), _function_15), _function_16), buffer);
         glossaryFile.write(buffer.toString().getBytes());
@@ -274,30 +240,22 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
   public int generateGlossaryFile(final String n, final String group, final List<EClass> entries, final StringBuffer buffer) {
     int _xblockexpression = (int) 0;
     {
-      final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf(it.isAbstract());
-        }
+      final Function1<EClass, Boolean> _function = (EClass it) -> {
+        return Boolean.valueOf(it.isAbstract());
       };
       final Map<Boolean, List<EClass>> entriesByAbstraction = IterableExtensions.<Boolean, EClass>groupBy(entries, _function);
       final List<EClass> abstractEntries = entriesByAbstraction.get(Boolean.valueOf(true));
       final List<EClass> concreteEntries = entriesByAbstraction.get(Boolean.valueOf(false));
-      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return OMLUtilities.isSchema(it);
-        }
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return OMLUtilities.isSchema(it);
       };
       final Iterable<EClass> schemaEntries = IterableExtensions.<EClass>filter(concreteEntries, _function_1);
-      final Function1<EClass, Boolean> _function_2 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf(((OMLUtilities.isAPI(it)).booleanValue() && (!(OMLUtilities.isSchema(it)).booleanValue())));
-        }
+      final Function1<EClass, Boolean> _function_2 = (EClass it) -> {
+        return Boolean.valueOf(((OMLUtilities.isAPI(it)).booleanValue() && (!(OMLUtilities.isSchema(it)).booleanValue())));
       };
       final Iterable<EClass> apiEntries = IterableExtensions.<EClass>filter(concreteEntries, _function_2);
-      final Function1<EClass, Boolean> _function_3 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return OMLUtilities.isOO(it);
-        }
+      final Function1<EClass, Boolean> _function_3 = (EClass it) -> {
+        return OMLUtilities.isOO(it);
       };
       final Iterable<EClass> ooEntries = IterableExtensions.<EClass>filter(concreteEntries, _function_3);
       int counter = 1;
@@ -330,10 +288,8 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
         _builder_1.append("-abstract-glossary}");
         String _plus_1 = ("\n" + _builder_1);
         buffer.append(_plus_1);
-        final Consumer<EClass> _function_4 = new Consumer<EClass>() {
-          public void accept(final EClass eClass) {
-            OMLSpecificationDocGenerator.this.generateClassGlossaryContents(buffer, eClass);
-          }
+        final Consumer<EClass> _function_4 = (EClass eClass) -> {
+          this.generateClassGlossaryContents(buffer, eClass);
         };
         abstractEntries.forEach(_function_4);
         int _counter = counter;
@@ -377,10 +333,8 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
         String _plus_5 = (_plus_4 + "\n");
         buffer.append(_plus_5);
         OMLUtilities.OMLTableCompare _oMLTableCompare = new OMLUtilities.OMLTableCompare();
-        final Consumer<EClass> _function_5 = new Consumer<EClass>() {
-          public void accept(final EClass eClass) {
-            OMLSpecificationDocGenerator.this.generateClassGlossaryContents(buffer, eClass);
-          }
+        final Consumer<EClass> _function_5 = (EClass eClass) -> {
+          this.generateClassGlossaryContents(buffer, eClass);
         };
         IterableExtensions.<EClass>sortWith(schemaEntries, _oMLTableCompare).forEach(_function_5);
         int _subcounter = subcounter;
@@ -406,10 +360,8 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
         String _plus_6 = ("\n" + _builder_4);
         String _plus_7 = (_plus_6 + "\n");
         buffer.append(_plus_7);
-        final Consumer<EClass> _function_6 = new Consumer<EClass>() {
-          public void accept(final EClass eClass) {
-            OMLSpecificationDocGenerator.this.generateClassGlossaryContents(buffer, eClass);
-          }
+        final Consumer<EClass> _function_6 = (EClass eClass) -> {
+          this.generateClassGlossaryContents(buffer, eClass);
         };
         apiEntries.forEach(_function_6);
         int _subcounter_1 = subcounter;
@@ -438,10 +390,8 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
           String _plus_8 = ("\n" + _builder_5);
           String _plus_9 = (_plus_8 + "\n");
           buffer.append(_plus_9);
-          final Consumer<EClass> _function_7 = new Consumer<EClass>() {
-            public void accept(final EClass eClass) {
-              OMLSpecificationDocGenerator.this.generateClassGlossaryContents(buffer, eClass);
-            }
+          final Consumer<EClass> _function_7 = (EClass eClass) -> {
+            this.generateClassGlossaryContents(buffer, eClass);
           };
           ooEntries.forEach(_function_7);
           int _subcounter_2 = subcounter;

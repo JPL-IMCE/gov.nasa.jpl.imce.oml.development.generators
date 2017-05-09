@@ -33,24 +33,18 @@ public class OMLLoadTest extends OMLUtilities {
   }
   
   public void test() {
-    final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
-      public Boolean apply(final EClass it) {
-        String _name = it.getName();
-        return Boolean.valueOf(Objects.equal(_name, "Extent"));
-      }
+    final Function1<EClass, Boolean> _function = (EClass it) -> {
+      String _name = it.getName();
+      return Boolean.valueOf(Objects.equal(_name, "Extent"));
     };
     final EClass extent = IterableExtensions.<EClass>findFirst(Iterables.<EClass>filter(this.c.getEClassifiers(), EClass.class), _function);
-    final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
-      public Boolean apply(final EClass it) {
-        String _name = it.getName();
-        return Boolean.valueOf(Objects.equal(_name, "Module"));
-      }
+    final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+      String _name = it.getName();
+      return Boolean.valueOf(Objects.equal(_name, "Module"));
     };
-    final Function1<EOperation, Boolean> _function_2 = new Function1<EOperation, Boolean>() {
-      public Boolean apply(final EOperation it) {
-        String _name = it.getName();
-        return Boolean.valueOf(Objects.equal(_name, "extent"));
-      }
+    final Function1<EOperation, Boolean> _function_2 = (EOperation it) -> {
+      String _name = it.getName();
+      return Boolean.valueOf(Objects.equal(_name, "extent"));
     };
     final EOperation module_extent = IterableExtensions.<EOperation>findFirst(IterableExtensions.<EClass>findFirst(Iterables.<EClass>filter(this.c.getEClassifiers(), EClass.class), _function_1).getEOperations(), _function_2);
     EClassifier _eType = module_extent.getEType();

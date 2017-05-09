@@ -64,6 +64,7 @@ public class OMLUtilities extends OMLXcorePackages {
   public static class OMLTableCompare implements Comparator<EClass> {
     private final List<String> knownTables = Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList("Annotation", "AnnotationEntry", "AnnotationProperty", "AnnotationPropertyTable", "AnnotationSubjectPropertyValue", "AnnotationSubjectTable", "Extent", "TerminologyGraph", "Bundle", "ConceptDesignationTerminologyAxiom", "TerminologyExtensionAxiom", "TerminologyNestingAxiom", "Aspect", "Concept", "ReifiedRelationship", "UnreifiedRelationship", "Scalar", "Structure", "BinaryScalarRestriction", "IRIScalarRestriction", "NumericScalarRestriction", "PlainLiteralScalarRestriction", "ScalarOneOfRestriction", "StringScalarRestriction", "SynonymScalarRestriction", "TimeScalarRestriction", "EntityScalarDataProperty", "EntityStructuredDataProperty", "ScalarDataProperty", "StructuredDataProperty", "AspectSpecializationAxiom", "ConceptSpecializationAxiom", "ReifiedRelationshipSpecializationAxiom", "EntityExistentialRestrictionAxiom", "EntityUniversalRestrictionAxiom", "EntityScalarDataPropertyExistentialRestrictionAxiom", "EntityScalarDataPropertyParticularRestrictionAxiom", "EntityScalarDataPropertyUniversalRestrictionAxiom", "ScalarOneOfLiteralAxiom", "BundledTerminologyAxiom", "AnonymousConceptTaxonomyAxiom", "RootConceptTaxonomyAxiom", "SpecificDisjointConceptAxiom"));
     
+    @Override
     public int compare(final EClass c1, final EClass c2) {
       int _xblockexpression = (int) 0;
       {
@@ -98,6 +99,7 @@ public class OMLUtilities extends OMLXcorePackages {
   public static class OMLFeatureCompare implements Comparator<ETypedElement> {
     private final List<String> knownAttributes = Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList("uuid", "tboxUUID", "extentUUID", "terminologyBundleUUID", "bundledTerminologyUUID", "extendedTerminologyUUID", "nestingTerminologyUUID", "nestingContextUUID", "bundleUUID", "moduleUUID", "descriptionBoxUUID", "refiningDescriptionBoxUUID", "singletonConceptClassifierUUID", "singletonReifiedRelationshipClassifierUUID", "dataStructureTypeUUID", "superAspectUUID", "subEntityUUID", "superConceptUUID", "subConceptUUID", "axiomUUID", "keyUUID", "subjectUUID", "propertyUUID", "closedWorldDefinitionsUUID", "refinedDescriptionBoxUUID", "refiningDescriptionBoxUUID", "dataStructureTypeUUID", "structuredDataPropertyValueUUID", "singletonInstanceUUID", "structuredDataPropertyUUID", "scalarDataPropertyUUID", "structuredPropertyTupleUUID", "singletonConceptClassifierUUID", "singletonReifiedRelationshipClassifierUUID", "reifiedRelationshipInstanceUUID", "unreifiedRelationshipUUID", "restrictedRelationUUID", "restrictedDomainUUID", "restrictedRangeUUID", "restrictedEntityUUID", "scalarPropertyUUID", "scalarRestrictionUUID", "domainUUID", "rangeUUID", "sourceUUID", "targetUUID", "superRelationshipUUID", "subRelationshipUUID", "rootUUID", "disjointTaxonomyParentUUID", "disjointLeafUUID", "conceptInstancesUUID", "reifiedRelationshipInstancesUUID", "reifiedRelationshipInstancesDomainsUUID", "reifiedRelationshipInstancesRangesUUID", "unreifiedRelationshipInstancesUUID", "singletonInstanceScalarDataPropertyValuesUUID", "singletonInstanceStructuredDataPropertyValuesUUID", "scalarDataPropertyValuesUUID", "structuredDataPropertyTuplesUUID", "kind", "isAbstract", "isAsymmetric", "isEssential", "isFunctional", "isInverseEssential", "isInverseFunctional", "isIrreflexive", "isReflexive", "isSymmetric", "isTransitive", "isIdentityCriteria", "minExclusive", "minInclusive", "maxExclusive", "maxInclusive", "length", "minLength", "maxLength", "nsPrefix", "name", "langRange", "pattern", "unreifiedPropertyName", "unreifiedInversePropertyName", "iri", "value", "scalarPropertyValue", "literalValue", "annotationsUUID", "boxStatementsUUID", "boxAxiomsUUID", "bundleStatementsUUID", "bundleAxiomsUUID"));
     
+    @Override
     public int compare(final ETypedElement o1, final ETypedElement o2) {
       int _xblockexpression = (int) 0;
       {
@@ -204,11 +206,9 @@ public class OMLUtilities extends OMLXcorePackages {
   
   public static String orderingClassName(final EClass eClass) {
     String _xifexpression = null;
-    if (((IterableExtensions.<ETypedElement>exists(OMLUtilities.orderingKeys(eClass), new Function1<ETypedElement, Boolean>() {
-      public Boolean apply(final ETypedElement f) {
-        return Boolean.valueOf(((OMLUtilities.isContainer(f)).booleanValue() || (f.getLowerBound() == 0)));
-      }
-    }) || Objects.equal(eClass.getName(), "AnnotationEntry")) || Objects.equal(eClass.getName(), "Annotation"))) {
+    if (((IterableExtensions.<ETypedElement>exists(OMLUtilities.orderingKeys(eClass), ((Function1<ETypedElement, Boolean>) (ETypedElement f) -> {
+      return Boolean.valueOf(((OMLUtilities.isContainer(f)).booleanValue() || (f.getLowerBound() == 0)));
+    })) || Objects.equal(eClass.getName(), "AnnotationEntry")) || Objects.equal(eClass.getName(), "Annotation"))) {
       StringConcatenation _builder = new StringConcatenation();
       String _firstLower = StringExtensions.toFirstLower(eClass.getName());
       _builder.append(_firstLower);
@@ -357,45 +357,38 @@ public class OMLUtilities extends OMLXcorePackages {
                 } else {
                   _elvis = "";
                 }
-                boolean _matched_1 = false;
-                if (Objects.equal(_elvis, "Map(Seq)")) {
-                  _matched_1=true;
-                  String _xblockexpression_2 = null;
-                  {
-                    final String key = ann.get("key");
-                    String _name = type.getName();
-                    String _plus = (((("scala.collection.immutable.Map[" + key) + ", scala.collection.immutable.Seq[") + typePrefix) + _name);
-                    _xblockexpression_2 = (_plus + "]]");
-                  }
-                  _switchResult_1 = _xblockexpression_2;
-                }
-                if (!_matched_1) {
-                  if (Objects.equal(_elvis, "Map")) {
-                    _matched_1=true;
-                    String _xblockexpression_3 = null;
-                    {
-                      final String key = ann.get("key");
+                if (_elvis != null) {
+                  switch (_elvis) {
+                    case "Map(Seq)":
+                      String _xblockexpression_2 = null;
+                      {
+                        final String key = ann.get("key");
+                        String _name = type.getName();
+                        String _plus = (((("scala.collection.immutable.Map[" + key) + ", scala.collection.immutable.Seq[") + typePrefix) + _name);
+                        _xblockexpression_2 = (_plus + "]]");
+                      }
+                      _switchResult_1 = _xblockexpression_2;
+                      break;
+                    case "Map":
+                      String _xblockexpression_3 = null;
+                      {
+                        final String key = ann.get("key");
+                        String _name = type.getName();
+                        String _plus = (((("scala.collection.immutable.Map[" + key) + ", ") + typePrefix) + _name);
+                        _xblockexpression_3 = (_plus + "]");
+                      }
+                      _switchResult_1 = _xblockexpression_3;
+                      break;
+                    case "Set":
                       String _name = type.getName();
-                      String _plus = (((("scala.collection.immutable.Map[" + key) + ", ") + typePrefix) + _name);
-                      _xblockexpression_3 = (_plus + "]");
-                    }
-                    _switchResult_1 = _xblockexpression_3;
-                  }
-                }
-                if (!_matched_1) {
-                  if (Objects.equal(_elvis, "Set")) {
-                    _matched_1=true;
-                    String _name = type.getName();
-                    String _plus = (("scala.collection.immutable.Set[_ <: " + typePrefix) + _name);
-                    _switchResult_1 = (_plus + "]");
-                  }
-                }
-                if (!_matched_1) {
-                  if (Objects.equal(_elvis, "SortedSet")) {
-                    _matched_1=true;
-                    String _name_1 = type.getName();
-                    String _plus_1 = (("scala.collection.immutable.SortedSet[" + typePrefix) + _name_1);
-                    _switchResult_1 = (_plus_1 + "]");
+                      String _plus = (("scala.collection.immutable.Set[_ <: " + typePrefix) + _name);
+                      _switchResult_1 = (_plus + "]");
+                      break;
+                    case "SortedSet":
+                      String _name_1 = type.getName();
+                      String _plus_1 = (("scala.collection.immutable.SortedSet[" + typePrefix) + _name_1);
+                      _switchResult_1 = (_plus_1 + "]");
+                      break;
                   }
                 }
                 _xblockexpression_1 = _switchResult_1;
@@ -430,96 +423,59 @@ public class OMLUtilities extends OMLXcorePackages {
       final EClassifier type = feature.getEType();
       String _switchResult = null;
       String _name = type.getName();
-      boolean _matched = false;
-      if (Objects.equal(_name, "EInt")) {
-        _matched=true;
-        _switchResult = "scala.Int";
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "EBoolean")) {
-          _matched=true;
-          _switchResult = "scala.Boolean";
+      if (_name != null) {
+        switch (_name) {
+          case "EInt":
+            _switchResult = "scala.Int";
+            break;
+          case "EBoolean":
+            _switchResult = "scala.Boolean";
+            break;
+          case "EString":
+            _switchResult = "scala.Predef.String";
+            break;
+          case "AbbrevIRI":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.AbbrevIRI";
+            break;
+          case "DescriptionKind":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.DescriptionKind";
+            break;
+          case "IRI":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.IRI";
+            break;
+          case "LangRange":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.LangRange";
+            break;
+          case "LexicalNumber":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalNumber";
+            break;
+          case "LexicalTime":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalTime";
+            break;
+          case "LexicalValue":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalValue";
+            break;
+          case "LocalName":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.LocalName";
+            break;
+          case "NamespacePrefix":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.NamespacePrefix";
+            break;
+          case "Pattern":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.Pattern";
+            break;
+          case "UUID":
+            _switchResult = "java.util.UUID";
+            break;
+          case "TerminologyKind":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.TerminologyKind";
+            break;
+          default:
+            String _name_1 = type.getName();
+            _switchResult = ("resolver.api." + _name_1);
+            break;
         }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "EString")) {
-          _matched=true;
-          _switchResult = "scala.Predef.String";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "AbbrevIRI")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.AbbrevIRI";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "DescriptionKind")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.DescriptionKind";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "IRI")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.IRI";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "LangRange")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.LangRange";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "LexicalNumber")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalNumber";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "LexicalTime")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalTime";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "LexicalValue")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalValue";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "LocalName")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.LocalName";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "NamespacePrefix")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.NamespacePrefix";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "Pattern")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.Pattern";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "UUID")) {
-          _matched=true;
-          _switchResult = "java.util.UUID";
-        }
-      }
-      if (!_matched) {
-        if (Objects.equal(_name, "TerminologyKind")) {
-          _matched=true;
-          _switchResult = "gov.nasa.jpl.imce.oml.tables.TerminologyKind";
-        }
-      }
-      if (!_matched) {
+      } else {
         String _name_1 = type.getName();
         _switchResult = ("resolver.api." + _name_1);
       }
@@ -705,10 +661,8 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Iterable<EClass> FunctionalAPIClasses(final EPackage ePkg) {
-    final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
-      public Boolean apply(final EClass it) {
-        return OMLUtilities.isAPI(it);
-      }
+    final Function1<EClass, Boolean> _function = (EClass it) -> {
+      return OMLUtilities.isAPI(it);
     };
     return IterableExtensions.<EClass>filter(Iterables.<EClass>filter(ePkg.getEClassifiers(), EClass.class), _function);
   }
@@ -730,19 +684,15 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Iterable<ETypedElement> orderingKeys(final EClass eClass) {
-    final Function1<ETypedElement, Boolean> _function = new Function1<ETypedElement, Boolean>() {
-      public Boolean apply(final ETypedElement it) {
-        return OMLUtilities.isOrderingKey(it);
-      }
+    final Function1<ETypedElement, Boolean> _function = (ETypedElement it) -> {
+      return OMLUtilities.isOrderingKey(it);
     };
     return IterableExtensions.<ETypedElement>filter(OMLUtilities.functionalAPIOrOrderingKeyAttributes(eClass), _function);
   }
   
   public static Iterable<ETypedElement> functionalAPIOrOrderingKeyAttributes(final EClass eClass) {
-    final Function1<ETypedElement, Boolean> _function = new Function1<ETypedElement, Boolean>() {
-      public Boolean apply(final ETypedElement it) {
-        return Boolean.valueOf(((!(OMLUtilities.isInterface(it)).booleanValue()) && ((OMLUtilities.isFunctionalAttributeOrReferenceExceptContainer(it)).booleanValue() || (OMLUtilities.isOrderingKey(it)).booleanValue())));
-      }
+    final Function1<ETypedElement, Boolean> _function = (ETypedElement it) -> {
+      return Boolean.valueOf(((!(OMLUtilities.isInterface(it)).booleanValue()) && ((OMLUtilities.isFunctionalAttributeOrReferenceExceptContainer(it)).booleanValue() || (OMLUtilities.isOrderingKey(it)).booleanValue())));
     };
     return IterableExtensions.<ETypedElement>filter(OMLUtilities.functionalAPIOrOrderingKeyFeatures(eClass), _function);
   }
@@ -750,10 +700,8 @@ public class OMLUtilities extends OMLXcorePackages {
   public static Iterable<ETypedElement> functionalAPIOrOrderingKeyFeatures(final EClass eClass) {
     List<ETypedElement> _xblockexpression = null;
     {
-      final Function1<EClass, Iterable<ETypedElement>> _function = new Function1<EClass, Iterable<ETypedElement>>() {
-        public Iterable<ETypedElement> apply(final EClass it) {
-          return OMLUtilities.ETypedElements(it);
-        }
+      final Function1<EClass, Iterable<ETypedElement>> _function = (EClass it) -> {
+        return OMLUtilities.ETypedElements(it);
       };
       final Set<ETypedElement> features = IterableExtensions.<ETypedElement>toSet(Iterables.<ETypedElement>concat(IterableExtensions.<EClass, Iterable<ETypedElement>>map(OMLUtilities.selfAndAllSupertypes(eClass), _function)));
       OMLUtilities.OMLFeatureCompare _oMLFeatureCompare = new OMLUtilities.OMLFeatureCompare();
@@ -764,20 +712,16 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Boolean hasSchemaOptionalAttributes(final EClass eClass) {
-    final Function1<ETypedElement, Boolean> _function = new Function1<ETypedElement, Boolean>() {
-      public Boolean apply(final ETypedElement a) {
-        int _lowerBound = a.getLowerBound();
-        return Boolean.valueOf((_lowerBound == 0));
-      }
+    final Function1<ETypedElement, Boolean> _function = (ETypedElement a) -> {
+      int _lowerBound = a.getLowerBound();
+      return Boolean.valueOf((_lowerBound == 0));
     };
     return Boolean.valueOf(IterableExtensions.<ETypedElement>exists(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function));
   }
   
   public static Iterable<ETypedElement> schemaAPIOrOrderingKeyAttributes(final EClass eClass) {
-    final Function1<ETypedElement, Boolean> _function = new Function1<ETypedElement, Boolean>() {
-      public Boolean apply(final ETypedElement it) {
-        return Boolean.valueOf(((!(OMLUtilities.isInterface(it)).booleanValue()) && ((OMLUtilities.isSchemaAttributeOrReferenceOrContainer(it)).booleanValue() || (OMLUtilities.isOrderingKey(it)).booleanValue())));
-      }
+    final Function1<ETypedElement, Boolean> _function = (ETypedElement it) -> {
+      return Boolean.valueOf(((!(OMLUtilities.isInterface(it)).booleanValue()) && ((OMLUtilities.isSchemaAttributeOrReferenceOrContainer(it)).booleanValue() || (OMLUtilities.isOrderingKey(it)).booleanValue())));
     };
     return IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyFeatures(eClass), _function);
   }
@@ -785,10 +729,8 @@ public class OMLUtilities extends OMLXcorePackages {
   public static Iterable<ETypedElement> schemaAPIOrOrderingKeyFeatures(final EClass eClass) {
     List<ETypedElement> _xblockexpression = null;
     {
-      final Function1<EClass, Iterable<ETypedElement>> _function = new Function1<EClass, Iterable<ETypedElement>>() {
-        public Iterable<ETypedElement> apply(final EClass it) {
-          return OMLUtilities.ETypedElements(it);
-        }
+      final Function1<EClass, Iterable<ETypedElement>> _function = (EClass it) -> {
+        return OMLUtilities.ETypedElements(it);
       };
       final Set<ETypedElement> features = IterableExtensions.<ETypedElement>toSet(Iterables.<ETypedElement>concat(IterableExtensions.<EClass, Iterable<ETypedElement>>map(OMLUtilities.selfAndAllSupertypes(eClass), _function)));
       OMLUtilities.OMLFeatureCompare _oMLFeatureCompare = new OMLUtilities.OMLFeatureCompare();
@@ -802,16 +744,12 @@ public class OMLUtilities extends OMLXcorePackages {
     HashSet<ETypedElement> _xblockexpression = null;
     {
       final HashSet<ETypedElement> features = new HashSet<ETypedElement>();
-      final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-        public Boolean apply(final EStructuralFeature it) {
-          return OMLUtilities.isFunctionalAPIOrOrderingKey(it);
-        }
+      final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
+        return OMLUtilities.isFunctionalAPIOrOrderingKey(it);
       };
       Iterables.<ETypedElement>addAll(features, IterableExtensions.<EStructuralFeature>filter(eClass.getEStructuralFeatures(), _function));
-      final Function1<EOperation, Boolean> _function_1 = new Function1<EOperation, Boolean>() {
-        public Boolean apply(final EOperation it) {
-          return OMLUtilities.isFunctionalAPIOrOrderingKey(it);
-        }
+      final Function1<EOperation, Boolean> _function_1 = (EOperation it) -> {
+        return OMLUtilities.isFunctionalAPIOrOrderingKey(it);
       };
       Iterables.<ETypedElement>addAll(features, IterableExtensions.<EOperation>filter(eClass.getEOperations(), _function_1));
       _xblockexpression = features;
@@ -831,33 +769,25 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Iterable<EClass> ESuperClasses(final EClass eClass) {
-    final Function1<EClass, String> _function = new Function1<EClass, String>() {
-      public String apply(final EClass it) {
-        return it.getName();
-      }
+    final Function1<EClass, String> _function = (EClass it) -> {
+      return it.getName();
     };
     return IterableExtensions.<EClass, String>sortBy(eClass.getESuperTypes(), _function);
   }
   
   public static Iterable<EClass> ESpecificClasses(final EClass eClass) {
-    final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
-      public Boolean apply(final EClass it) {
-        return Boolean.valueOf(it.getESuperTypes().contains(eClass));
-      }
+    final Function1<EClass, Boolean> _function = (EClass it) -> {
+      return Boolean.valueOf(it.getESuperTypes().contains(eClass));
     };
-    final Function1<EClass, String> _function_1 = new Function1<EClass, String>() {
-      public String apply(final EClass it) {
-        return it.getName();
-      }
+    final Function1<EClass, String> _function_1 = (EClass it) -> {
+      return it.getName();
     };
     return IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(eClass.getEPackage().getEClassifiers(), EClass.class), _function), _function_1);
   }
   
   public static Iterable<EStructuralFeature> APIStructuralFeatures(final EClass eClass) {
-    final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-      public Boolean apply(final EStructuralFeature it) {
-        return Boolean.valueOf(((OMLUtilities.isAPI(it)).booleanValue() && (OMLUtilities.isFunctionalAttributeOrReferenceExceptContainer(it)).booleanValue()));
-      }
+    final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
+      return Boolean.valueOf(((OMLUtilities.isAPI(it)).booleanValue() && (OMLUtilities.isFunctionalAttributeOrReferenceExceptContainer(it)).booleanValue()));
     };
     return IterableExtensions.<EStructuralFeature>filter(eClass.getEStructuralFeatures(), _function);
   }
@@ -867,41 +797,31 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Boolean isSpecializationOfRootClass(final EClass eClass) {
-    return Boolean.valueOf(((!eClass.getESuperTypes().isEmpty()) && IterableExtensions.<EClass>exists(OMLUtilities.selfAndAllSupertypes(eClass), new Function1<EClass, Boolean>() {
-      public Boolean apply(final EClass it) {
-        return OMLUtilities.isRootHierarchyClass(it);
-      }
-    })));
+    return Boolean.valueOf(((!eClass.getESuperTypes().isEmpty()) && IterableExtensions.<EClass>exists(OMLUtilities.selfAndAllSupertypes(eClass), ((Function1<EClass, Boolean>) (EClass it) -> {
+      return OMLUtilities.isRootHierarchyClass(it);
+    }))));
   }
   
   public static Iterable<EOperation> APIOperations(final EClass eClass) {
-    final Function1<EOperation, Boolean> _function = new Function1<EOperation, Boolean>() {
-      public Boolean apply(final EOperation it) {
-        return OMLUtilities.isAPI(it);
-      }
+    final Function1<EOperation, Boolean> _function = (EOperation it) -> {
+      return OMLUtilities.isAPI(it);
     };
     return IterableExtensions.<EOperation>filter(eClass.getEOperations(), _function);
   }
   
   public static Iterable<EStructuralFeature> getSortedDerivedAttributeSignature(final EClass eClass) {
-    final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-      public Boolean apply(final EStructuralFeature it) {
-        return Boolean.valueOf(it.isDerived());
-      }
+    final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
+      return Boolean.valueOf(it.isDerived());
     };
     return IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeSignature(eClass), _function);
   }
   
   public static Iterable<EStructuralFeature> getSortedAttributeFactorySignature(final EClass eClass) {
-    final Function1<EClass, Iterable<EStructuralFeature>> _function = new Function1<EClass, Iterable<EStructuralFeature>>() {
-      public Iterable<EStructuralFeature> apply(final EClass it) {
-        final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-          public Boolean apply(final EStructuralFeature it) {
-            return Boolean.valueOf(((((OMLUtilities.isAPI(it)).booleanValue() && (!(OMLUtilities.isContainment(it)).booleanValue())) && (!it.isDerived())) && (!(OMLUtilities.isUUID(it)).booleanValue())));
-          }
-        };
-        return IterableExtensions.<EStructuralFeature>filter(it.getEStructuralFeatures(), _function);
-      }
+    final Function1<EClass, Iterable<EStructuralFeature>> _function = (EClass it) -> {
+      final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it_1) -> {
+        return Boolean.valueOf(((((OMLUtilities.isAPI(it_1)).booleanValue() && (!(OMLUtilities.isContainment(it_1)).booleanValue())) && (!it_1.isDerived())) && (!(OMLUtilities.isUUID(it_1)).booleanValue())));
+      };
+      return IterableExtensions.<EStructuralFeature>filter(it.getEStructuralFeatures(), _function_1);
     };
     Iterable<EStructuralFeature> _flatten = Iterables.<EStructuralFeature>concat(IterableExtensions.<EClass, Iterable<EStructuralFeature>>map(OMLUtilities.selfAndAllSupertypes(eClass), _function));
     OMLUtilities.OMLFeatureCompare _oMLFeatureCompare = new OMLUtilities.OMLFeatureCompare();
@@ -909,10 +829,8 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static EStructuralFeature lookupUUIDFeature(final EClass eClass) {
-    final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-      public Boolean apply(final EStructuralFeature it) {
-        return OMLUtilities.isUUID(it);
-      }
+    final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
+      return OMLUtilities.isUUID(it);
     };
     return IterableExtensions.<EStructuralFeature>findFirst(OMLUtilities.getSortedAttributeSignature(eClass), _function);
   }
@@ -922,17 +840,13 @@ public class OMLUtilities extends OMLXcorePackages {
     {
       final BasicEList<ETypedElement> typedElements = new BasicEList<ETypedElement>();
       Iterables.<ETypedElement>addAll(typedElements, OMLUtilities.getSortedAttributeSignature(eClass));
-      final Function1<EOperation, Boolean> _function = new Function1<EOperation, Boolean>() {
-        public Boolean apply(final EOperation it) {
-          Boolean _isOverride = OMLUtilities.isOverride(it);
-          return Boolean.valueOf((!(_isOverride).booleanValue()));
-        }
+      final Function1<EOperation, Boolean> _function = (EOperation it) -> {
+        Boolean _isOverride = OMLUtilities.isOverride(it);
+        return Boolean.valueOf((!(_isOverride).booleanValue()));
       };
       Iterables.<ETypedElement>addAll(typedElements, IterableExtensions.<EOperation>filter(Iterables.<EOperation>filter(OMLUtilities.selfAndAllSupertypes(eClass), EOperation.class), _function));
-      final Function1<ETypedElement, Boolean> _function_1 = new Function1<ETypedElement, Boolean>() {
-        public Boolean apply(final ETypedElement it) {
-          return OMLUtilities.isUUID(it);
-        }
+      final Function1<ETypedElement, Boolean> _function_1 = (ETypedElement it) -> {
+        return OMLUtilities.isUUID(it);
       };
       _xblockexpression = IterableExtensions.<ETypedElement>findFirst(typedElements, _function_1);
     }
@@ -940,20 +854,16 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Iterable<EStructuralFeature> getSortedAttributeSignatureExceptDerived(final EClass eClass) {
-    final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-      public Boolean apply(final EStructuralFeature it) {
-        boolean _isDerived = it.isDerived();
-        return Boolean.valueOf((!_isDerived));
-      }
+    final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
+      boolean _isDerived = it.isDerived();
+      return Boolean.valueOf((!_isDerived));
     };
     return IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeSignature(eClass), _function);
   }
   
   public static Iterable<EStructuralFeature> getSortedAttributeSignature(final EClass eClass) {
-    final Function1<EClass, Iterable<EStructuralFeature>> _function = new Function1<EClass, Iterable<EStructuralFeature>>() {
-      public Iterable<EStructuralFeature> apply(final EClass it) {
-        return OMLUtilities.APIStructuralFeatures(it);
-      }
+    final Function1<EClass, Iterable<EStructuralFeature>> _function = (EClass it) -> {
+      return OMLUtilities.APIStructuralFeatures(it);
     };
     Iterable<EStructuralFeature> _flatten = Iterables.<EStructuralFeature>concat(IterableExtensions.<EClass, Iterable<EStructuralFeature>>map(OMLUtilities.selfAndAllSupertypes(eClass), _function));
     OMLUtilities.OMLFeatureCompare _oMLFeatureCompare = new OMLUtilities.OMLFeatureCompare();
@@ -961,10 +871,8 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Iterable<EStructuralFeature> lookupCopyConstructorArguments(final EClass eClass) {
-    final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-      public Boolean apply(final EStructuralFeature it) {
-        return OMLUtilities.isCopyConstructorArgument(it);
-      }
+    final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
+      return OMLUtilities.isCopyConstructorArgument(it);
     };
     return IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeSignature(eClass), _function);
   }
@@ -986,30 +894,26 @@ public class OMLUtilities extends OMLXcorePackages {
   public static EStructuralFeature lookupUUIDNamespaceFeature(final EClass e) {
     EStructuralFeature _xblockexpression = null;
     {
-      final Function1<EClass, String> _function = new Function1<EClass, String>() {
-        public String apply(final EClass it) {
-          EAnnotation _eAnnotation = it.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID");
-          EMap<String, String> _details = null;
-          if (_eAnnotation!=null) {
-            _details=_eAnnotation.getDetails();
-          }
-          String _get = null;
-          if (_details!=null) {
-            _get=_details.get("namespace");
-          }
-          return _get;
+      final Function1<EClass, String> _function = (EClass it) -> {
+        EAnnotation _eAnnotation = it.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID");
+        EMap<String, String> _details = null;
+        if (_eAnnotation!=null) {
+          _details=_eAnnotation.getDetails();
         }
+        String _get = null;
+        if (_details!=null) {
+          _get=_details.get("namespace");
+        }
+        return _get;
       };
       final Iterable<String> ns = IterableExtensions.<String>filterNull(IterableExtensions.<EClass, String>map(OMLUtilities.selfAndAllSupertypes(e), _function));
-      final Function1<EStructuralFeature, Boolean> _function_1 = new Function1<EStructuralFeature, Boolean>() {
-        public Boolean apply(final EStructuralFeature it) {
-          String _name = it.getName();
-          String _head = null;
-          if (ns!=null) {
-            _head=IterableExtensions.<String>head(ns);
-          }
-          return Boolean.valueOf(Objects.equal(_name, _head));
+      final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
+        String _name = it.getName();
+        String _head = null;
+        if (ns!=null) {
+          _head=IterableExtensions.<String>head(ns);
         }
+        return Boolean.valueOf(Objects.equal(_name, _head));
       };
       _xblockexpression = IterableExtensions.<EStructuralFeature>findFirst(OMLUtilities.getSortedAttributeFactorySignature(e), _function_1);
     }
@@ -1017,47 +921,41 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Iterable<EStructuralFeature> lookupUUIDNamespaceFactors(final EClass e) {
-    final Function1<EClass, Iterable<EStructuralFeature>> _function = new Function1<EClass, Iterable<EStructuralFeature>>() {
-      public Iterable<EStructuralFeature> apply(final EClass eClass) {
-        Iterable<EStructuralFeature> _xblockexpression = null;
-        {
-          EAnnotation _eAnnotation = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID");
-          EMap<String, String> _details = null;
-          if (_eAnnotation!=null) {
-            _details=_eAnnotation.getDetails();
-          }
-          String _get = null;
-          if (_details!=null) {
-            _get=_details.get("factors");
-          }
-          final String factors = _get;
-          Iterable<EStructuralFeature> _xifexpression = null;
-          if ((null == factors)) {
-            _xifexpression = new BasicEList<EStructuralFeature>();
-          } else {
-            Iterable<EStructuralFeature> _xblockexpression_1 = null;
-            {
-              final ArrayList<String> factoredFeatures = new ArrayList<String>();
-              CollectionExtensions.<String>addAll(factoredFeatures, factors.split(","));
-              final Function1<EStructuralFeature, Boolean> _function = new Function1<EStructuralFeature, Boolean>() {
-                public Boolean apply(final EStructuralFeature s) {
-                  final Function1<String, Boolean> _function = new Function1<String, Boolean>() {
-                    public Boolean apply(final String f) {
-                      String _name = s.getName();
-                      return Boolean.valueOf(Objects.equal(f, _name));
-                    }
-                  };
-                  return Boolean.valueOf(IterableExtensions.<String>exists(factoredFeatures, _function));
-                }
-              };
-              _xblockexpression_1 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function);
-            }
-            _xifexpression = _xblockexpression_1;
-          }
-          _xblockexpression = _xifexpression;
+    final Function1<EClass, Iterable<EStructuralFeature>> _function = (EClass eClass) -> {
+      Iterable<EStructuralFeature> _xblockexpression = null;
+      {
+        EAnnotation _eAnnotation = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/NamespaceUUID");
+        EMap<String, String> _details = null;
+        if (_eAnnotation!=null) {
+          _details=_eAnnotation.getDetails();
         }
-        return _xblockexpression;
+        String _get = null;
+        if (_details!=null) {
+          _get=_details.get("factors");
+        }
+        final String factors = _get;
+        Iterable<EStructuralFeature> _xifexpression = null;
+        if ((null == factors)) {
+          _xifexpression = new BasicEList<EStructuralFeature>();
+        } else {
+          Iterable<EStructuralFeature> _xblockexpression_1 = null;
+          {
+            final ArrayList<String> factoredFeatures = new ArrayList<String>();
+            CollectionExtensions.<String>addAll(factoredFeatures, factors.split(","));
+            final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature s) -> {
+              final Function1<String, Boolean> _function_2 = (String f) -> {
+                String _name = s.getName();
+                return Boolean.valueOf(Objects.equal(f, _name));
+              };
+              return Boolean.valueOf(IterableExtensions.<String>exists(factoredFeatures, _function_2));
+            };
+            _xblockexpression_1 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
+          }
+          _xifexpression = _xblockexpression_1;
+        }
+        _xblockexpression = _xifexpression;
       }
+      return _xblockexpression;
     };
     return Iterables.<EStructuralFeature>concat(IterableExtensions.<EClass, Iterable<EStructuralFeature>>map(OMLUtilities.selfAndAllSupertypes(e), _function));
   }
@@ -1068,10 +966,8 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Iterable<EOperation> ScalaOperations(final EClass eClass) {
-    final Function1<EOperation, Boolean> _function = new Function1<EOperation, Boolean>() {
-      public Boolean apply(final EOperation op) {
-        return Boolean.valueOf(((OMLUtilities.isScala(op)).booleanValue() || (null != OMLUtilities.xExpressions(op))));
-      }
+    final Function1<EOperation, Boolean> _function = (EOperation op) -> {
+      return Boolean.valueOf(((OMLUtilities.isScala(op)).booleanValue() || (null != OMLUtilities.xExpressions(op))));
     };
     return IterableExtensions.<EOperation>filter(OMLUtilities.APIOperations(eClass), _function);
   }
@@ -1373,11 +1269,9 @@ public class OMLUtilities extends OMLXcorePackages {
   }
   
   public static Boolean isExtentManaged(final EClass e) {
-    final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
-      public Boolean apply(final EClass eClass) {
-        EAnnotation _eAnnotation = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentManaged");
-        return Boolean.valueOf((null != _eAnnotation));
-      }
+    final Function1<EClass, Boolean> _function = (EClass eClass) -> {
+      EAnnotation _eAnnotation = eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentManaged");
+      return Boolean.valueOf((null != _eAnnotation));
     };
     return Boolean.valueOf(IterableExtensions.<EClass>exists(OMLUtilities.selfAndAllSupertypes(e), _function));
   }
