@@ -15,12 +15,16 @@
  * limitations under the License.
  * License Terms
  */
-package gov.nasa.jpl.imce.oml.generators
+package gov.nasa.jpl.imce.oml.development.generators
 
+import gov.nasa.jpl.imce.oml.oti.provenance.ProvenancePackage
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.List
+import java.util.Map
+import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EDataType
 import org.eclipse.emf.ecore.EEnum
@@ -37,6 +41,21 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		new OMLSpecificationTablesGenerator().generate(args.get(0))	
 	}
 	
+	static def String locateOML2OTI(String path) {
+		val url = ProvenancePackage.getResource(path)
+		if (null !== url)
+			url.toURI.toString
+		else {
+			val binURL = ProvenancePackage.getResource("/gov/nasa/jpl/imce/oml/oti/provenance/ProvenancePackage.class")
+			if (null === binURL)
+				throw new IllegalArgumentException("locateXcore: failed to locate path: "+path)
+			val Path binPath = Paths.get(binURL.toURI)
+			val xcorePath = binPath.parent.parent.parent.parent.parent.parent.parent.parent.parent.resolve(path.substring(1))
+			val located = xcorePath.toAbsolutePath.toString
+			located
+		}
+	}
+	
 	def generate(String targetDir) {
 		val bundlePath = Paths.get(targetDir)
 	
@@ -51,6 +70,13 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
       		
       	val oml2oti_Folder = bundlePath.resolve("shared/src/main/scala/gov/nasa/jpl/imce/oml/provenance/oti")
 		oml2oti_Folder.toFile.mkdirs
+		
+		val oml2oti_path = "/model/OMLProvenanceOTI.xcore"
+		val oml2oti_uri = URI.createPlatformResourceURI("/gov.nasa.jpl.imce.oml.model"+oml2oti_path, false)
+		val Map<URI, URI> uriMap = set.getURIConverter().getURIMap()
+		uriMap.put(oml2oti_uri, URI.createURI(locateOML2OTI(oml2oti_path)))
+		val oml2oti_r = set.getResource(oml2oti_uri, true)
+		val oml2oti = oml2oti_r.getContents().filter(EPackage).get(0)
 		
       	generate(
       		#[oml2oti], 

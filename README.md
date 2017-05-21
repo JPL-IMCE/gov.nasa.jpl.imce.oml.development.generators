@@ -20,21 +20,47 @@ The Xtend code generator produces the cross-platform single source specification
 
 ## Contributors
 
-- Maged Elaasar (lead)
 - Nicolas Rouquette
+- Maged Elaasar
 
 # Running the Xtend generators
 
 To run the Xtend generators, the following projects must be in the workspace of an Eclipse Neon Modeling package installation:
-- [gov.nasa.jpl.imce.omf.schema.generators](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.omf.schema.generators)
-- [gov.nasa.jpl.imce.omf.schema.specification](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.omf.schema.specification)
-- [jpl.omf.schema.tables](https://github.com/JPL-IMCE/jpl.omf.schema.tables)
 
-You can import these projects via the following [Eclipse Team Project Set](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.omf.schema.generators/OMFSchemaTablesGeneration.psf).
+- [gov.nasa.jpl.imce.oml.model](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.tycho/tree/master/plugins/core/gov.nasa.jpl.imce.oml.model)
+- [gov.nasa.jpl.imce.oml.oti.provenance](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.tycho/tree/master/plugins/other/gov.nasa.jpl.imce.oml.oti.provenance)
+	These projects provides the OML `*.xcore` metamodels used as inputs to the code generators.
+	
+- [gov.nasa.jpl.imce.oml.development.generators](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators)
+	The generators, currently specified as model-to-text transformations in the [Eclipse Xtend](https://www.eclipse.org/xtend/) language.
 
-You can run the Xtend generator with the following Eclipse launch configuration:
-[launchers/OMFSchemaGeneratorTest.launch](launchers/OMFSchemaGeneratorTest.launch).
+- [gov.nasa.jpl.imce.oml.tables](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.tables)
+- [gov.nasa.jpl.imce.oml.resolver](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.resolver)
+- [gov.nasa.jpl.imce.oml.doc](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.doc)
+	The generators affect the content of these projects.
+	After generation, these projects need to be separately committed & pushed.
+	
+## OML normalized relational schema code generation
 
-The expected Console output has several EMF-related misleading errors.
-Instead of the console output, use the JUnit success/failure to determine whether the code generation worked properly or not.
+- Execute the launch configuration [OML Development Generator for OML Schema Tables](../launchers/OML Development Generator for OML Schema Tables.launch)
 
+	Affects [gov.nasa.jpl.imce.oml.tables](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.tables)
+	
+## OML resolver between normalized relational table schema and functional API in-memory representation
+
+- Execute the launch configuration [OML Development Generator for OML Resolver API](../launchers/OML Development Generator for OML Resolver API.launch)
+
+	Affects [gov.nasa.jpl.imce.oml.tables](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.tables)
+
+## OML resolver implementation
+
+- Execute the launch configuration [OML Development Generator for OML Resolver Implementation](../launchers/OML Development Generator for OML Resolver Implementation.launch)
+
+	Affects [gov.nasa.jpl.imce.oml.resolver](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.resolver)
+	
+## OML specification document glossary
+
+- Execute the launch configuration [OML Development Generator for OML Specification Document](../launchers/OML Development Generator for OML Specification Document.launch)
+
+	Affects [gov.nasa.jpl.imce.oml.doc](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.doc)
+	

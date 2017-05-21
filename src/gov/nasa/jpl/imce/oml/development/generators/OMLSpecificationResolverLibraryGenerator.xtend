@@ -15,7 +15,7 @@
  * limitations under the License.
  * License Terms
  */
-package gov.nasa.jpl.imce.oml.generators
+package gov.nasa.jpl.imce.oml.development.generators
 
 import java.io.File
 import java.io.FileOutputStream
@@ -30,7 +30,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 
 	static def main(String[] args) {
 		if (1 != args.length) {
-			System.err.println("usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.tables project")
+			System.err.println("usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.resolver project")
 			System.exit(1)
 		}
 
@@ -211,7 +211,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 			  // factoryMethodWithDerivedUUID
 			  // container: «container.name» «container.EType.name»
 			  // contained: «contained.name» «contained.EType.name»
-			  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isContainer] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
+			  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isFactory] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
 			  scala.Tuple2(
 			  	extent.copy(
 			  	  «contained.name» = extent.with«contained.EType.name»(«container.name», «newVal»),

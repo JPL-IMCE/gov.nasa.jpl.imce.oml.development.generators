@@ -15,7 +15,7 @@
  * limitations under the License.
  * License Terms
  */
-package gov.nasa.jpl.imce.oml.generators
+package gov.nasa.jpl.imce.oml.development.generators
 
 import java.util.Comparator
 import java.util.HashSet
@@ -118,8 +118,10 @@ class OMLUtilities extends OMLXcorePackages {
 							"scala.collection.immutable.Set[_ <: "+typePrefix+type.name+"]"		
 					
 						case "SortedSet": 
-							"scala.collection.immutable.SortedSet["+typePrefix+type.name+"]"		
-						}
+							"scala.collection.immutable.SortedSet["+typePrefix+type.name+"]"	
+						default:
+							throw new java.lang.IllegalArgumentException("Multi-valued operation: "+feature.EClassContainer.name+"."+feature.name+" needs a @Collection(...) annotation!")		
+						}	
 					}
 					else
 						"scala.Option["+typePrefix+type.name+"]"
@@ -311,7 +313,7 @@ class OMLUtilities extends OMLXcorePackages {
 	}
 	
 	static def Iterable<EStructuralFeature> APIStructuralFeatures(EClass eClass) {
-		eClass.EStructuralFeatures.filter[isAPI && isFunctionalAttributeOrReferenceExceptContainer]
+		eClass.EStructuralFeatures.filter[isAPI && !isFactory && !isContainment]
 	}
     
 	static def Boolean isRootHierarchyClass(EClass eClass) {
@@ -335,7 +337,7 @@ class OMLUtilities extends OMLXcorePackages {
 	static def Iterable<EStructuralFeature> getSortedAttributeFactorySignature(EClass eClass) {
 		eClass
 		.selfAndAllSupertypes
-		.map[EStructuralFeatures.filter[isAPI && !isContainment && !derived && !isUUID]]
+		.map[EStructuralFeatures.filter[(isAPI || isFactory) && !isContainment && !derived && !isUUID]]
 		.flatten
 		.sortWith(new OMLFeatureCompare())
 	}
@@ -575,6 +577,10 @@ class OMLUtilities extends OMLXcorePackages {
     		e.selfAndAllSupertypes.exists[eClass |
     			null !== eClass.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentManaged")
     		]
+    }
+    
+    static def Boolean isFactory(ENamedElement e) {
+    		null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/Factory")
     }
     
     static def Boolean isGlossary(ENamedElement e) {

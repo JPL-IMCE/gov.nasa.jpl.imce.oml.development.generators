@@ -15,7 +15,7 @@
  * limitations under the License.
  * License Terms
  */
- package gov.nasa.jpl.imce.oml.generators
+ package gov.nasa.jpl.imce.oml.development.generators
 
 import org.eclipse.emf.ecore.EClass
 

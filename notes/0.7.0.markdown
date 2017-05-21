@@ -1,0 +1,8 @@
+gov.nasa.jpl.imce.oml.development.generators 0.7.0 is a refactoring release
+
+## Bugs fixed
+
+- [#1 Update generators for the oml.tycho refactoring](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/1)
+
+	- Added launchers to execute the generators from the Eclipse IDE assuming that the tycho projects and non-tycho projects
+	  with generated content have been imported in the Eclipse workspace.

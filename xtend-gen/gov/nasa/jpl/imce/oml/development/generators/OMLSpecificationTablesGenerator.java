@@ -15,18 +15,22 @@
  * limitations under the License.
  * License Terms
  */
-package gov.nasa.jpl.imce.oml.generators;
+package gov.nasa.jpl.imce.oml.development.generators;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
-import gov.nasa.jpl.imce.oml.generators.OMLUtilities;
+import gov.nasa.jpl.imce.oml.development.generators.OMLUtilities;
+import gov.nasa.jpl.imce.oml.oti.provenance.ProvenancePackage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
@@ -35,14 +39,17 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypedElement;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
+import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.ListExtensions;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
+@SuppressWarnings("all")
 public class OMLSpecificationTablesGenerator extends OMLUtilities {
   public static void main(final String[] args) {
     int _length = args.length;
@@ -52,6 +59,36 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       System.exit(1);
     }
     new OMLSpecificationTablesGenerator().generate(args[0]);
+  }
+  
+  public static String locateOML2OTI(final String path) {
+    try {
+      String _xblockexpression = null;
+      {
+        final URL url = ProvenancePackage.class.getResource(path);
+        String _xifexpression = null;
+        if ((null != url)) {
+          _xifexpression = url.toURI().toString();
+        } else {
+          String _xblockexpression_1 = null;
+          {
+            final URL binURL = ProvenancePackage.class.getResource("/gov/nasa/jpl/imce/oml/oti/provenance/ProvenancePackage.class");
+            if ((null == binURL)) {
+              throw new IllegalArgumentException(("locateXcore: failed to locate path: " + path));
+            }
+            final Path binPath = Paths.get(binURL.toURI());
+            final Path xcorePath = binPath.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().resolve(path.substring(1));
+            final String located = xcorePath.toAbsolutePath().toString();
+            _xblockexpression_1 = located;
+          }
+          _xifexpression = _xblockexpression_1;
+        }
+        _xblockexpression = _xifexpression;
+      }
+      return _xblockexpression;
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
+    }
   }
   
   public void generate(final String targetDir) {
@@ -65,8 +102,14 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       "OMLSpecificationTables");
     final Path oml2oti_Folder = bundlePath.resolve("shared/src/main/scala/gov/nasa/jpl/imce/oml/provenance/oti");
     oml2oti_Folder.toFile().mkdirs();
+    final String oml2oti_path = "/model/OMLProvenanceOTI.xcore";
+    final URI oml2oti_uri = URI.createPlatformResourceURI(("/gov.nasa.jpl.imce.oml.model" + oml2oti_path), false);
+    final Map<URI, URI> uriMap = this.set.getURIConverter().getURIMap();
+    uriMap.put(oml2oti_uri, URI.createURI(OMLSpecificationTablesGenerator.locateOML2OTI(oml2oti_path)));
+    final Resource oml2oti_r = this.set.getResource(oml2oti_uri, true);
+    final EPackage oml2oti = ((EPackage[])Conversions.unwrapArray(Iterables.<EPackage>filter(oml2oti_r.getContents(), EPackage.class), EPackage.class))[0];
     this.generate(
-      Collections.<EPackage>unmodifiableList(CollectionLiterals.<EPackage>newArrayList(this.oml2oti)), 
+      Collections.<EPackage>unmodifiableList(CollectionLiterals.<EPackage>newArrayList(oml2oti)), 
       oml2oti_Folder.toAbsolutePath().toString(), 
       "gov.nasa.jpl.imce.oml.provenance.oti", 
       "OML2OTIProvenanceTables");
@@ -88,15 +131,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       } finally {
         tablesFile.close();
       }
-      final Function1<EPackage, EList<EClassifier>> _function = new Function1<EPackage, EList<EClassifier>>() {
-        public EList<EClassifier> apply(final EPackage it) {
-          return it.getEClassifiers();
-        }
+      final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
+        return it.getEClassifiers();
       };
-      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return OMLUtilities.isFunctionalAPI(it);
-        }
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return OMLUtilities.isFunctionalAPI(it);
       };
       Iterable<EClass> _filter = IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1);
       for (final EClass eClass : _filter) {
@@ -121,15 +160,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
   public String generateTablesFile(final List<EPackage> ePackages, final String packageQName, final String tableName) {
     String _xblockexpression = null;
     {
-      final Function1<EPackage, EList<EClassifier>> _function = new Function1<EPackage, EList<EClassifier>>() {
-        public EList<EClassifier> apply(final EPackage it) {
-          return it.getEClassifiers();
-        }
+      final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
+        return it.getEClassifiers();
       };
-      final Function1<EClass, Boolean> _function_1 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf((((OMLUtilities.isFunctionalAPI(it)).booleanValue() && (!it.isInterface())) && (!(OMLUtilities.isValueTable(it)).booleanValue())));
-        }
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return Boolean.valueOf((((OMLUtilities.isFunctionalAPI(it)).booleanValue() && (!it.isInterface())) && (!(OMLUtilities.isValueTable(it)).booleanValue())));
       };
       Iterable<EClass> _filter = IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1);
       OMLUtilities.OMLTableCompare _oMLTableCompare = new OMLUtilities.OMLTableCompare();
@@ -744,10 +779,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
   
   public void generateJS(final EPackage ePackage, final String targetJSFolder) {
     try {
-      final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf(((OMLUtilities.isFunctionalAPI(it)).booleanValue() && (OMLUtilities.hasSchemaOptionalAttributes(it)).booleanValue()));
-        }
+      final Function1<EClass, Boolean> _function = (EClass it) -> {
+        return Boolean.valueOf(((OMLUtilities.isFunctionalAPI(it)).booleanValue() && (OMLUtilities.hasSchemaOptionalAttributes(it)).booleanValue()));
       };
       Iterable<EClass> _filter = IterableExtensions.<EClass>filter(Iterables.<EClass>filter(ePackage.getEClassifiers(), EClass.class), _function);
       for (final EClass eClass : _filter) {
@@ -771,10 +804,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
   
   public void generateJVM(final EPackage ePackage, final String targetJVMFolder) {
     try {
-      final Function1<EClass, Boolean> _function = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return Boolean.valueOf(((OMLUtilities.isFunctionalAPI(it)).booleanValue() && (OMLUtilities.hasSchemaOptionalAttributes(it)).booleanValue()));
-        }
+      final Function1<EClass, Boolean> _function = (EClass it) -> {
+        return Boolean.valueOf(((OMLUtilities.isFunctionalAPI(it)).booleanValue() && (OMLUtilities.hasSchemaOptionalAttributes(it)).booleanValue()));
       };
       Iterable<EClass> _filter = IterableExtensions.<EClass>filter(Iterables.<EClass>filter(ePackage.getEClassifiers(), EClass.class), _function);
       for (final EClass eClass : _filter) {
@@ -825,20 +856,14 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     _builder.append(" {");
     _builder.newLineIfNotEmpty();
     {
-      final Function1<EPackage, EList<EClassifier>> _function = new Function1<EPackage, EList<EClassifier>>() {
-        public EList<EClassifier> apply(final EPackage it) {
-          return it.getEClassifiers();
-        }
+      final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
+        return it.getEClassifiers();
       };
-      final Function1<EDataType, Boolean> _function_1 = new Function1<EDataType, Boolean>() {
-        public Boolean apply(final EDataType t) {
-          return Boolean.valueOf((!(t instanceof EEnum)));
-        }
+      final Function1<EDataType, Boolean> _function_1 = (EDataType t) -> {
+        return Boolean.valueOf((!(t instanceof EEnum)));
       };
-      final Function1<EDataType, String> _function_2 = new Function1<EDataType, String>() {
-        public String apply(final EDataType it) {
-          return it.getName();
-        }
+      final Function1<EDataType, String> _function_2 = (EDataType it) -> {
+        return it.getName();
       };
       List<EDataType> _sortBy = IterableExtensions.<EDataType, String>sortBy(IterableExtensions.<EDataType>filter(Iterables.<EDataType>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EDataType.class), _function_1), _function_2);
       for(final EDataType type : _sortBy) {
@@ -864,20 +889,14 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     _builder.append("  ");
     _builder.newLine();
     {
-      final Function1<EPackage, EList<EClassifier>> _function_3 = new Function1<EPackage, EList<EClassifier>>() {
-        public EList<EClassifier> apply(final EPackage it) {
-          return it.getEClassifiers();
-        }
+      final Function1<EPackage, EList<EClassifier>> _function_3 = (EPackage it) -> {
+        return it.getEClassifiers();
       };
-      final Function1<EClass, Boolean> _function_4 = new Function1<EClass, Boolean>() {
-        public Boolean apply(final EClass it) {
-          return OMLUtilities.isFunctionalAPIWithOrderingKeys(it);
-        }
+      final Function1<EClass, Boolean> _function_4 = (EClass it) -> {
+        return OMLUtilities.isFunctionalAPIWithOrderingKeys(it);
       };
-      final Function1<EClass, String> _function_5 = new Function1<EClass, String>() {
-        public String apply(final EClass it) {
-          return it.getName();
-        }
+      final Function1<EClass, String> _function_5 = (EClass it) -> {
+        return it.getName();
       };
       List<EClass> _sortBy_1 = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function_3)), EClass.class), _function_4), _function_5);
       for(final EClass eClass : _sortBy_1) {
@@ -971,18 +990,14 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     String _xblockexpression = null;
     {
       final EStructuralFeature uuid = OMLUtilities.lookupUUIDFeature(eClass);
-      final Function1<EReference, Boolean> _function = new Function1<EReference, Boolean>() {
-        public Boolean apply(final EReference it) {
-          return Boolean.valueOf(it.isContainer());
-        }
+      final Function1<EReference, Boolean> _function = (EReference it) -> {
+        return Boolean.valueOf(it.isContainer());
       };
       final EReference container = IterableExtensions.<EReference>findFirst(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function);
       final EStructuralFeature uuidNS = OMLUtilities.lookupUUIDNamespaceFeature(eClass);
       final Iterable<EStructuralFeature> uuidFactors = OMLUtilities.lookupUUIDNamespaceFactors(eClass);
-      final Function1<EStructuralFeature, Boolean> _function_1 = new Function1<EStructuralFeature, Boolean>() {
-        public Boolean apply(final EStructuralFeature it) {
-          return OMLUtilities.isUUIDFeature(it);
-        }
+      final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
+        return OMLUtilities.isUUIDFeature(it);
       };
       final Iterable<EStructuralFeature> pairs = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
       final boolean uuidWithGenerator = ((null != uuidNS) && (null != uuidFactors));
@@ -1075,11 +1090,9 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.newLine();
           _builder.append("  ");
           {
-            final Function1<ETypedElement, Boolean> _function_2 = new Function1<ETypedElement, Boolean>() {
-              public Boolean apply(final ETypedElement a) {
-                int _lowerBound = a.getLowerBound();
-                return Boolean.valueOf((_lowerBound > 0));
-              }
+            final Function1<ETypedElement, Boolean> _function_2 = (ETypedElement a) -> {
+              int _lowerBound_1 = a.getLowerBound();
+              return Boolean.valueOf((_lowerBound_1 > 0));
             };
             Iterable<ETypedElement> _filter = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_2);
             boolean _hasElements_1 = false;
@@ -1136,11 +1149,9 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.newLineIfNotEmpty();
           _builder.newLine();
           {
-            final Function1<ETypedElement, Boolean> _function_3 = new Function1<ETypedElement, Boolean>() {
-              public Boolean apply(final ETypedElement a) {
-                int _lowerBound = a.getLowerBound();
-                return Boolean.valueOf((_lowerBound == 0));
-              }
+            final Function1<ETypedElement, Boolean> _function_3 = (ETypedElement a) -> {
+              int _lowerBound_2 = a.getLowerBound();
+              return Boolean.valueOf((_lowerBound_2 == 0));
             };
             Iterable<ETypedElement> _filter_1 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_3);
             boolean _hasElements_3 = false;
@@ -1179,10 +1190,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       {
         if (uuidWithoutContainer) {
           {
-            final Function1<ETypedElement, Boolean> _function_4 = new Function1<ETypedElement, Boolean>() {
-              public Boolean apply(final ETypedElement a) {
-                return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
-              }
+            final Function1<ETypedElement, Boolean> _function_4 = (ETypedElement a) -> {
+              return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
             };
             Iterable<ETypedElement> _filter_2 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_4);
             boolean _hasElements_4 = false;
@@ -1227,10 +1236,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
             }
           }
           {
-            final Function1<ETypedElement, Boolean> _function_5 = new Function1<ETypedElement, Boolean>() {
-              public Boolean apply(final ETypedElement a) {
-                return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
-              }
+            final Function1<ETypedElement, Boolean> _function_5 = (ETypedElement a) -> {
+              return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
             };
             Iterable<ETypedElement> _filter_3 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_5);
             boolean _hasElements_6 = false;
@@ -1253,10 +1260,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         } else {
           if (uuidWithGenerator) {
             {
-              final Function1<ETypedElement, Boolean> _function_6 = new Function1<ETypedElement, Boolean>() {
-                public Boolean apply(final ETypedElement a) {
-                  return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
-                }
+              final Function1<ETypedElement, Boolean> _function_6 = (ETypedElement a) -> {
+                return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
               };
               Iterable<ETypedElement> _filter_4 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_6);
               boolean _hasElements_7 = false;
@@ -1301,10 +1306,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               }
             }
             {
-              final Function1<ETypedElement, Boolean> _function_7 = new Function1<ETypedElement, Boolean>() {
-                public Boolean apply(final ETypedElement a) {
-                  return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
-                }
+              final Function1<ETypedElement, Boolean> _function_7 = (ETypedElement a) -> {
+                return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
               };
               Iterable<ETypedElement> _filter_5 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_7);
               boolean _hasElements_9 = false;
@@ -1327,10 +1330,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           } else {
             if (uuidWithContainer) {
               {
-                final Function1<ETypedElement, Boolean> _function_8 = new Function1<ETypedElement, Boolean>() {
-                  public Boolean apply(final ETypedElement a) {
-                    return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
-                  }
+                final Function1<ETypedElement, Boolean> _function_8 = (ETypedElement a) -> {
+                  return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
                 };
                 Iterable<ETypedElement> _filter_6 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_8);
                 boolean _hasElements_10 = false;
@@ -1370,10 +1371,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                 }
               }
               {
-                final Function1<ETypedElement, Boolean> _function_9 = new Function1<ETypedElement, Boolean>() {
-                  public Boolean apply(final ETypedElement a) {
-                    return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
-                  }
+                final Function1<ETypedElement, Boolean> _function_9 = (ETypedElement a) -> {
+                  return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
                 };
                 Iterable<ETypedElement> _filter_7 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_9);
                 boolean _hasElements_11 = false;
