@@ -1,0 +1,5 @@
+gov.nasa.jpl.imce.oml.development.generators 0.7.1 is a significant update
+
+## Issues resolved
+
+- [#2 ModuleEdge needs to refer to the target module by IRI](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/2)
