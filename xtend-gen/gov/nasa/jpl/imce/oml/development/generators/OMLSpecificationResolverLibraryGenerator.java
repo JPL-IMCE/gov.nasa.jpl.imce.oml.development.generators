@@ -49,7 +49,27 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
       System.err.println("usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.resolver project");
       System.exit(1);
     }
-    new OMLSpecificationResolverLibraryGenerator().generate(args[0]);
+    final OMLSpecificationResolverLibraryGenerator gen = new OMLSpecificationResolverLibraryGenerator();
+    final String dir = args[0];
+    boolean ok = false;
+    try {
+      gen.generate(dir);
+      ok = true;
+    } catch (final Throwable _t) {
+      if (_t instanceof Throwable) {
+        final Throwable t = (Throwable)_t;
+        System.err.println(t.getMessage());
+        t.printStackTrace(System.err);
+      } else {
+        throw Exceptions.sneakyThrow(_t);
+      }
+    } finally {
+      if (ok) {
+        System.out.println("Done");
+      } else {
+        System.err.println("Abnormal exit!");
+      }
+    }
   }
   
   public void generate(final String targetDir) {

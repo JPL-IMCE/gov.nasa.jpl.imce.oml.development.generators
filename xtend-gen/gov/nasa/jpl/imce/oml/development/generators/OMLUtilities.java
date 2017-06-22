@@ -418,8 +418,15 @@ public class OMLUtilities extends OMLXcorePackages {
             }
             _xifexpression_1 = _xifexpression_2;
           } else {
-            String _name_1 = type.getName();
-            _xifexpression_1 = (typePrefix + _name_1);
+            String _xifexpression_3 = null;
+            Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+            if ((_isIRIReference).booleanValue()) {
+              _xifexpression_3 = "gov.nasa.jpl.imce.oml.tables.IRI";
+            } else {
+              String _name_1 = type.getName();
+              _xifexpression_3 = (typePrefix + _name_1);
+            }
+            _xifexpression_1 = _xifexpression_3;
           }
           _switchResult = _xifexpression_1;
         }
@@ -527,9 +534,18 @@ public class OMLUtilities extends OMLXcorePackages {
       if (!_matched) {
         if ((type instanceof EClass)) {
           _matched=true;
-          String _name_1 = type.getName();
-          String _plus = ("UUID (Foreign Key for: OML " + _name_1);
-          _switchResult = (_plus + ")");
+          String _xifexpression = null;
+          Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+          if ((_isIRIReference).booleanValue()) {
+            String _name_1 = type.getName();
+            String _plus = ("IRI (Foreign Key for: OML " + _name_1);
+            _xifexpression = (_plus + ")");
+          } else {
+            String _name_2 = type.getName();
+            String _plus_1 = ("UUID (Foreign Key for: OML " + _name_2);
+            _xifexpression = (_plus_1 + ")");
+          }
+          _switchResult = _xifexpression;
         }
       }
       if (!_matched) {
@@ -666,7 +682,14 @@ public class OMLUtilities extends OMLXcorePackages {
       if (!_matched) {
         if ((type instanceof EClass)) {
           _matched=true;
-          _switchResult = "UUID";
+          String _xifexpression = null;
+          Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+          if ((_isIRIReference).booleanValue()) {
+            _xifexpression = "IRI";
+          } else {
+            _xifexpression = "UUID";
+          }
+          _switchResult = _xifexpression;
         }
       }
       if (!_matched) {
@@ -1280,6 +1303,11 @@ public class OMLUtilities extends OMLXcorePackages {
     return Boolean.valueOf((null == _eAnnotation));
   }
   
+  public static Boolean isIRIReference(final ENamedElement e) {
+    EAnnotation _eAnnotation = e.getEAnnotation("http://imce.jpl.nasa.gov/oml/IRIReference");
+    return Boolean.valueOf((null != _eAnnotation));
+  }
+  
   public static Boolean isExtentContainer(final ENamedElement e) {
     EAnnotation _eAnnotation = e.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentContainer");
     return Boolean.valueOf((null != _eAnnotation));
@@ -1409,11 +1437,39 @@ public class OMLUtilities extends OMLXcorePackages {
     return _xblockexpression;
   }
   
+  public static String columnUUID(final ETypedElement feature) {
+    String _xifexpression = null;
+    if ((feature instanceof EReference)) {
+      String _xifexpression_1 = null;
+      Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+      if ((_isIRIReference).booleanValue()) {
+        String _name = ((EReference)feature).getName();
+        String _plus = ("oug.namespaceUUID(" + _name);
+        _xifexpression_1 = (_plus + "IRI).toString");
+      } else {
+        String _name_1 = ((EReference)feature).getName();
+        _xifexpression_1 = (_name_1 + "UUID");
+      }
+      _xifexpression = _xifexpression_1;
+    } else {
+      _xifexpression = feature.getName();
+    }
+    return _xifexpression;
+  }
+  
   public static String columnName(final ETypedElement feature) {
     String _xifexpression = null;
     if ((feature instanceof EReference)) {
-      String _name = ((EReference)feature).getName();
-      _xifexpression = (_name + "UUID");
+      String _xifexpression_1 = null;
+      Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+      if ((_isIRIReference).booleanValue()) {
+        String _name = ((EReference)feature).getName();
+        _xifexpression_1 = (_name + "IRI");
+      } else {
+        String _name_1 = ((EReference)feature).getName();
+        _xifexpression_1 = (_name_1 + "UUID");
+      }
+      _xifexpression = _xifexpression_1;
     } else {
       _xifexpression = feature.getName();
     }

@@ -58,7 +58,27 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       System.err.println("usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.tables project");
       System.exit(1);
     }
-    new OMLSpecificationTablesGenerator().generate(args[0]);
+    final OMLSpecificationTablesGenerator gen = new OMLSpecificationTablesGenerator();
+    final String dir = args[0];
+    boolean ok = false;
+    try {
+      gen.generate(dir);
+      ok = true;
+    } catch (final Throwable _t) {
+      if (_t instanceof Throwable) {
+        final Throwable t = (Throwable)_t;
+        System.err.println(t.getMessage());
+        t.printStackTrace(System.err);
+      } else {
+        throw Exceptions.sneakyThrow(_t);
+      }
+    } finally {
+      if (ok) {
+        System.out.println("Done");
+      } else {
+        System.err.println("Abnormal exit!");
+      }
+    }
   }
   
   public static String locateOML2OTI(final String path) {
@@ -199,12 +219,15 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import scala.util.{Failure,Success,Try}");
       _builder.newLine();
-      _builder.append("import scala.{Boolean,Unit}");
-      _builder.newLine();
       {
         boolean _equals_1 = Objects.equal("OMLSpecificationTables", tableName);
         if (_equals_1) {
-          _builder.append("import scala.Predef.ArrowAssoc");
+          _builder.append("import scala.{Boolean,StringContext,Unit}");
+          _builder.newLine();
+          _builder.append("import scala.Predef.{ArrowAssoc,String}");
+          _builder.newLine();
+        } else {
+          _builder.append("import scala.{Boolean,Unit}");
           _builder.newLine();
         }
       }
@@ -312,6 +335,107 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.newLineIfNotEmpty();
         }
       }
+      _builder.append("  ");
+      _builder.newLine();
+      {
+        boolean _equals_4 = Objects.equal("OMLSpecificationTables", tableName);
+        if (_equals_4) {
+          _builder.append("def show: String = {");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("def showSeq[T](title: String, s: Seq[T]): String = {");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append("if (s.isEmpty)");
+          _builder.newLine();
+          _builder.append("       ");
+          _builder.append("\"\\n\" + title + \": empty\"");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append("else");
+          _builder.newLine();
+          _builder.append("       ");
+          _builder.append("\"\\n\" + title + s\": ${s.size} entries\" +");
+          _builder.newLine();
+          _builder.append("       ");
+          _builder.append("s.map(_.toString).mkString(\"\\n \", \"\\n \", \"\\n\")");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("}");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("val buff = new scala.collection.mutable.StringBuilder()");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.newLine();
+          _builder.append("  ");
+          {
+            boolean _hasElements_4 = false;
+            for(final EClass eClass_5 : eClasses) {
+              if (!_hasElements_4) {
+                _hasElements_4 = true;
+              } else {
+                _builder.appendImmediate("\n", "  ");
+              }
+              {
+                String _tableVariableName_2 = OMLUtilities.tableVariableName(eClass_5);
+                boolean _notEquals = (!Objects.equal("annotations", _tableVariableName_2));
+                if (_notEquals) {
+                  _builder.append("buff ++= showSeq(\"");
+                  String _tableVariableName_3 = OMLUtilities.tableVariableName(eClass_5);
+                  _builder.append(_tableVariableName_3, "  ");
+                  _builder.append("\", ");
+                  String _tableVariableName_4 = OMLUtilities.tableVariableName(eClass_5);
+                  _builder.append(_tableVariableName_4, "  ");
+                  _builder.append(")");
+                }
+              }
+            }
+          }
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("if (annotations.isEmpty)");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append("buff ++= \"\\nannotations: empty\"");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("else {");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append("buff ++= s\"\\nannotations: ${annotations.size} entries\"");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append("annotations.keys.toSeq.sorted.foreach { ap =>");
+          _builder.newLine();
+          _builder.append("      ");
+          _builder.append("val as = annotations.getOrElse(ap, Seq.empty)");
+          _builder.newLine();
+          _builder.append("      ");
+          _builder.append("buff ++= showSeq(s\"annotations(${ap.abbrevIRI})\", as)");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append("}");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("}");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("buff.toString");
+          _builder.newLine();
+          _builder.append("}");
+          _builder.newLine();
+        }
+      }
+      _builder.newLine();
       _builder.append("}");
       _builder.newLine();
       _builder.newLine();
@@ -418,34 +542,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append(tableName, "  ");
       _builder.newLineIfNotEmpty();
       {
-        boolean _equals_4 = Objects.equal("OMLSpecificationTables", tableName);
-        if (_equals_4) {
-          _builder.append("  ");
-          _builder.append("= ");
-          {
-            boolean _hasElements_4 = false;
-            for(final EClass eClass_5 : eClasses) {
-              if (!_hasElements_4) {
-                _hasElements_4 = true;
-                _builder.append((tableName + "(\n    "), "  ");
-              } else {
-                _builder.appendImmediate(",\n    ", "  ");
-              }
-              String _tableVariableName_2 = OMLUtilities.tableVariableName(eClass_5);
-              _builder.append(_tableVariableName_2, "  ");
-              _builder.append(" = t1.");
-              String _tableVariableName_3 = OMLUtilities.tableVariableName(eClass_5);
-              _builder.append(_tableVariableName_3, "  ");
-              _builder.append(" ++ t2.");
-              String _tableVariableName_4 = OMLUtilities.tableVariableName(eClass_5);
-              _builder.append(_tableVariableName_4, "  ");
-            }
-            if (_hasElements_4) {
-              _builder.append(",\n    annotations = t1.annotations ++ t2.annotations)", "  ");
-            }
-          }
-          _builder.newLineIfNotEmpty();
-        } else {
+        boolean _equals_5 = Objects.equal("OMLSpecificationTables", tableName);
+        if (_equals_5) {
           _builder.append("  ");
           _builder.append("= ");
           {
@@ -467,6 +565,32 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               _builder.append(_tableVariableName_7, "  ");
             }
             if (_hasElements_5) {
+              _builder.append(",\n    annotations = t1.annotations ++ t2.annotations)", "  ");
+            }
+          }
+          _builder.newLineIfNotEmpty();
+        } else {
+          _builder.append("  ");
+          _builder.append("= ");
+          {
+            boolean _hasElements_6 = false;
+            for(final EClass eClass_7 : eClasses) {
+              if (!_hasElements_6) {
+                _hasElements_6 = true;
+                _builder.append((tableName + "(\n    "), "  ");
+              } else {
+                _builder.appendImmediate(",\n    ", "  ");
+              }
+              String _tableVariableName_8 = OMLUtilities.tableVariableName(eClass_7);
+              _builder.append(_tableVariableName_8, "  ");
+              _builder.append(" = t1.");
+              String _tableVariableName_9 = OMLUtilities.tableVariableName(eClass_7);
+              _builder.append(_tableVariableName_9, "  ");
+              _builder.append(" ++ t2.");
+              String _tableVariableName_10 = OMLUtilities.tableVariableName(eClass_7);
+              _builder.append(_tableVariableName_10, "  ");
+            }
+            if (_hasElements_6) {
               _builder.append(")", "  ");
             }
           }
@@ -501,25 +625,25 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append("ze.getName match {");
       _builder.newLine();
       {
-        for(final EClass eClass_7 : eClasses) {
+        for(final EClass eClass_8 : eClasses) {
           _builder.append("  \t  ");
           _builder.append("case ");
-          String _name = eClass_7.getName();
+          String _name = eClass_8.getName();
           _builder.append(_name, "  \t  ");
           _builder.append("Helper.TABLE_JSON_FILENAME =>");
           _builder.newLineIfNotEmpty();
           _builder.append("  \t  ");
           _builder.append("  ");
           _builder.append("tables.");
-          String _tableReaderName = OMLSpecificationTablesGenerator.tableReaderName(eClass_7);
+          String _tableReaderName = OMLSpecificationTablesGenerator.tableReaderName(eClass_8);
           _builder.append(_tableReaderName, "  \t    ");
           _builder.append("(is)");
           _builder.newLineIfNotEmpty();
         }
       }
       {
-        boolean _equals_5 = Objects.equal("OMLSpecificationTables", tableName);
-        if (_equals_5) {
+        boolean _equals_6 = Objects.equal("OMLSpecificationTables", tableName);
+        if (_equals_6) {
           _builder.append("      ");
           _builder.append("case annotationPropertyIRI =>");
           _builder.newLine();
@@ -598,6 +722,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append(".apply {");
       _builder.newLine();
       _builder.append("  \t  ");
+      _builder.append("omlSchemaJsonZipFile.getParentFile.mkdirs()");
+      _builder.newLine();
+      _builder.append("  \t  ");
+      _builder.newLine();
+      _builder.append("  \t  ");
       _builder.append("// @see http://www.oracle.com/technetwork/articles/java/compress-1565076.html");
       _builder.newLine();
       _builder.append("  \t  ");
@@ -620,23 +749,23 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append("  ");
       _builder.newLine();
       {
-        for(final EClass eClass_8 : eClasses) {
+        for(final EClass eClass_9 : eClasses) {
           _builder.append("      ");
           _builder.append("zos.putNextEntry(new java.util.zip.ZipEntry(");
-          String _name_1 = eClass_8.getName();
+          String _name_1 = eClass_9.getName();
           _builder.append(_name_1, "      ");
           _builder.append("Helper.TABLE_JSON_FILENAME))");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
           _builder.append("tables.");
-          String _tableVariableName_8 = OMLUtilities.tableVariableName(eClass_8);
-          _builder.append(_tableVariableName_8, "      ");
+          String _tableVariableName_11 = OMLUtilities.tableVariableName(eClass_9);
+          _builder.append(_tableVariableName_11, "      ");
           _builder.append(".foreach { t =>");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
           _builder.append("   ");
           _builder.append("val line = ");
-          String _name_2 = eClass_8.getName();
+          String _name_2 = eClass_9.getName();
           _builder.append(_name_2, "         ");
           _builder.append("Helper.toJSON(t)+\"\\n\"");
           _builder.newLineIfNotEmpty();
@@ -655,8 +784,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append("      ");
       _builder.newLine();
       {
-        boolean _equals_6 = Objects.equal("OMLSpecificationTables", tableName);
-        if (_equals_6) {
+        boolean _equals_7 = Objects.equal("OMLSpecificationTables", tableName);
+        if (_equals_7) {
           _builder.append("      ");
           _builder.append("tables");
           _builder.newLine();
@@ -1365,9 +1494,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                   String _name_10 = f_2.getName();
                   _builder.append(_name_10, "        ");
                   _builder.append("\" -> ");
-                  String _name_11 = f_2.getName();
-                  _builder.append(_name_11, "        ");
-                  _builder.append("UUID");
+                  String _columnUUID = OMLUtilities.columnUUID(f_2);
+                  _builder.append(_columnUUID, "        ");
                 }
               }
               {
@@ -1430,8 +1558,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  \t");
       _builder.append("case that: ");
-      String _name_12 = eClass.getName();
-      _builder.append(_name_12, "  \t");
+      String _name_11 = eClass.getName();
+      _builder.append(_name_11, "  \t");
       _builder.append(" =>");
       _builder.newLineIfNotEmpty();
       {
@@ -1469,13 +1597,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.newLine();
       _builder.append("@JSExportTopLevel(\"");
-      String _name_13 = eClass.getName();
-      _builder.append(_name_13);
+      String _name_12 = eClass.getName();
+      _builder.append(_name_12);
       _builder.append("Helper\")");
       _builder.newLineIfNotEmpty();
       _builder.append("object ");
-      String _name_14 = eClass.getName();
-      _builder.append(_name_14);
+      String _name_13 = eClass.getName();
+      _builder.append(_name_13);
       _builder.append("Helper {");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
@@ -1487,8 +1615,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("= \"");
-      String _name_15 = eClass.getName();
-      _builder.append(_name_15, "  ");
+      String _name_14 = eClass.getName();
+      _builder.append(_name_14, "  ");
       _builder.append("s.json\"");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
@@ -1498,14 +1626,14 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append(": upickle.default.Writer[");
-      String _name_16 = eClass.getName();
-      _builder.append(_name_16, "  ");
+      String _name_15 = eClass.getName();
+      _builder.append(_name_15, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= upickle.default.macroW[");
-      String _name_17 = eClass.getName();
-      _builder.append(_name_17, "  ");
+      String _name_16 = eClass.getName();
+      _builder.append(_name_16, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
@@ -1514,8 +1642,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("def toJSON(c: ");
-      String _name_18 = eClass.getName();
-      _builder.append(_name_18, "  ");
+      String _name_17 = eClass.getName();
+      _builder.append(_name_17, "  ");
       _builder.append(")");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
@@ -1530,14 +1658,14 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append(": upickle.default.Reader[");
-      String _name_19 = eClass.getName();
-      _builder.append(_name_19, "  ");
+      String _name_18 = eClass.getName();
+      _builder.append(_name_18, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= upickle.default.macroR[");
-      String _name_20 = eClass.getName();
-      _builder.append(_name_20, "  ");
+      String _name_19 = eClass.getName();
+      _builder.append(_name_19, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
@@ -1549,13 +1677,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append(": ");
-      String _name_21 = eClass.getName();
-      _builder.append(_name_21, "  ");
+      String _name_20 = eClass.getName();
+      _builder.append(_name_20, "  ");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= upickle.default.read[");
-      String _name_22 = eClass.getName();
-      _builder.append(_name_22, "  ");
+      String _name_21 = eClass.getName();
+      _builder.append(_name_21, "  ");
       _builder.append("](c)");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
