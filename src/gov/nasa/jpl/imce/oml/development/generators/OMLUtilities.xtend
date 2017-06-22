@@ -128,6 +128,8 @@ class OMLUtilities extends OMLXcorePackages {
 				}
 //				else if (isContainer)
 //					"scala.Option[java.util.UUID] /* reference to a "+typePrefix+type.name+" */"
+				else if (feature.isIRIReference)
+					"gov.nasa.jpl.imce.oml.tables.IRI"
 				else
 					typePrefix+type.name
 			default:
@@ -164,7 +166,11 @@ class OMLUtilities extends OMLXcorePackages {
 			case "EInt": "Int"
 			case "EBoolean": "Boolean"
 			case "EString": "String"
-			case type instanceof EClass: "UUID (Foreign Key for: OML "+type.name+")"
+			case type instanceof EClass: 
+				if (feature.isIRIReference)
+					"IRI (Foreign Key for: OML "+type.name+")"
+				else
+					"UUID (Foreign Key for: OML "+type.name+")"
 			case "UUID": "UUID (Primary Key)"
 			default: type.name
 		}
@@ -223,7 +229,11 @@ class OMLUtilities extends OMLXcorePackages {
 			case "EInt": "scala.Int"
 			case "EBoolean": "scala.Boolean"
 			case "EString": "scala.Predef.String"
-			case type instanceof EClass: "UUID"
+			case type instanceof EClass: 
+				if (feature.isIRIReference)
+					"IRI"
+				else
+					"UUID"
 			default: type.name
 		}
 	}
@@ -569,6 +579,10 @@ class OMLUtilities extends OMLXcorePackages {
     		null === e.getEAnnotation("http://imce.jpl.nasa.gov/oml/NotFunctionalAPI")
     }
     
+    static def Boolean isIRIReference(ENamedElement e) {
+    		null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/IRIReference")
+    }
+    
     static def Boolean isExtentContainer(ENamedElement e) {
     	null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/ExtentContainer")
     }
@@ -821,8 +835,24 @@ class OMLUtilities extends OMLXcorePackages {
 		
 	}
 	
+	static def String columnUUID(ETypedElement feature) {
+		if (feature instanceof EReference) { 
+			if (feature.isIRIReference)
+				"oug.namespaceUUID("+feature.name+"IRI).toString" 
+			else
+				feature.name+"UUID" 
+		} else 
+			feature.name
+	}
+	
 	static def String columnName(ETypedElement feature) {
-		if (feature instanceof EReference) feature.name+"UUID" else feature.name
+		if (feature instanceof EReference) { 
+			if (feature.isIRIReference)
+				feature.name+"IRI" 
+			else
+				feature.name+"UUID" 
+		} else 
+			feature.name
 	}
 	
 	static def String markDown(ENamedElement e) {

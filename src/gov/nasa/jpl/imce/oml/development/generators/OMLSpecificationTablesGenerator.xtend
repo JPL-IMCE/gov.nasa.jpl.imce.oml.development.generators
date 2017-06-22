@@ -33,12 +33,26 @@ import org.eclipse.emf.ecore.EReference
 
 class OMLSpecificationTablesGenerator extends OMLUtilities {
 	
-	static def main(String[] args) {
+	static def void main(String[] args) {
 		if (1 != args.length) {
 			System.err.println("usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.tables project")
 			System.exit(1)
 		}	
-		new OMLSpecificationTablesGenerator().generate(args.get(0))	
+		val gen = new OMLSpecificationTablesGenerator()
+		val dir = args.get(0)
+		var ok = false
+		try {
+			gen.generate(dir)	
+			ok = true
+		} catch (Throwable t) {
+			System.err.println(t.getMessage)
+			t.printStackTrace(System.err)
+		} finally {
+			if (ok)
+				System.out.println("Done")
+			else
+				System.err.println("Abnormal exit!")
+		}
 	}
 	
 	static def String locateOML2OTI(String path) {
@@ -127,9 +141,11 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import scala.collection.JavaConversions._
 		import scala.util.control.Exception._
 		import scala.util.{Failure,Success,Try}
-		import scala.{Boolean,Unit}
 		«IF 'OMLSpecificationTables' == tableName»
-		import scala.Predef.ArrowAssoc
+		import scala.{Boolean,StringContext,Unit}
+		import scala.Predef.{ArrowAssoc,String}
+		«ELSE»
+		import scala.{Boolean,Unit}
 		«ENDIF»
 		
 		case class «tableName»
@@ -150,6 +166,36 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «ELSE»
 		  «FOR eClass : eClasses BEFORE "= " SEPARATOR " &&\n  "»«eClass.tableVariableName».isEmpty«ENDFOR»
 		  «ENDIF»
+		  
+		«IF 'OMLSpecificationTables' == tableName»
+		def show: String = {
+		  
+		  def showSeq[T](title: String, s: Seq[T]): String = {
+		    if (s.isEmpty)
+		       "\n" + title + ": empty"
+		    else
+		       "\n" + title + s": ${s.size} entries" +
+		       s.map(_.toString).mkString("\n ", "\n ", "\n")
+		  }
+		  
+		  val buff = new scala.collection.mutable.StringBuilder()
+		  
+		  «FOR eClass : eClasses SEPARATOR "\n"»«IF ('annotations' != eClass.tableVariableName)»buff ++= showSeq("«eClass.tableVariableName»", «eClass.tableVariableName»)«ENDIF»«ENDFOR»
+		  
+		  if (annotations.isEmpty)
+		    buff ++= "\nannotations: empty"
+		  else {
+		    buff ++= s"\nannotations: ${annotations.size} entries"
+		    annotations.keys.toSeq.sorted.foreach { ap =>
+		      val as = annotations.getOrElse(ap, Seq.empty)
+		      buff ++= showSeq(s"annotations(${ap.abbrevIRI})", as)
+		    }
+		  }
+		  
+		  buff.toString
+		}
+		«ENDIF»
+		
 		}
 		
 		object «tableName» {
@@ -222,6 +268,8 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		        Failure(cause)
 		    }
 		    .apply {
+		  	  omlSchemaJsonZipFile.getParentFile.mkdirs()
+		  	  
 		  	  // @see http://www.oracle.com/technetwork/articles/java/compress-1565076.html
 		  	  val fos = new java.io.FileOutputStream(omlSchemaJsonZipFile)
 		  	  val bos = new java.io.BufferedOutputStream(fos, 100000)
@@ -389,7 +437,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		          "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithContainer»
 		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE "  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      oug.namespaceUUID(\n        \""+eClass.name+"\""»    «attr.columnName»: «attr.constructorTypeName»«ENDFOR»«FOR f : pairs»,
-		          "«f.name»" -> «f.name»UUID«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		          "«f.name»" -> «f.columnUUID»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ENDIF»
 		
 		  override val hashCode

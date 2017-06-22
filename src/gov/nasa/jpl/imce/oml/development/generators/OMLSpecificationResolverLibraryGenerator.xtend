@@ -28,13 +28,27 @@ import org.eclipse.emf.ecore.EStructuralFeature
 
 class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 
-	static def main(String[] args) {
+	static def void main(String[] args) {
 		if (1 != args.length) {
 			System.err.println("usage: <dir> where <dir> is the directory of the /gov.nasa.jpl.imce.oml.resolver project")
 			System.exit(1)
 		}
 
-		new OMLSpecificationResolverLibraryGenerator().generate(args.get(0))
+		val gen = new OMLSpecificationResolverLibraryGenerator()
+		val dir = args.get(0)
+		var ok = false
+		try {
+			gen.generate(dir)	
+			ok = true
+		} catch (Throwable t) {
+			System.err.println(t.getMessage)
+			t.printStackTrace(System.err)
+		} finally {
+			if (ok)
+				System.out.println("Done")
+			else
+				System.err.println("Abnormal exit!")
+		}
 	}
 
 	def generate(String targetDir) {
