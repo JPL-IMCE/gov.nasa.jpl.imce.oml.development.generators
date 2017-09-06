@@ -37,6 +37,7 @@ import org.eclipse.xtext.xbase.XFeatureCall
 import org.eclipse.xtext.xbase.XMemberFeatureCall
 import gov.nasa.jpl.imce.oml.model.extensions.OMLXcorePackages
 import java.util.ArrayList
+import org.eclipse.emf.ecore.EClassifier
 
 class OMLUtilities extends OMLXcorePackages {
 
@@ -123,13 +124,19 @@ class OMLUtilities extends OMLXcorePackages {
 							throw new java.lang.IllegalArgumentException("Multi-valued operation: "+feature.EClassContainer.name+"."+feature.name+" needs a @Collection(...) annotation!")		
 						}	
 					}
-					else
-						"scala.Option["+typePrefix+type.name+"]"
+					else {
+						if (feature.isLiteralFeature)
+							"scala.Option["+scalaType+"]"
+						else
+							"scala.Option["+typePrefix+type.name+"]"
+						}
 				}
 //				else if (isContainer)
 //					"scala.Option[java.util.UUID] /* reference to a "+typePrefix+type.name+" */"
 				else if (feature.isIRIReference)
 					"gov.nasa.jpl.imce.oml.tables.IRI"
+				else if (feature.isLiteralFeature)
+					scalaType
 				else
 					typePrefix+type.name
 			default:
@@ -155,6 +162,13 @@ class OMLUtilities extends OMLXcorePackages {
 			case "Pattern": "gov.nasa.jpl.imce.oml.tables.Pattern"
 			case "UUID": "java.util.UUID"
 			case "TerminologyKind": "gov.nasa.jpl.imce.oml.tables.TerminologyKind"
+			case "PositiveIntegerLiteral": "gov.nasa.jpl.imce.oml.tables.PositiveIntegerLiteral"
+			case "LiteralPattern": "gov.nasa.jpl.imce.oml.tables.LiteralPattern"
+			case "LanguageTagDataType": "gov.nasa.jpl.imce.oml.tables.LanguageTagDataType"
+			case "LiteralValue": "gov.nasa.jpl.imce.oml.tables.LiteralValue"
+			case "LiteralNumber": "gov.nasa.jpl.imce.oml.tables.LiteralNumber"
+			case "LiteralDateTime": "gov.nasa.jpl.imce.oml.tables.LiteralDateTime"
+			case "StringDataType": "gov.nasa.jpl.imce.oml.tables.StringDataType"
 			default: "resolver.api."+type.name
 		}
 	}
@@ -232,6 +246,12 @@ class OMLUtilities extends OMLXcorePackages {
 			case type instanceof EClass: 
 				if (feature.isIRIReference)
 					"IRI"
+				else if (feature.isLiteralDateTimeFeature)
+					"LiteralDateTime"
+				else if (feature.isLiteralNumberFeature)
+					"LiteralNumber"
+				else if (feature.isLiteralFeature)
+					"LiteralValue"
 				else
 					"UUID"
 			default: type.name
@@ -323,7 +343,7 @@ class OMLUtilities extends OMLXcorePackages {
 	}
 	
 	static def Iterable<EStructuralFeature> APIStructuralFeatures(EClass eClass) {
-		eClass.EStructuralFeatures.filter[isAPI && !isFactory && !isContainment]
+		eClass.EStructuralFeatures.filter[isAPI && !isFactory  && (!isContainment || isLiteralFeature)]
 	}
     
 	static def Boolean isRootHierarchyClass(EClass eClass) {
@@ -347,7 +367,7 @@ class OMLUtilities extends OMLXcorePackages {
 	static def Iterable<EStructuralFeature> getSortedAttributeFactorySignature(EClass eClass) {
 		eClass
 		.selfAndAllSupertypes
-		.map[EStructuralFeatures.filter[(isAPI || isFactory) && !isContainment && !derived && !isUUID]]
+		.map[EStructuralFeatures.filter[(isAPI || isFactory) && (!isContainment || isLiteralFeature) && !derived && !isUUID]]
 		.flatten
 		.sortWith(new OMLFeatureCompare())
 	}
@@ -525,10 +545,34 @@ class OMLUtilities extends OMLXcorePackages {
 		!f.isContainer && !f.isContainment
 	}
 	
+	static def Boolean isLiteralDateTime(EClassifier type) {
+		type.name == "LiteralDateTime"
+	}
+	
+	static def Boolean isLiteralDateTimeFeature(ETypedElement f) {
+		isLiteralDateTime(f.EType)
+	}
+	
+	static def Boolean isLiteralNumber(EClassifier type) {
+		type.name == "LiteralNumber"
+	}
+	
+	static def Boolean isLiteralNumberFeature(ETypedElement f) {
+		isLiteralNumber(f.EType)
+	}
+	
+	static def Boolean isLiteralValue(EClassifier type) {
+		type.name == "LiteralValue" || type.name == "LiteralNumber" || type.name == "LiteralDateTime"
+	}
+	
+	static def Boolean isLiteralFeature(ETypedElement f) {
+		isLiteralValue(f.EType)
+	}
+	
 	static def Boolean isSchemaAttributeOrReferenceOrContainer(ETypedElement f) {
 		switch f {
 			EReference: 
-				f.isSchema && ! f.containment
+				f.isSchema && (! f.containment || f.isLiteralFeature)
 			default: 
 				f.isSchema
 		}
@@ -576,7 +620,22 @@ class OMLUtilities extends OMLXcorePackages {
     }
     
     static def Boolean isAPI(ENamedElement e) {
-    		null === e.getEAnnotation("http://imce.jpl.nasa.gov/oml/NotFunctionalAPI")
+    	(null === e.getEAnnotation("http://imce.jpl.nasa.gov/oml/NotFunctionalAPI")) && 
+    	switch (e) {
+    		ETypedElement: {
+    			val c = e.EType
+    			switch (c) {
+    				EClass:
+    					(c.name != "LiteralValue") || !c.EAllSuperTypes.exists [ it.name == "LiteralValue" ]
+    				default:
+    					true
+    			}
+    		}
+    		EClass:
+   				 (e.name != "LiteralValue") && !e.EAllSuperTypes.exists [ it.name == "LiteralValue" ]
+   			default:
+   				true
+   		}
     }
     
     static def Boolean isIRIReference(ENamedElement e) {
@@ -849,6 +908,8 @@ class OMLUtilities extends OMLXcorePackages {
 		if (feature instanceof EReference) { 
 			if (feature.isIRIReference)
 				feature.name+"IRI" 
+			else if (feature.isLiteralFeature)
+				feature.name
 			else
 				feature.name+"UUID" 
 		} else 

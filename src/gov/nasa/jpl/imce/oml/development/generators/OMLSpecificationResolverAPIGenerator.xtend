@@ -234,7 +234,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	
 	def String generateExtentContainerClassFile(EClass eClass, Iterable<EClass> allEClasses) {
 		val extManaged = allEClasses.filter[isExtentManaged]
-		val containers = allEClasses.map[EStructuralFeatures].flatten.filter[isContainment]
+		val containers = allEClasses.map[EStructuralFeatures].flatten.filter[isContainment && !isLiteralFeature]
 		
 		val containerTypes = containers.map[EClassContainer].toSet.toList.sortBy[name]
 		val containedTypes = containers.map[EType].toSet.toList.sortBy[name]
@@ -253,7 +253,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		(«FOR em : extManaged.filter[!isAbstract] BEFORE " " SEPARATOR ",\n  " AFTER ",\n"»«em.tableVariableName»: Map[java.util.UUID, «em.name»] = HashMap.empty[java.util.UUID, «em.name»]«ENDFOR»
 		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.name»: Map[«c.EClassContainer.name», Set[«c.EType.name»]] = HashMap.empty[«c.EClassContainer.name», Set[«c.EType.name»]]«ENDFOR»
 		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.EClassContainer.name.toFirstLower»Of«c.EType.name»: Map[«c.EType.name», «c.EClassContainer.name»] = HashMap.empty[«c.EType.name», «c.EClassContainer.name»]«ENDFOR»
-		«FOR c : containers.filter[name != "annotations"] BEFORE "\n  " SEPARATOR ",\n  " AFTER "\n"»«c.EType.name.toFirstLower»ByUUID: Map[java.util.UUID, «c.EType.name»] = HashMap.empty[java.util.UUID, «c.EType.name»]«ENDFOR»
+		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER "\n"»«c.EType.name.toFirstLower»ByUUID: Map[java.util.UUID, «c.EType.name»] = HashMap.empty[java.util.UUID, «c.EType.name»]«ENDFOR»
 		) {
 		  «FOR c : containers»
 		  def with«c.EType.name»(«c.EClassContainer.name.toFirstLower»: «c.EClassContainer.name», «c.EType.name.toFirstLower»: «c.EType.name»)

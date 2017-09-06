@@ -134,7 +134,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import org.apache.commons.compress.archivers.zip.{ZipArchiveEntry, ZipFile}
 		
 		«IF 'OMLSpecificationTables' == tableName»
-		import scala.collection.immutable.{Map,Seq}
+		import scala.collection.immutable.Seq
 		«ELSE»
 		import scala.collection.immutable.Seq
 		«ENDIF»
@@ -143,7 +143,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import scala.util.{Failure,Success,Try}
 		«IF 'OMLSpecificationTables' == tableName»
 		import scala.{Boolean,StringContext,Unit}
-		import scala.Predef.{ArrowAssoc,String}
+		import scala.Predef.String
 		«ELSE»
 		import scala.{Boolean,Unit}
 		«ENDIF»
@@ -151,7 +151,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		case class «tableName»
 		«IF 'OMLSpecificationTables' == tableName»
 		«FOR eClass : eClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER ","»«eClass.tableVariable»«ENDFOR»
-		  annotations: Map[AnnotationProperty, Seq[AnnotationEntry]] = Map.empty)
+		  annotations: Seq[AnnotationPropertyValue] = Seq.empty)
 		«ELSE»
 		«FOR eClass : eClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER "\n)"»«eClass.tableVariable»«ENDFOR» 
 		«ENDIF»
@@ -167,34 +167,25 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «FOR eClass : eClasses BEFORE "= " SEPARATOR " &&\n  "»«eClass.tableVariableName».isEmpty«ENDFOR»
 		  «ENDIF»
 		  
-		«IF 'OMLSpecificationTables' == tableName»
-		def show: String = {
+		  «IF 'OMLSpecificationTables' == tableName»
+		  def show: String = {
 		  
-		  def showSeq[T](title: String, s: Seq[T]): String = {
-		    if (s.isEmpty)
-		       "\n" + title + ": empty"
-		    else
-		       "\n" + title + s": ${s.size} entries" +
-		       s.map(_.toString).mkString("\n ", "\n ", "\n")
-		  }
-		  
-		  val buff = new scala.collection.mutable.StringBuilder()
-		  
-		  «FOR eClass : eClasses SEPARATOR "\n"»«IF ('annotations' != eClass.tableVariableName)»buff ++= showSeq("«eClass.tableVariableName»", «eClass.tableVariableName»)«ENDIF»«ENDFOR»
-		  
-		  if (annotations.isEmpty)
-		    buff ++= "\nannotations: empty"
-		  else {
-		    buff ++= s"\nannotations: ${annotations.size} entries"
-		    annotations.keys.toSeq.sorted.foreach { ap =>
-		      val as = annotations.getOrElse(ap, Seq.empty)
-		      buff ++= showSeq(s"annotations(${ap.abbrevIRI})", as)
+		    def showSeq[T](title: String, s: Seq[T]): String = {
+		      if (s.isEmpty)
+		         "\n" + title + ": empty"
+		      else
+		         "\n" + title + s": ${s.size} entries" +
+		         s.map(_.toString).mkString("\n ", "\n ", "\n")
 		    }
-		  }
 		  
-		  buff.toString
-		}
-		«ENDIF»
+		    val buff = new scala.collection.mutable.StringBuilder()
+		  
+		  «FOR eClass : eClasses SEPARATOR "\n"»«IF ('annotations' != eClass.tableVariableName)»  buff ++= showSeq("«eClass.tableVariableName»", «eClass.tableVariableName»)«ENDIF»«ENDFOR»
+		    buff ++= showSeq("annotations", annotations)
+		  
+		    buff.toString
+		  }
+		  «ENDIF»
 		
 		}
 		
@@ -244,16 +235,6 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  	  case «eClass.name»Helper.TABLE_JSON_FILENAME =>
 		  	    tables.«eClass.tableReaderName»(is)
 		      «ENDFOR»
-		      «IF 'OMLSpecificationTables' == tableName»
-		      case annotationPropertyIRI =>
-		        tables
-		          .annotationProperties
-		          .find(_.iri == annotationPropertyIRI)
-		          .fold[OMLSpecificationTables](tables) { ap =>
-		          val annotationPropertyTable = ap -> readJSonTable[AnnotationEntry](is, AnnotationEntryHelper.fromJSON)
-		          tables.copy(annotations = tables.annotations + annotationPropertyTable)
-		        }
-		      «ENDIF»
 		    }
 		  }
 		  
@@ -287,24 +268,6 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		      zos.closeEntry()
 		      «ENDFOR»
 		      
-		      «IF 'OMLSpecificationTables' == tableName»
-		      tables
-		        .annotationProperties
-		        .foreach { ap =>
-		          tables
-		            .annotations
-		            .get(ap)
-		            .foreach { as =>
-		              zos.putNextEntry(new java.util.zip.ZipEntry(ap.iri))
-		              as.foreach { a =>
-		                val line = AnnotationEntryHelper.toJSON(a)+"\n"
-		                zos.write(line.getBytes(java.nio.charset.Charset.forName("UTF-8")))
-		              }
-		              zos.closeEntry()
-		            }
-		        }
-		      «ENDIF»
-		  
 		      zos.close()
 		  	  Success(())
 		  	}
