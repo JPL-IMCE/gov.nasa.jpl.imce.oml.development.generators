@@ -409,7 +409,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		
 		  val TABLE_JSON_FILENAME 
 		  : scala.Predef.String 
-		  = "«eClass.name»s.json"
+		  = "«pluralize(eClass.name)».json"
 		  
 		  implicit val w
 		  : upickle.default.Writer[«eClass.name»]
