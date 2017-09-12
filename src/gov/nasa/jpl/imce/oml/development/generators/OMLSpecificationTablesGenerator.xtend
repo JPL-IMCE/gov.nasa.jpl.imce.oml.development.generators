@@ -149,23 +149,14 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		«ENDIF»
 		
 		case class «tableName»
-		«IF 'OMLSpecificationTables' == tableName»
-		«FOR eClass : eClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER ","»«eClass.tableVariable»«ENDFOR»
-		  annotations: Seq[AnnotationPropertyValue] = Seq.empty)
-		«ELSE»
-		«FOR eClass : eClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER "\n)"»«eClass.tableVariable»«ENDFOR» 
-		«ENDIF»
+		«FOR eClass : eClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER "\n)"»«eClass.tableVariable»«ENDFOR»
 		{
 		  «FOR eClass : eClasses»
 		  «eClass.tableReader(tableName)»
 		  «ENDFOR»
 		  
 		  def isEmpty: Boolean
-		  «IF 'OMLSpecificationTables' == tableName»
-		  «FOR eClass : eClasses BEFORE "= " SEPARATOR " &&\n  " AFTER " &&\n  annotations.isEmpty"»«eClass.tableVariableName».isEmpty«ENDFOR»
-		  «ELSE»
 		  «FOR eClass : eClasses BEFORE "= " SEPARATOR " &&\n  "»«eClass.tableVariableName».isEmpty«ENDFOR»
-		  «ENDIF»
 		  
 		  «IF 'OMLSpecificationTables' == tableName»
 		  def show: String = {
@@ -180,8 +171,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  
 		    val buff = new scala.collection.mutable.StringBuilder()
 		  
-		  «FOR eClass : eClasses SEPARATOR "\n"»«IF ('annotations' != eClass.tableVariableName)»  buff ++= showSeq("«eClass.tableVariableName»", «eClass.tableVariableName»)«ENDIF»«ENDFOR»
-		    buff ++= showSeq("annotations", annotations)
+		  «FOR eClass : eClasses SEPARATOR "\n"»  buff ++= showSeq("«eClass.tableVariableName»", «eClass.tableVariableName»)«ENDFOR»
 		  
 		    buff.toString
 		  }
@@ -218,11 +208,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  def mergeTables
 		  (t1: «tableName», t2: «tableName»)
 		  : «tableName»
-		  «IF 'OMLSpecificationTables' == tableName»
-		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ",\n    annotations = t1.annotations ++ t2.annotations)"»«eClass.tableVariableName» = t1.«eClass.tableVariableName» ++ t2.«eClass.tableVariableName»«ENDFOR»
-		  «ELSE» 
-		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = t1.«eClass.tableVariableName» ++ t2.«eClass.tableVariableName»«ENDFOR» 
-		  «ENDIF»
+		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = t1.«eClass.tableVariableName» ++ t2.«eClass.tableVariableName»«ENDFOR»
 		  
 		  def readZipArchive
 		  (zipFile: ZipFile)
