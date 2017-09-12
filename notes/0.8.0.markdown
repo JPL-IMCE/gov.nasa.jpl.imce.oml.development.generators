@@ -7,3 +7,4 @@ gov.nasa.jpl.imce.oml.development.generators 0.8.0 is a significant update
 	Limitation: /gov.nasa.jpl.imce.oml.tables/shared/src/main/scala/gov/nasa/jpl/imce/oml/tables/LiteralValue.scala is *NOT* generated.
 	Changes to OML's "literal" datatypes need to be reflected in this file.
  
+- [#4 Generated OML table spec has duplicate fields "annotations" and "annotationPropertyValues"](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/4)
