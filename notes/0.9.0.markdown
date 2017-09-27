@@ -1,0 +1,7 @@
+gov.nasa.jpl.imce.oml.development.generators 0.9.0 is a significant update
+
+## Issues resolved
+
+- [#6 Add support for OML Rules](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/6)
+
+- [#7 Add support for typed OML LiteralValues](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/7)
