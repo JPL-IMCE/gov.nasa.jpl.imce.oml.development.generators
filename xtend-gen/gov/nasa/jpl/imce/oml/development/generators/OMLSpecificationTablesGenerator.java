@@ -916,7 +916,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final EStructuralFeature uuidNS = OMLUtilities.lookupUUIDNamespaceFeature(eClass);
       final Iterable<EStructuralFeature> uuidFactors = OMLUtilities.lookupUUIDNamespaceFactors(eClass);
       final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
-        return OMLUtilities.isUUIDFeature(it);
+        return Boolean.valueOf(((OMLUtilities.isUUIDFeature(it)).booleanValue() && (it.getLowerBound() > 0)));
       };
       final Iterable<EStructuralFeature> pairs = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
       final boolean uuidWithGenerator = ((null != uuidNS) && (null != uuidFactors));

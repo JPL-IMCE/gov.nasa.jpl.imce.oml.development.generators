@@ -931,6 +931,13 @@ public class OMLUtilities extends OMLXcorePackages {
     return IterableExtensions.<EStructuralFeature>findFirst(OMLUtilities.getSortedAttributeSignature(eClass), _function);
   }
   
+  public static EOperation lookupUUIDOperation(final EClass eClass) {
+    final Function1<EOperation, Boolean> _function = (EOperation it) -> {
+      return Boolean.valueOf(((OMLUtilities.isUUID(it)).booleanValue() && (OMLUtilities.isScala(it)).booleanValue()));
+    };
+    return IterableExtensions.<EOperation>findFirst(eClass.getEAllOperations(), _function);
+  }
+  
   public static ETypedElement lookupUUIDTypedElement(final EClass eClass) {
     ETypedElement _xblockexpression = null;
     {
@@ -1053,7 +1060,10 @@ public class OMLUtilities extends OMLXcorePackages {
       }
       return _xblockexpression;
     };
-    return Iterables.<EStructuralFeature>concat(IterableExtensions.<EClass, Iterable<EStructuralFeature>>map(OMLUtilities.selfAndAllSupertypes(e), _function));
+    final Function1<EStructuralFeature, String> _function_1 = (EStructuralFeature it) -> {
+      return it.getName();
+    };
+    return IterableExtensions.<EStructuralFeature, String>sortBy(Iterables.<EStructuralFeature>concat(IterableExtensions.<EClass, Iterable<EStructuralFeature>>map(OMLUtilities.selfAndAllSupertypes(e), _function)), _function_1);
   }
   
   public static Boolean isCopyConstructorArgument(final EStructuralFeature attribute) {

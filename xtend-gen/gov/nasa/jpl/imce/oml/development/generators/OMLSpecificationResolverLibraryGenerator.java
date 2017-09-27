@@ -193,20 +193,34 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         {
           final EStructuralFeature uuidNS = OMLUtilities.lookupUUIDNamespaceFeature(eClass);
           final Iterable<EStructuralFeature> uuidFactors = OMLUtilities.lookupUUIDNamespaceFactors(eClass);
+          final EOperation uuidOp = OMLUtilities.lookupUUIDOperation(eClass);
           String _xifexpression_1 = null;
-          if (((null != uuidNS) && (null != uuidFactors))) {
-            _xifexpression_1 = this.factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidFactors);
+          if ((null != uuidOp)) {
+            _xifexpression_1 = OMLUtilities.scalaAnnotation(uuidOp);
           } else {
-            String _xifexpression_2 = null;
-            Boolean _isUUIDDerived = OMLUtilities.isUUIDDerived(eClass);
-            if ((_isUUIDDerived).booleanValue()) {
-              _xifexpression_2 = this.factoryMethodWithDerivedUUID(eClass);
-            } else {
-              _xifexpression_2 = this.factoryMethodWithImplicitlyDerivedUUID(eClass);
-            }
-            _xifexpression_1 = _xifexpression_2;
+            _xifexpression_1 = null;
           }
-          _xblockexpression_1 = _xifexpression_1;
+          final String uuidScala = _xifexpression_1;
+          String _xifexpression_2 = null;
+          Boolean _isUUIDDerived = OMLUtilities.isUUIDDerived(eClass);
+          if ((_isUUIDDerived).booleanValue()) {
+            _xifexpression_2 = this.factoryMethodWithDerivedUUID(eClass);
+          } else {
+            String _xifexpression_3 = null;
+            if (((null != uuidNS) || (!IterableExtensions.isEmpty(uuidFactors)))) {
+              _xifexpression_3 = this.factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidFactors);
+            } else {
+              String _xifexpression_4 = null;
+              if ((null != uuidScala)) {
+                _xifexpression_4 = this.factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidScala);
+              } else {
+                _xifexpression_4 = this.factoryMethodWithImplicitlyDerivedUUID(eClass);
+              }
+              _xifexpression_3 = _xifexpression_4;
+            }
+            _xifexpression_2 = _xifexpression_3;
+          }
+          _xblockexpression_1 = _xifexpression_2;
         }
         _xifexpression = _xblockexpression_1;
       }
@@ -775,6 +789,248 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
     return _xblockexpression;
   }
   
+  public String factoryMethodWithUUIDGenerator(final EClass eClass, final EStructuralFeature uuidNS, final String uuidScala) {
+    String _xblockexpression = null;
+    {
+      final Function1<EReference, Boolean> _function = (EReference it) -> {
+        return Boolean.valueOf(it.isContainer());
+      };
+      final EReference container = IterableExtensions.<EReference>findFirst(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function);
+      EReference _eOpposite = null;
+      if (container!=null) {
+        _eOpposite=container.getEOpposite();
+      }
+      final EReference contained = _eOpposite;
+      final String newVal = StringExtensions.toFirstLower(eClass.getName());
+      StringConcatenation _builder = new StringConcatenation();
+      _builder.append("override def create");
+      String _name = eClass.getName();
+      _builder.append(_name);
+      _builder.newLineIfNotEmpty();
+      {
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        boolean _hasElements = false;
+        for(final EStructuralFeature attr : _sortedAttributeFactorySignature) {
+          if (!_hasElements) {
+            _hasElements = true;
+            String _xifexpression = null;
+            Boolean _isExtentContainer = OMLUtilities.isExtentContainer(eClass);
+            if ((_isExtentContainer).booleanValue()) {
+              _xifexpression = "( uuid: java.util.UUID,\n ";
+            } else {
+              _xifexpression = "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n ";
+            }
+            _builder.append(_xifexpression);
+          } else {
+            _builder.appendImmediate(",\n ", "");
+          }
+          _builder.append(" ");
+          String _name_1 = attr.getName();
+          _builder.append(_name_1);
+          _builder.append(": ");
+          String _queryResolverType = OMLUtilities.queryResolverType(attr, "resolver.api.");
+          _builder.append(_queryResolverType);
+        }
+        if (_hasElements) {
+          _builder.append(" )");
+        }
+      }
+      _builder.newLineIfNotEmpty();
+      _builder.append(": (resolver.api.Extent, resolver.api.");
+      String _name_2 = eClass.getName();
+      _builder.append(_name_2);
+      _builder.append(")");
+      _builder.newLineIfNotEmpty();
+      _builder.append("= {");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("// factoryMethodWithUUIDGenerator (scala...)");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("// container: ");
+      String _name_3 = container.getName();
+      _builder.append(_name_3, "  ");
+      _builder.append(" ");
+      String _name_4 = container.getEType().getName();
+      _builder.append(_name_4, "  ");
+      _builder.newLineIfNotEmpty();
+      _builder.append("  ");
+      _builder.append("// contained: ");
+      String _name_5 = contained.getName();
+      _builder.append(_name_5, "  ");
+      _builder.append(" ");
+      String _name_6 = contained.getEType().getName();
+      _builder.append(_name_6, "  ");
+      _builder.newLineIfNotEmpty();
+      _builder.append("  ");
+      _builder.append("val ");
+      _builder.append(newVal, "  ");
+      _builder.append(" = ");
+      String _name_7 = eClass.getName();
+      _builder.append(_name_7, "  ");
+      {
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature_1 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        boolean _hasElements_1 = false;
+        for(final EStructuralFeature attr_1 : _sortedAttributeFactorySignature_1) {
+          if (!_hasElements_1) {
+            _hasElements_1 = true;
+            _builder.append("( uuid, ", "  ");
+          } else {
+            _builder.appendImmediate(", ", "  ");
+          }
+          String _name_8 = attr_1.getName();
+          _builder.append(_name_8, "  ");
+        }
+        if (_hasElements_1) {
+          _builder.append(" )", "  ");
+        }
+      }
+      _builder.newLineIfNotEmpty();
+      _builder.append("  ");
+      _builder.append("scala.Tuple2(");
+      _builder.newLine();
+      {
+        int _lowerBound = container.getLowerBound();
+        boolean _equals = (_lowerBound == 0);
+        if (_equals) {
+          _builder.append("    ");
+          String _name_9 = container.getName();
+          _builder.append(_name_9, "    ");
+          _builder.append(".fold {");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append("extent.copy(");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append(" ");
+          String _firstLower = StringExtensions.toFirstLower(contained.getEType().getName());
+          _builder.append(_firstLower, "     ");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_1 = StringExtensions.toFirstLower(contained.getEType().getName());
+          _builder.append(_firstLower_1, "     ");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "     ");
+          _builder.append("))");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append("}{ _");
+          String _name_10 = container.getName();
+          _builder.append(_name_10, "    ");
+          _builder.append("_ =>");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append("extent.copy(");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append(" ");
+          String _name_11 = contained.getName();
+          _builder.append(_name_11, "     ");
+          _builder.append(" = extent.with");
+          String _name_12 = contained.getEType().getName();
+          _builder.append(_name_12, "     ");
+          _builder.append("(_");
+          String _name_13 = container.getName();
+          _builder.append(_name_13, "     ");
+          _builder.append("_, ");
+          _builder.append(newVal, "     ");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append(" ");
+          String _firstLower_2 = StringExtensions.toFirstLower(container.getEType().getName());
+          _builder.append(_firstLower_2, "     ");
+          _builder.append("Of");
+          String _name_14 = contained.getEType().getName();
+          _builder.append(_name_14, "     ");
+          _builder.append(" = extent.");
+          String _firstLower_3 = StringExtensions.toFirstLower(container.getEType().getName());
+          _builder.append(_firstLower_3, "     ");
+          _builder.append("Of");
+          String _name_15 = contained.getEType().getName();
+          _builder.append(_name_15, "     ");
+          _builder.append(" + (");
+          _builder.append(newVal, "     ");
+          _builder.append(" -> _");
+          String _name_16 = container.getName();
+          _builder.append(_name_16, "     ");
+          _builder.append("_),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append(" ");
+          String _firstLower_4 = StringExtensions.toFirstLower(contained.getEType().getName());
+          _builder.append(_firstLower_4, "     ");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_5 = StringExtensions.toFirstLower(contained.getEType().getName());
+          _builder.append(_firstLower_5, "     ");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "     ");
+          _builder.append("))");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append("},");
+          _builder.newLine();
+        } else {
+          _builder.append("    ");
+          _builder.append("extent.copy(");
+          _builder.newLine();
+          _builder.append("    ");
+          _builder.append(" ");
+          String _name_17 = contained.getName();
+          _builder.append(_name_17, "     ");
+          _builder.append(" = extent.with");
+          String _name_18 = contained.getEType().getName();
+          _builder.append(_name_18, "     ");
+          _builder.append("(");
+          String _name_19 = container.getName();
+          _builder.append(_name_19, "     ");
+          _builder.append(", ");
+          _builder.append(newVal, "     ");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append(" ");
+          String _firstLower_6 = StringExtensions.toFirstLower(container.getEType().getName());
+          _builder.append(_firstLower_6, "     ");
+          _builder.append("Of");
+          String _name_20 = contained.getEType().getName();
+          _builder.append(_name_20, "     ");
+          _builder.append(" = extent.");
+          String _firstLower_7 = StringExtensions.toFirstLower(container.getEType().getName());
+          _builder.append(_firstLower_7, "     ");
+          _builder.append("Of");
+          String _name_21 = contained.getEType().getName();
+          _builder.append(_name_21, "     ");
+          _builder.append(" + (");
+          _builder.append(newVal, "     ");
+          _builder.append(" -> ");
+          String _name_22 = container.getName();
+          _builder.append(_name_22, "     ");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("    ");
+          _builder.append(" ");
+          String _firstLower_8 = StringExtensions.toFirstLower(contained.getEType().getName());
+          _builder.append(_firstLower_8, "     ");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_9 = StringExtensions.toFirstLower(contained.getEType().getName());
+          _builder.append(_firstLower_9, "     ");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "     ");
+          _builder.append(")),");
+          _builder.newLineIfNotEmpty();
+        }
+      }
+      _builder.append("  \t");
+      _builder.append(newVal, "  \t");
+      _builder.append(")");
+      _builder.newLineIfNotEmpty();
+      _builder.append("}");
+      _builder.newLine();
+      _xblockexpression = _builder.toString();
+    }
+    return _xblockexpression;
+  }
+  
   public String factoryMethodWithDerivedUUID(final EClass eClass) {
     String _xblockexpression = null;
     {
@@ -1174,13 +1430,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_3 = eClass.getName();
           _builder.append(_name_3, "  ");
           {
-            final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
-              Boolean _isContainer = OMLUtilities.isContainer(it);
-              return Boolean.valueOf((!(_isContainer).booleanValue()));
-            };
-            Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
+            Iterable<EStructuralFeature> _sortedAttributeFactorySignature_1 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
             boolean _hasElements_1 = false;
-            for(final EStructuralFeature attr_1 : _filter) {
+            for(final EStructuralFeature attr_1 : _sortedAttributeFactorySignature_1) {
               if (!_hasElements_1) {
                 _hasElements_1 = true;
                 _builder.append("( uuid, ", "  ");
@@ -1223,9 +1475,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           _builder_1.append(_name_5);
           _builder_1.newLineIfNotEmpty();
           {
-            Iterable<EStructuralFeature> _sortedAttributeFactorySignature_1 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+            Iterable<EStructuralFeature> _sortedAttributeFactorySignature_2 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
             boolean _hasElements_2 = false;
-            for(final EStructuralFeature attr_2 : _sortedAttributeFactorySignature_1) {
+            for(final EStructuralFeature attr_2 : _sortedAttributeFactorySignature_2) {
               if (!_hasElements_2) {
                 _hasElements_2 = true;
                 String _xifexpression_3 = null;
@@ -1265,13 +1517,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
           String _name_8 = eClass.getName();
           _builder_1.append(_name_8, "\t");
           {
-            final Function1<EStructuralFeature, Boolean> _function_2 = (EStructuralFeature it) -> {
-              Boolean _isContainer = OMLUtilities.isContainer(it);
-              return Boolean.valueOf((!(_isContainer).booleanValue()));
-            };
-            Iterable<EStructuralFeature> _filter_1 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_2);
+            Iterable<EStructuralFeature> _sortedAttributeFactorySignature_3 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
             boolean _hasElements_3 = false;
-            for(final EStructuralFeature attr_3 : _filter_1) {
+            for(final EStructuralFeature attr_3 : _sortedAttributeFactorySignature_3) {
               if (!_hasElements_3) {
                 _hasElements_3 = true;
                 _builder_1.append("( uuid, ", "\t");
@@ -1298,9 +1546,9 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         _builder_2.append(_name_10);
         _builder_2.newLineIfNotEmpty();
         {
-          Iterable<EStructuralFeature> _sortedAttributeFactorySignature_2 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+          Iterable<EStructuralFeature> _sortedAttributeFactorySignature_4 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
           boolean _hasElements_4 = false;
-          for(final EStructuralFeature attr_4 : _sortedAttributeFactorySignature_2) {
+          for(final EStructuralFeature attr_4 : _sortedAttributeFactorySignature_4) {
             if (!_hasElements_4) {
               _hasElements_4 = true;
               String _xifexpression_4 = null;
@@ -1359,13 +1607,13 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
         String _name_17 = eClass.getName();
         _builder_2.append(_name_17, "  ");
         {
-          final Function1<EStructuralFeature, Boolean> _function_3 = (EStructuralFeature it) -> {
-            Boolean _isContainer = OMLUtilities.isContainer(it);
-            return Boolean.valueOf((!(_isContainer).booleanValue()));
+          final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
+            Boolean _isFactory = OMLUtilities.isFactory(it);
+            return Boolean.valueOf((!(_isFactory).booleanValue()));
           };
-          Iterable<EStructuralFeature> _filter_2 = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_3);
+          Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
           boolean _hasElements_5 = false;
-          for(final EStructuralFeature attr_5 : _filter_2) {
+          for(final EStructuralFeature attr_5 : _filter) {
             if (!_hasElements_5) {
               _hasElements_5 = true;
               _builder_2.append("( uuid, ", "  ");
