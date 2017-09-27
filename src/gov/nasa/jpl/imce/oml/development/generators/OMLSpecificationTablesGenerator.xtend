@@ -337,7 +337,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
 		val uuidNS = eClass.lookupUUIDNamespaceFeature
 		val uuidFactors = eClass.lookupUUIDNamespaceFactors
-		val pairs = eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature]
+		val pairs = eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature && lowerBound>0]
 		val uuidWithGenerator = (null !== uuidNS) && (null !== uuidFactors)
 		val uuidWithoutContainer = (null !== uuid) && (null === container) && (null !== uuidNS)
 		val uuidWithContainer = (null !== uuid) && (null !== container)

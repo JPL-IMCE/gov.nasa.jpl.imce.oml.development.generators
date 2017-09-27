@@ -110,10 +110,17 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		else {
 			val uuidNS = eClass.lookupUUIDNamespaceFeature
 			val uuidFactors = eClass.lookupUUIDNamespaceFactors
-			if (null !== uuidNS && null !== uuidFactors)
-				factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidFactors)
-			else if (eClass.isUUIDDerived)
+			val uuidOp = eClass.lookupUUIDOperation
+			val uuidScala = if (null !== uuidOp)
+				uuidOp.scalaAnnotation
+			else
+				null
+			if (eClass.isUUIDDerived)
 				factoryMethodWithDerivedUUID(eClass)
+			else if (null !== uuidNS || !uuidFactors.empty) 
+				factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidFactors)
+			else if (null !== uuidScala) 
+				factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidScala)
 			else
 				factoryMethodWithImplicitlyDerivedUUID(eClass)
 		}
@@ -193,6 +200,41 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		'''
 	}
 
+	def String factoryMethodWithUUIDGenerator(EClass eClass, EStructuralFeature uuidNS, String uuidScala) {
+		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
+		val contained = container?.EOpposite
+		val newVal = eClass.name.toFirstLower
+		'''
+			override def create«eClass.name»
+			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+			: (resolver.api.Extent, resolver.api.«eClass.name»)
+			= {
+			  // factoryMethodWithUUIDGenerator (scala...)
+			  // container: «container.name» «container.EType.name»
+			  // contained: «contained.name» «contained.EType.name»
+			  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
+			  scala.Tuple2(
+			    «IF (container.lowerBound == 0)»
+			    «container.name».fold {
+			    extent.copy(
+			     «contained.EType.name.toFirstLower»ByUUID = extent.«contained.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»))
+			    }{ _«container.name»_ =>
+			    extent.copy(
+			     «contained.name» = extent.with«contained.EType.name»(_«container.name»_, «newVal»),
+			     «container.EType.name.toFirstLower»Of«contained.EType.name» = extent.«container.EType.name.toFirstLower»Of«contained.EType.name» + («newVal» -> _«container.name»_),
+			     «contained.EType.name.toFirstLower»ByUUID = extent.«contained.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»))
+			    },
+			    «ELSE»
+			    extent.copy(
+			     «contained.name» = extent.with«contained.EType.name»(«container.name», «newVal»),
+			     «container.EType.name.toFirstLower»Of«contained.EType.name» = extent.«container.EType.name.toFirstLower»Of«contained.EType.name» + («newVal» -> «container.name»),
+			     «contained.EType.name.toFirstLower»ByUUID = extent.«contained.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»)),
+			    «ENDIF»
+			  	«newVal»)
+			}
+		'''
+	}
+
 	def String factoryMethodWithDerivedUUID(EClass eClass) {
 		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
 		val contained = container?.EOpposite
@@ -246,7 +288,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= {
-				  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isContainer] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
+				  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
 				  scala.Tuple2(
 					extent.copy(«eClass.tableVariableName» = extent.«eClass.tableVariableName» + (uuid -> «newVal»)), 
 						«newVal»)
@@ -257,7 +299,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= scala.Tuple2(
 				    extent, 
-					«eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isContainer] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
+					«eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
 				)
 			'''
 		} else '''
@@ -268,7 +310,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 			  // factoryMethodWithImplicitlyDerivedUUID
 			  // container: «container.name» «container.EType.name»
 			  // contained: «contained.name» «contained.EType.name»
-			  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isContainer] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
+			  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isFactory] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
 			  scala.Tuple2(
 			  	extent.copy(
 			  	  «contained.name» = extent.with«contained.EType.name»(«container.name», «newVal»),

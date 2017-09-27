@@ -137,10 +137,17 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		else {
 			val uuidNS = eClass.lookupUUIDNamespaceFeature
 			val uuidFactors = eClass.lookupUUIDNamespaceFactors
-			if (null !== uuidNS && null !== uuidFactors) 
-				factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidFactors)
-			else if (eClass.isUUIDDerived)
+			val uuidOp = eClass.lookupUUIDOperation
+			val uuidScala = if (null !== uuidOp)
+				uuidOp.scalaAnnotation
+			else
+				null
+			if (eClass.isUUIDDerived)
 				factoryMethodWithDerivedUUID(eClass)
+			else if (null !== uuidNS || !uuidFactors.empty) 
+				factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidFactors)
+			else if (null !== uuidScala) 
+				factoryMethodWithUUIDGenerator(eClass, uuidNS, uuidScala)
 			else
 				factoryMethodWithImplicitlyDerivedUUID(eClass)
 		}
@@ -155,15 +162,38 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	}
 	
 	def String factoryMethodWithUUIDGenerator(EClass eClass, EStructuralFeature uuidNS, Iterable<EStructuralFeature> uuidFactors) {
-		val uuidConv = if (null !== uuidNS.EClassType?.lookupUUIDFeature) ".uuid" else ""
+		val uuidConv = if (null !== uuidNS && null !== uuidNS.EClassType?.lookupUUIDFeature) ".uuid" else ""
 		'''
 		def create«eClass.name»
 		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
 		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
 		= «IF (uuidFactors.empty)»{«ELSE»{
-			// namespace uuid...
+		  // namespace uuid...
 		  import scala.Predef.ArrowAssoc«ENDIF»
+		  «IF (null !== uuidNS)»
 		  val uuid: java.util.UUID = namespaceUUID(«uuidNS.name»«uuidConv».toString«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		  «ELSE»
+		  val uuid: java.util.UUID = namespaceUUID("«eClass.name»"«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		  «ENDIF»
+		}
+		
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		'''
+	}
+	
+	def String factoryMethodWithUUIDGenerator(EClass eClass, EStructuralFeature uuidNS, String uuidScala) {
+		'''
+		def create«eClass.name»
+		«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( " else "( extent: Extent,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('')»«ENDFOR»
+		«IF (eClass.isExtentContainer)»: «eClass.name»«ELSE»: (Extent, «eClass.name»)«ENDIF»
+		= {
+		  // custom uuid...
+		  import scala.Predef.ArrowAssoc
+		  val uuid: java.util.UUID = «uuidScala»
 		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
 		}
 		
@@ -245,26 +275,32 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		package gov.nasa.jpl.imce.oml.resolver.api
 		
 		import scala.collection.immutable.{Map, HashMap, Set}
-		import scala.{Option,None}
+		import scala.Option
 		 
-		«FOR ct : containerTypes BEFORE "// Container types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.EPackage.name».«ct.name»«ENDFOR»
-		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.EPackage.name».«ct.name»«ENDFOR»
+		«FOR ct : containerTypes BEFORE "// Container types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
+		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
 		«eClass.doc("")»case class «eClass.name»
 		(«FOR em : extManaged.filter[!isAbstract] BEFORE " " SEPARATOR ",\n  " AFTER ",\n"»«em.tableVariableName»: Map[java.util.UUID, «em.name»] = HashMap.empty[java.util.UUID, «em.name»]«ENDFOR»
-		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.name»: Map[«c.EClassContainer.name», Set[«c.EType.name»]] = HashMap.empty[«c.EClassContainer.name», Set[«c.EType.name»]]«ENDFOR»
+		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.name»: Map[«c.EClassContainer.name», «IF (c.upperBound == 1)»«c.EType.name»«ELSE»Set[«c.EType.name»]«ENDIF»] = HashMap.empty[«c.EClassContainer.name», «IF (c.upperBound == 1)»«c.EType.name»«ELSE»Set[«c.EType.name»]«ENDIF»]«ENDFOR»
 		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.EClassContainer.name.toFirstLower»Of«c.EType.name»: Map[«c.EType.name», «c.EClassContainer.name»] = HashMap.empty[«c.EType.name», «c.EClassContainer.name»]«ENDFOR»
-		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER "\n"»«c.EType.name.toFirstLower»ByUUID: Map[java.util.UUID, «c.EType.name»] = HashMap.empty[java.util.UUID, «c.EType.name»]«ENDFOR»
+		«FOR ct : containedTypes BEFORE "\n  " SEPARATOR ",\n  " AFTER "\n"»«ct.name.toFirstLower»ByUUID: Map[java.util.UUID, «ct.name»] = HashMap.empty[java.util.UUID, «ct.name»]«ENDFOR»
 		) {
-		  «FOR c : containers»
-		  def with«c.EType.name»(«c.EClassContainer.name.toFirstLower»: «c.EClassContainer.name», «c.EType.name.toFirstLower»: «c.EType.name»)
-		  : Map[«c.EClassContainer.name», Set[«c.EType.name»]] 
-		  = «c.name».updated(«c.EClassContainer.name.toFirstLower», «c.name».getOrElse(«c.EClassContainer.name.toFirstLower», Set.empty[«c.EType.name»]) + «c.EType.name.toFirstLower»)
+		  «FOR c : containers»«IF (c.upperBound == 1)»
+		  def with«c.EType.name»(key: «c.EClassContainer.name», value: «c.EType.name»)
+		  : Map[«c.EClassContainer.name», «c.EType.name»] 
+		  = «c.name».updated(key, value)
 		  
+		  «ELSE»
+		  def with«c.EType.name»(key: «c.EClassContainer.name», value: «c.EType.name»)
+		  : Map[«c.EClassContainer.name», Set[«c.EType.name»]] 
+		  = «c.name».updated(key, «c.name».getOrElse(key, Set.empty[«c.EType.name»]) + value)
+		  
+		  «ENDIF»
 		  «ENDFOR»
 				
 		  def lookupModule(uuid: Option[java.util.UUID])
 		  : Option[Module]
-		  = uuid.fold[Option[Module]](None) { lookupModule }
+		  = uuid.flatMap { lookupModule }
 		  
 		  def lookupModule(uuid: java.util.UUID)
 		  : Option[Module]
@@ -272,23 +308,42 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  
 		  def lookupTerminologyBox(uuid: Option[java.util.UUID])
 		  : Option[TerminologyBox]
-		  = uuid.fold[Option[TerminologyBox]](None) { lookupTerminologyBox }
+		  = uuid.flatMap { lookupTerminologyBox }
 		  
 		  def lookupTerminologyBox(uuid: java.util.UUID)
 		  : Option[TerminologyBox]
 		  = lookupTerminologyGraph(uuid) orElse lookupBundle(uuid)
 		
 		  «FOR em : extManaged.filter[!isAbstract] SEPARATOR "\n  " AFTER "\n"»
+		  
 		  def lookup«em.name»(uuid: Option[java.util.UUID])
 		  : Option[«em.name»]
-		  = uuid.fold[Option[«em.name»]](None) { lookup«em.name» } 
+		  = uuid.flatMap { lookup«em.name» } 
 		  
 		  def lookup«em.name»(uuid: java.util.UUID)
 		  : Option[«em.name»]
 		  = «em.tableVariableName».get(uuid)
 		  «ENDFOR»
 
-		  «FOR c : containers SEPARATOR "\n  " AFTER "\n"»
+		  «FOR c : containers SEPARATOR "\n  " AFTER "\n"»«IF (c.upperBound == 1)»
+		  def lookup«c.name.toFirstUpper»(key: Option[«c.EClassContainer.name»])
+		  : Option[«c.EType.name»]
+		  = key.flatMap { lookup«c.name.toFirstUpper» }
+		  
+		  def lookup«c.name.toFirstUpper»(key: «c.EClassContainer.name»)
+		  : Option[«c.EType.name»]
+		  = «c.name».get(key)
+		  «IF (c.EType.name != "Annotation" && c.EType != c.EClassContainer)»
+		  
+		  def lookup«c.EType.name»(uuid: Option[java.util.UUID])
+		  : Option[«c.EType.name»]
+		  = uuid.flatMap { lookup«c.EType.name» } 
+		  
+		  def lookup«c.EType.name»(uuid: java.util.UUID)
+		  : Option[«c.EType.name»]
+		  = «c.EType.name.toFirstLower»ByUUID.get(uuid)
+	  	  «ENDIF»
+	  	  «ELSE»
 		  def lookup«c.name.toFirstUpper»(key: Option[«c.EClassContainer.name»])
 		  : Set[«c.EType.name»]
 		  = key.fold[Set[«c.EType.name»]](Set.empty[«c.EType.name»]) { lookup«c.name.toFirstUpper» }
@@ -300,11 +355,12 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  
 		  def lookup«c.EType.name»(uuid: Option[java.util.UUID])
 		  : Option[«c.EType.name»]
-		  = uuid.fold[Option[«c.EType.name»]](None) { lookup«c.EType.name» } 
+		  = uuid.flatMap { lookup«c.EType.name» } 
 		  
 		  def lookup«c.EType.name»(uuid: java.util.UUID)
 		  : Option[«c.EType.name»]
 		  = «c.EType.name.toFirstLower»ByUUID.get(uuid)
+	  	  «ENDIF»
 	  	  «ENDIF»
 		  «ENDFOR»
 		
@@ -316,20 +372,24 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	'''
 	}
 	
-	def String generateClassFile(EClass eClass) '''
+	def String generateClassFile(EClass eClass) {
+		val apiStructuralFeatures = eClass.APIStructuralFeatures
+		val apiOperations = eClass.APIOperations
+	'''
 		«copyright»
 		package gov.nasa.jpl.imce.oml.resolver.api
 		
 		«eClass.doc("")»«eClass.traitDeclaration»
 		{
-		«FOR f : eClass.APIStructuralFeatures BEFORE "\n  " SEPARATOR "\n  " AFTER "\n"»«f.doc("  ")»«IF (f.isOverride)»override «ENDIF»val «f.name»: «f.queryResolverType('')»«ENDFOR»
-		«FOR op : eClass.APIOperations BEFORE "\n  " SEPARATOR "\n  " AFTER "\n"»«op.doc("  ")»«op.queryResolverName('')»: «op.queryResolverType('')»«ENDFOR»
+		«FOR f : apiStructuralFeatures BEFORE "\n  " SEPARATOR "\n  " AFTER "\n"»«f.doc("  ")»«IF (f.isOverride)»override «ENDIF»val «f.name»: «f.queryResolverType('')»«ENDFOR»
+		«FOR op : apiOperations BEFORE "\n  " SEPARATOR "\n  " AFTER "\n"»«op.doc("  ")»«op.queryResolverName('')»: «op.queryResolverType('')»«ENDFOR»
 		«IF (eClass.isRootHierarchyClass)»
 		  
 		  def canEqual(that: scala.Any): scala.Boolean
 		«ENDIF»
 		}
 	'''
+	}
 	
 	static def String traitDeclaration(EClass eClass) '''
 		trait «eClass.name»

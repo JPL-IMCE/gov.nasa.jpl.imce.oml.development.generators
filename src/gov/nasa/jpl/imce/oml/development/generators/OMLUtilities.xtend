@@ -378,6 +378,10 @@ class OMLUtilities extends OMLXcorePackages {
 		.findFirst[isUUID]
 	}
 	
+	static def EOperation lookupUUIDOperation(EClass eClass) {
+		eClass.EAllOperations.findFirst[isUUID && isScala]
+	}
+	
 	static def ETypedElement lookupUUIDTypedElement(EClass eClass) {
 		val typedElements = new BasicEList<ETypedElement>()
 		typedElements.addAll(eClass.getSortedAttributeSignature)
@@ -426,9 +430,9 @@ class OMLUtilities extends OMLXcorePackages {
 				factoredFeatures.addAll(factors.split(","))
 				eClass.getSortedAttributeFactorySignature.filter[s|factoredFeatures.exists[f|f == s.name]]
 			}
-		].flatten
+		].flatten.sortBy[name]
 	}
-    
+	
 	static def Boolean isCopyConstructorArgument(EStructuralFeature attribute) {
 		null !== attribute.getEAnnotation("http://imce.jpl.nasa.gov/oml/CopyConstructor")
 	}
