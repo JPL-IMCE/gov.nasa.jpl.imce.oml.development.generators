@@ -172,10 +172,10 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  import scala.Predef.ArrowAssoc«ENDIF»
 		  «IF (null !== uuidNS)»
 		  val uuid: java.util.UUID = namespaceUUID(«uuidNS.name»«uuidConv».toString«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
-		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "»«attr.name»«ENDFOR» )
 		  «ELSE»
 		  val uuid: java.util.UUID = namespaceUUID("«eClass.name»"«FOR f : uuidFactors BEFORE ", " SEPARATOR ", "» "«f.name»" -> «f.name»«ENDFOR»)
-		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "»«attr.name»«ENDFOR» )
 		  «ENDIF»
 		}
 		
@@ -194,7 +194,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  // custom uuid...
 		  import scala.Predef.ArrowAssoc
 		  val uuid: java.util.UUID = «uuidScala»
-		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "»«attr.name»«ENDFOR» )
 		}
 		
 		def create«eClass.name»
@@ -204,7 +204,10 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	}
 	
 	def String factoryMethodWithDerivedUUID(EClass eClass) {
-		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature] SEPARATOR ", "» "«attr.name»" -> «IF (attr.isIRIReference)»namespaceUUID(«attr.name»).toString«ELSE»«attr.name».uuid.toString«ENDIF»«ENDFOR»'''
+		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature]»«IF (attr.isIRIReference)» ++
+  Seq("«attr.name»" -> namespaceUUID(«attr.name»).toString)«ELSEIF (0 == attr.lowerBound)» ++
+  «attr.name».map { vt => "«attr.name»" -> vt.uuid.toString }«ELSE» ++
+  Seq("«attr.name»" -> «attr.name».uuid.toString)«ENDIF»«ENDFOR»'''
 		
 		'''
 		def create«eClass.name»
@@ -213,8 +216,10 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		= {
 			// derived uuid...
 		  import scala.Predef.ArrowAssoc
-		  val uuid: java.util.UUID = namespaceUUID("«eClass.name»", «pairs»)
-		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		  val uuid: java.util.UUID = namespaceUUID(
+		    "«eClass.name»",
+		    Seq.empty[(String, String)]«pairs» : _*)
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "uuid, " else "extent, uuid, " SEPARATOR ", "»«attr.name»«ENDFOR» )
 		}
 		
 		def create«eClass.name»
@@ -224,7 +229,10 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	}
 	
 	def String factoryMethodWithImplicitlyDerivedUUID(EClass eClass) {
-		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature] SEPARATOR ", "» "«attr.name»" -> «IF (attr.isIRIReference)»namespaceUUID(«attr.name»).toString«ELSE»«attr.name».uuid.toString«ENDIF»«ENDFOR»'''
+		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature]»«IF (attr.isIRIReference)» ++
+  Seq("«attr.name»" -> namespaceUUID(«attr.name»).toString«ELSEIF (0 == attr.lowerBound)» ++
+  «attr.name».map { vt => "«attr.name»" -> vt.uuid.toString }«ELSE» ++
+  Seq("«attr.name»" -> «attr.name».uuid.toString)«ENDIF»«ENDFOR»'''
 		
 		'''
 		def create«eClass.name»
@@ -233,8 +241,10 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		= {
 			// implicitly derived uuid...
 		  import scala.Predef.ArrowAssoc
-		  val implicitUUID: java.util.UUID = namespaceUUID("«eClass.name»", «pairs»)
-		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "implicitUUID, " else "extent, implicitUUID, " SEPARATOR ", "» «attr.name»«ENDFOR» )
+		  val implicitUUID: java.util.UUID = namespaceUUID(
+		    "«eClass.name»",
+		    Seq.empty[(String, String)]«pairs» : _*)
+		  create«eClass.name»( «FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "implicitUUID, " else "extent, implicitUUID, " SEPARATOR ", "»«attr.name»«ENDFOR» )
 		}
 		
 		def create«eClass.name»
@@ -248,6 +258,8 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		package «packageQName»
 		
 		import gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator
+		import scala.collection.immutable.Seq
+		import scala.Predef.String
 		
 		trait OMLResolvedFactory {
 		  
