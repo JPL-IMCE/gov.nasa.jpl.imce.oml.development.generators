@@ -1315,6 +1315,15 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         }
       }
       _builder.newLine();
+      {
+        EStructuralFeature _lookupUUIDFeature = OMLUtilities.lookupUUIDFeature(eClass);
+        boolean _tripleNotEquals = (null != _lookupUUIDFeature);
+        if (_tripleNotEquals) {
+          _builder.append("val vertexId: scala.Long = uuid.hashCode.toLong");
+          _builder.newLine();
+          _builder.newLine();
+        }
+      }
       _builder.append("  ");
       _builder.append("override val hashCode");
       _builder.newLine();

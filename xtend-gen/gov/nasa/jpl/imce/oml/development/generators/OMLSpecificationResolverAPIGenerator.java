@@ -2007,7 +2007,14 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       {
         Boolean _isRootHierarchyClass = OMLUtilities.isRootHierarchyClass(eClass);
         if ((_isRootHierarchyClass).booleanValue()) {
+          _builder.append("  ");
           _builder.newLine();
+          _builder.append("  ");
+          _builder.append("val vertexId: scala.Long = uuid.toString.hashCode.toLong");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.newLine();
+          _builder.append("  ");
           _builder.append("def canEqual(that: scala.Any): scala.Boolean");
           _builder.newLine();
         }
