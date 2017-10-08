@@ -395,7 +395,9 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		{
 		«FOR f : apiStructuralFeatures BEFORE "\n  " SEPARATOR "\n  " AFTER "\n"»«f.doc("  ")»«IF (f.isOverride)»override «ENDIF»val «f.name»: «f.queryResolverType('')»«ENDFOR»
 		«FOR op : apiOperations BEFORE "\n  " SEPARATOR "\n  " AFTER "\n"»«op.doc("  ")»«op.queryResolverName('')»: «op.queryResolverType('')»«ENDFOR»
-		«IF (eClass.isRootHierarchyClass)»
+		  «IF (eClass.isRootHierarchyClass)»
+		  
+		  val vertexId: scala.Long = uuid.toString.hashCode.toLong
 		  
 		  def canEqual(that: scala.Any): scala.Boolean
 		«ENDIF»

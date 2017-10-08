@@ -389,6 +389,10 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		          "«f.name»" -> «f.columnUUID»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString,\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ENDIF»
 		
+		«IF null !== eClass.lookupUUIDFeature»
+		  val vertexId: scala.Long = uuid.hashCode.toLong
+
+		«ENDIF»
 		  override val hashCode
 		  : scala.Int 
 		  = «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes BEFORE "(" SEPARATOR ", " AFTER ").##"»«attr.columnName»«ENDFOR»
