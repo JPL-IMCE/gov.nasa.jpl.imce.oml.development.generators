@@ -387,6 +387,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	def String generateClassFile(EClass eClass) {
 		val apiStructuralFeatures = eClass.APIStructuralFeatures
 		val apiOperations = eClass.APIOperations
+		val apiExtentOperations = apiOperations.filter[isImplicitExtent]
 	'''
 		«copyright»
 		package gov.nasa.jpl.imce.oml.resolver.api
@@ -402,6 +403,18 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  def canEqual(that: scala.Any): scala.Boolean
 		«ENDIF»
 		}
+		«IF (!apiExtentOperations.empty)»
+		
+		object «eClass.name» {
+		
+		«FOR op : apiExtentOperations»  def «op.name»
+		  («eClass.name.toLowerCase.charAt(0)»: «eClass.name», ext: Extent)
+		  : «op.queryResolverType('')»
+		  = «eClass.name.toLowerCase.charAt(0)».«op.name»()(ext)
+		
+		«ENDFOR»
+		}
+		«ENDIF»
 	'''
 	}
 	

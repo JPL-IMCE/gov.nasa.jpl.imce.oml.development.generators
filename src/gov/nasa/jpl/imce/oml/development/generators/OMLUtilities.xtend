@@ -135,6 +135,8 @@ class OMLUtilities extends OMLXcorePackages {
 //					"scala.Option[java.util.UUID] /* reference to a "+typePrefix+type.name+" */"
 				else if (feature.isIRIReference)
 					"gov.nasa.jpl.imce.oml.tables.IRI"
+				else if (feature.isLiteralStringFeature)
+					"gov.nasa.jpl.imce.oml.tables.StringDataType"
 				else if (feature.isLiteralFeature)
 					scalaType
 				else
@@ -250,6 +252,8 @@ class OMLUtilities extends OMLXcorePackages {
 					"LiteralDateTime"
 				else if (feature.isLiteralNumberFeature)
 					"LiteralNumber"
+				else if (feature.isLiteralStringFeature)
+					"StringDataType"
 				else if (feature.isLiteralFeature)
 					"LiteralValue"
 				else
@@ -565,8 +569,16 @@ class OMLUtilities extends OMLXcorePackages {
 		isLiteralNumber(f.EType)
 	}
 	
+	static def Boolean isLiteralString(EClassifier type) {
+		type.name == "LiteralString"
+	}
+	
+	static def Boolean isLiteralStringFeature(ETypedElement f) {
+		isLiteralString(f.EType)
+	}
+	
 	static def Boolean isLiteralValue(EClassifier type) {
-		type.name == "LiteralValue" || type.name == "LiteralNumber" || type.name == "LiteralDateTime"
+		type.name == "LiteralValue" || type.name == "LiteralNumber" || type.name == "LiteralDateTime" || type.name == "LiteralString"
 	}
 	
 	static def Boolean isLiteralFeature(ETypedElement f) {
