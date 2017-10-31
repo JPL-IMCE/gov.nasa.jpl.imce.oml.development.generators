@@ -431,12 +431,19 @@ public class OMLUtilities extends OMLXcorePackages {
               _xifexpression_4 = "gov.nasa.jpl.imce.oml.tables.IRI";
             } else {
               String _xifexpression_5 = null;
-              Boolean _isLiteralFeature_1 = OMLUtilities.isLiteralFeature(feature);
-              if ((_isLiteralFeature_1).booleanValue()) {
-                _xifexpression_5 = scalaType;
+              Boolean _isLiteralStringFeature = OMLUtilities.isLiteralStringFeature(feature);
+              if ((_isLiteralStringFeature).booleanValue()) {
+                _xifexpression_5 = "gov.nasa.jpl.imce.oml.tables.StringDataType";
               } else {
-                String _name_1 = type.getName();
-                _xifexpression_5 = (typePrefix + _name_1);
+                String _xifexpression_6 = null;
+                Boolean _isLiteralFeature_1 = OMLUtilities.isLiteralFeature(feature);
+                if ((_isLiteralFeature_1).booleanValue()) {
+                  _xifexpression_6 = scalaType;
+                } else {
+                  String _name_1 = type.getName();
+                  _xifexpression_6 = (typePrefix + _name_1);
+                }
+                _xifexpression_5 = _xifexpression_6;
               }
               _xifexpression_4 = _xifexpression_5;
             }
@@ -733,11 +740,18 @@ public class OMLUtilities extends OMLXcorePackages {
                 _xifexpression_2 = "LiteralNumber";
               } else {
                 String _xifexpression_3 = null;
-                Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(feature);
-                if ((_isLiteralFeature).booleanValue()) {
-                  _xifexpression_3 = "LiteralValue";
+                Boolean _isLiteralStringFeature = OMLUtilities.isLiteralStringFeature(feature);
+                if ((_isLiteralStringFeature).booleanValue()) {
+                  _xifexpression_3 = "StringDataType";
                 } else {
-                  _xifexpression_3 = "UUID";
+                  String _xifexpression_4 = null;
+                  Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(feature);
+                  if ((_isLiteralFeature).booleanValue()) {
+                    _xifexpression_4 = "LiteralValue";
+                  } else {
+                    _xifexpression_4 = "UUID";
+                  }
+                  _xifexpression_3 = _xifexpression_4;
                 }
                 _xifexpression_2 = _xifexpression_3;
               }
@@ -1304,8 +1318,17 @@ public class OMLUtilities extends OMLXcorePackages {
     return OMLUtilities.isLiteralNumber(f.getEType());
   }
   
+  public static Boolean isLiteralString(final EClassifier type) {
+    String _name = type.getName();
+    return Boolean.valueOf(Objects.equal(_name, "LiteralString"));
+  }
+  
+  public static Boolean isLiteralStringFeature(final ETypedElement f) {
+    return OMLUtilities.isLiteralString(f.getEType());
+  }
+  
   public static Boolean isLiteralValue(final EClassifier type) {
-    return Boolean.valueOf(((Objects.equal(type.getName(), "LiteralValue") || Objects.equal(type.getName(), "LiteralNumber")) || Objects.equal(type.getName(), "LiteralDateTime")));
+    return Boolean.valueOf((((Objects.equal(type.getName(), "LiteralValue") || Objects.equal(type.getName(), "LiteralNumber")) || Objects.equal(type.getName(), "LiteralDateTime")) || Objects.equal(type.getName(), "LiteralString")));
   }
   
   public static Boolean isLiteralFeature(final ETypedElement f) {

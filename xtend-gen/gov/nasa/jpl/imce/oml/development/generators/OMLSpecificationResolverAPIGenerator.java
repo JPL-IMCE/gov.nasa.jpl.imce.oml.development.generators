@@ -1939,6 +1939,10 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
     {
       final Iterable<EStructuralFeature> apiStructuralFeatures = OMLUtilities.APIStructuralFeatures(eClass);
       final Iterable<EOperation> apiOperations = OMLUtilities.APIOperations(eClass);
+      final Function1<EOperation, Boolean> _function = (EOperation it) -> {
+        return OMLUtilities.isImplicitExtent(it);
+      };
+      final Iterable<EOperation> apiExtentOperations = IterableExtensions.<EOperation>filter(apiOperations, _function);
       StringConcatenation _builder = new StringConcatenation();
       String _copyright = OMLUtilities.copyright();
       _builder.append(_copyright);
@@ -2021,6 +2025,53 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       }
       _builder.append("}");
       _builder.newLine();
+      {
+        boolean _isEmpty = IterableExtensions.isEmpty(apiExtentOperations);
+        boolean _not = (!_isEmpty);
+        if (_not) {
+          _builder.newLine();
+          _builder.append("object ");
+          String _name_1 = eClass.getName();
+          _builder.append(_name_1);
+          _builder.append(" {");
+          _builder.newLineIfNotEmpty();
+          _builder.newLine();
+          {
+            for(final EOperation op_1 : apiExtentOperations) {
+              _builder.append("  def ");
+              String _name_2 = op_1.getName();
+              _builder.append(_name_2);
+              _builder.newLineIfNotEmpty();
+              _builder.append("  ");
+              _builder.append("(");
+              char _charAt = eClass.getName().toLowerCase().charAt(0);
+              _builder.append(_charAt, "  ");
+              _builder.append(": ");
+              String _name_3 = eClass.getName();
+              _builder.append(_name_3, "  ");
+              _builder.append(", ext: Extent)");
+              _builder.newLineIfNotEmpty();
+              _builder.append("  ");
+              _builder.append(": ");
+              String _queryResolverType_2 = OMLUtilities.queryResolverType(op_1, "");
+              _builder.append(_queryResolverType_2, "  ");
+              _builder.newLineIfNotEmpty();
+              _builder.append("  ");
+              _builder.append("= ");
+              char _charAt_1 = eClass.getName().toLowerCase().charAt(0);
+              _builder.append(_charAt_1, "  ");
+              _builder.append(".");
+              String _name_4 = op_1.getName();
+              _builder.append(_name_4, "  ");
+              _builder.append("()(ext)");
+              _builder.newLineIfNotEmpty();
+              _builder.newLine();
+            }
+          }
+          _builder.append("}");
+          _builder.newLine();
+        }
+      }
       _xblockexpression = _builder.toString();
     }
     return _xblockexpression;
