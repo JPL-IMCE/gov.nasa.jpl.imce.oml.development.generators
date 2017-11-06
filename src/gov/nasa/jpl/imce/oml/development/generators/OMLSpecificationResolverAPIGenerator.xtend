@@ -204,7 +204,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	}
 	
 	def String factoryMethodWithDerivedUUID(EClass eClass) {
-		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature]»«IF (attr.isIRIReference)» ++
+		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature && isEssential]»«IF (attr.isIRIReference)» ++
   Seq("«attr.name»" -> namespaceUUID(«attr.name»).toString)«ELSEIF (0 == attr.lowerBound)» ++
   «attr.name».map { vt => "«attr.name»" -> vt.uuid.toString }«ELSE» ++
   Seq("«attr.name»" -> «attr.name».uuid.toString)«ENDIF»«ENDFOR»'''

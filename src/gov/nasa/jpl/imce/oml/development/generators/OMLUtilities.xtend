@@ -415,6 +415,10 @@ class OMLUtilities extends OMLXcorePackages {
 		null !== sf.EClassType?.lookupUUIDTypedElement
 	}
 	
+	static def Boolean isEssential(EStructuralFeature sf) {
+		sf.lowerBound == 1 && sf.upperBound == 1	
+	}
+	
     static def Boolean isUUIDDerived(EClass e) {
     		null !== e.getEAnnotation("http://imce.jpl.nasa.gov/oml/DerivedUUID")
     }
