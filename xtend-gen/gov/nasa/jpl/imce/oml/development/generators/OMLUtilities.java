@@ -1003,6 +1003,10 @@ public class OMLUtilities extends OMLXcorePackages {
     return Boolean.valueOf((null != _lookupUUIDTypedElement));
   }
   
+  public static Boolean isEssential(final EStructuralFeature sf) {
+    return Boolean.valueOf(((sf.getLowerBound() == 1) && (sf.getUpperBound() == 1)));
+  }
+  
   public static Boolean isUUIDDerived(final EClass e) {
     EAnnotation _eAnnotation = e.getEAnnotation("http://imce.jpl.nasa.gov/oml/DerivedUUID");
     return Boolean.valueOf((null != _eAnnotation));

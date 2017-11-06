@@ -812,7 +812,7 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       StringConcatenation _builder = new StringConcatenation();
       {
         final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
-          return OMLUtilities.isUUIDFeature(it);
+          return Boolean.valueOf(((OMLUtilities.isUUIDFeature(it)).booleanValue() && (OMLUtilities.isEssential(it)).booleanValue()));
         };
         Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function);
         for(final EStructuralFeature attr : _filter) {
