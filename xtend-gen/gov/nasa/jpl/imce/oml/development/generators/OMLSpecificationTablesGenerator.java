@@ -170,12 +170,10 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
         return it.getEClassifiers();
       };
-      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
-        return OMLUtilities.isFunctionalAPI(it);
-      };
-      Iterable<EClass> _filter = IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1);
+      Iterable<EClass> _filter = Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class);
       for (final EClass eClass : _filter) {
-        {
+        Boolean _isFunctionalAPI = OMLUtilities.isFunctionalAPI(eClass);
+        if ((_isFunctionalAPI).booleanValue()) {
           String _name = eClass.getName();
           String _plus = ((targetFolder + File.separator) + _name);
           String _plus_1 = (_plus + ".scala");
@@ -185,6 +183,19 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
             classFile.write(this.generateClassFile(eClass, packageQName).getBytes());
           } finally {
             classFile.close();
+          }
+        } else {
+          if (((!eClass.getName().startsWith("Literal")) && (!Objects.equal(eClass.getName(), "Extent")))) {
+            String _name_1 = eClass.getName();
+            String _plus_2 = ((targetFolder + File.separator) + _name_1);
+            String _plus_3 = (_plus_2 + ".scala");
+            File _file_4 = new File(_plus_3);
+            final FileOutputStream classFile_1 = new FileOutputStream(_file_4);
+            try {
+              classFile_1.write(this.generateTraitFile(eClass, packageQName).getBytes());
+            } finally {
+              classFile_1.close();
+            }
           }
         }
       }
@@ -1417,18 +1428,60 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           } else {
             _builder.appendImmediate(",", "  ");
           }
-          _builder.append("  ");
-          _builder.append("@(JSExport @field) ");
-          String _columnName_1 = OMLUtilities.columnName(attr_1);
-          _builder.append(_columnName_1, "  ");
-          _builder.append(": ");
-          String _constructorTypeRef = OMLUtilities.constructorTypeRef(eClass, attr_1);
-          _builder.append(_constructorTypeRef, "  ");
-          _builder.newLineIfNotEmpty();
+          {
+            if ((((null != OMLUtilities.lookupUUIDFeature(eClass)) && Objects.equal(OMLUtilities.columnName(attr_1), "uuid")) && (!IterableExtensions.isEmpty(OMLUtilities.ESuperClasses(eClass))))) {
+              _builder.append("  ");
+              _builder.append("@(JSExport @field) override val ");
+              String _columnName_1 = OMLUtilities.columnName(attr_1);
+              _builder.append(_columnName_1, "  ");
+              _builder.append(": ");
+              String _constructorTypeRef = OMLUtilities.constructorTypeRef(eClass, attr_1);
+              _builder.append(_constructorTypeRef, "  ");
+              _builder.newLineIfNotEmpty();
+            } else {
+              EClass _EClassContainer = OMLUtilities.EClassContainer(attr_1);
+              boolean _notEquals = (!Objects.equal(_EClassContainer, eClass));
+              if (_notEquals) {
+                _builder.append("  ");
+                _builder.append("@(JSExport @field) override val ");
+                String _columnName_2 = OMLUtilities.columnName(attr_1);
+                _builder.append(_columnName_2, "  ");
+                _builder.append(": ");
+                String _constructorTypeRef_1 = OMLUtilities.constructorTypeRef(eClass, attr_1);
+                _builder.append(_constructorTypeRef_1, "  ");
+                _builder.newLineIfNotEmpty();
+              } else {
+                _builder.append("  ");
+                _builder.append("@(JSExport @field) val ");
+                String _columnName_3 = OMLUtilities.columnName(attr_1);
+                _builder.append(_columnName_3, "  ");
+                _builder.append(": ");
+                String _constructorTypeRef_2 = OMLUtilities.constructorTypeRef(eClass, attr_1);
+                _builder.append(_constructorTypeRef_2, "  ");
+                _builder.newLineIfNotEmpty();
+              }
+            }
+          }
         }
       }
-      _builder.append(") {");
-      _builder.newLine();
+      _builder.append(")");
+      {
+        Iterable<EClass> _ESuperClasses = OMLUtilities.ESuperClasses(eClass);
+        boolean _hasElements_1 = false;
+        for(final EClass sup : _ESuperClasses) {
+          if (!_hasElements_1) {
+            _hasElements_1 = true;
+            _builder.append(" extends");
+          } else {
+            _builder.appendImmediate(" with", "");
+          }
+          _builder.append(" ");
+          String _name_2 = sup.getName();
+          _builder.append(_name_2);
+        }
+      }
+      _builder.append(" {");
+      _builder.newLineIfNotEmpty();
       {
         Boolean _hasSchemaOptionalAttributes_1 = OMLUtilities.hasSchemaOptionalAttributes(eClass);
         if ((_hasSchemaOptionalAttributes_1).booleanValue()) {
@@ -1442,21 +1495,21 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               return Boolean.valueOf((_lowerBound_1 > 0));
             };
             Iterable<ETypedElement> _filter = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_3);
-            boolean _hasElements_1 = false;
+            boolean _hasElements_2 = false;
             for(final ETypedElement attr_2 : _filter) {
-              if (!_hasElements_1) {
-                _hasElements_1 = true;
+              if (!_hasElements_2) {
+                _hasElements_2 = true;
               } else {
                 _builder.appendImmediate(",\n", "  ");
               }
               _builder.append("  ");
-              String _columnName_2 = OMLUtilities.columnName(attr_2);
-              _builder.append(_columnName_2, "  ");
+              String _columnName_4 = OMLUtilities.columnName(attr_2);
+              _builder.append(_columnName_4, "  ");
               _builder.append(": ");
-              String _constructorTypeRef_1 = OMLUtilities.constructorTypeRef(eClass, attr_2);
-              _builder.append(_constructorTypeRef_1, "  ");
+              String _constructorTypeRef_3 = OMLUtilities.constructorTypeRef(eClass, attr_2);
+              _builder.append(_constructorTypeRef_3, "  ");
             }
-            if (_hasElements_1) {
+            if (_hasElements_2) {
               _builder.append(")", "  ");
             }
           }
@@ -1467,10 +1520,10 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.append("  ");
           {
             Iterable<ETypedElement> _schemaAPIOrOrderingKeyAttributes_2 = OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass);
-            boolean _hasElements_2 = false;
+            boolean _hasElements_3 = false;
             for(final ETypedElement attr_3 : _schemaAPIOrOrderingKeyAttributes_2) {
-              if (!_hasElements_2) {
-                _hasElements_2 = true;
+              if (!_hasElements_3) {
+                _hasElements_3 = true;
               } else {
                 _builder.appendImmediate(",\n", "  ");
               }
@@ -1479,17 +1532,17 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                 boolean _greaterThan = (_lowerBound_1 > 0);
                 if (_greaterThan) {
                   _builder.append("    ");
-                  String _columnName_3 = OMLUtilities.columnName(attr_3);
-                  _builder.append(_columnName_3, "  ");
+                  String _columnName_5 = OMLUtilities.columnName(attr_3);
+                  _builder.append(_columnName_5, "  ");
                 } else {
                   _builder.append("    scala.None /* ");
-                  String _columnName_4 = OMLUtilities.columnName(attr_3);
-                  _builder.append(_columnName_4, "  ");
+                  String _columnName_6 = OMLUtilities.columnName(attr_3);
+                  _builder.append(_columnName_6, "  ");
                   _builder.append(" */");
                 }
               }
             }
-            if (_hasElements_2) {
+            if (_hasElements_3) {
               _builder.append(")\n", "  ");
             }
           }
@@ -1501,10 +1554,10 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               return Boolean.valueOf((_lowerBound_2 == 0));
             };
             Iterable<ETypedElement> _filter_1 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_4);
-            boolean _hasElements_3 = false;
+            boolean _hasElements_4 = false;
             for(final ETypedElement attr_4 : _filter_1) {
-              if (!_hasElements_3) {
-                _hasElements_3 = true;
+              if (!_hasElements_4) {
+                _hasElements_4 = true;
               } else {
                 _builder.appendImmediate("", "  ");
               }
@@ -1519,13 +1572,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append(": ");
-              String _name_2 = eClass.getName();
-              _builder.append(_name_2, "  ");
+              String _name_3 = eClass.getName();
+              _builder.append(_name_3, "  ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("= copy(");
-              String _columnName_5 = OMLUtilities.columnName(attr_4);
-              _builder.append(_columnName_5, "  ");
+              String _columnName_7 = OMLUtilities.columnName(attr_4);
+              _builder.append(_columnName_7, "  ");
               _builder.append("=scala.Some(l))");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1537,36 +1590,36 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       {
         if (uuidWithoutContainer) {
           {
-            boolean _hasElements_4 = false;
+            boolean _hasElements_5 = false;
             for(final ETypedElement attr_5 : keyAttributes) {
-              if (!_hasElements_4) {
-                _hasElements_4 = true;
+              if (!_hasElements_5) {
+                _hasElements_5 = true;
                 _builder.append("  // Ctor(uuidWithoutContainer)\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n");
               } else {
                 _builder.appendImmediate(",\n", "");
               }
               _builder.append("    ");
-              String _columnName_6 = OMLUtilities.columnName(attr_5);
-              _builder.append(_columnName_6);
+              String _columnName_8 = OMLUtilities.columnName(attr_5);
+              _builder.append(_columnName_8);
               _builder.append(": ");
-              String _constructorTypeRef_2 = OMLUtilities.constructorTypeRef(eClass, attr_5);
-              _builder.append(_constructorTypeRef_2);
+              String _constructorTypeRef_4 = OMLUtilities.constructorTypeRef(eClass, attr_5);
+              _builder.append(_constructorTypeRef_4);
             }
-            if (_hasElements_4) {
+            if (_hasElements_5) {
               String _lowerCaseInitialOrWord = OMLUtilities.lowerCaseInitialOrWord(eClass.getName());
               String _plus = (")\n  = this(\n      taggedTypes." + _lowerCaseInitialOrWord);
               String _plus_1 = (_plus + "UUID(oug.namespaceUUID(\n        ");
-              String _name_3 = uuidNS.getName();
-              String _plus_2 = (_plus_1 + _name_3);
+              String _name_4 = uuidNS.getName();
+              String _plus_2 = (_plus_1 + _name_4);
               String _plus_3 = (_plus_2 + ".toString");
               _builder.append(_plus_3);
             }
           }
           {
-            boolean _hasElements_5 = false;
+            boolean _hasElements_6 = false;
             for(final EStructuralFeature f : uuidFactors) {
-              if (!_hasElements_5) {
-                _hasElements_5 = true;
+              if (!_hasElements_6) {
+                _hasElements_6 = true;
               } else {
                 _builder.appendImmediate(",", "");
               }
@@ -1574,11 +1627,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               _builder.newLineIfNotEmpty();
               _builder.append("        ");
               _builder.append("\"");
-              String _name_4 = f.getName();
-              _builder.append(_name_4, "        ");
-              _builder.append("\" -> ");
               String _name_5 = f.getName();
               _builder.append(_name_5, "        ");
+              _builder.append("\" -> ");
+              String _name_6 = f.getName();
+              _builder.append(_name_6, "        ");
             }
           }
           {
@@ -1586,19 +1639,19 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
             };
             Iterable<ETypedElement> _filter_2 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_5);
-            boolean _hasElements_6 = false;
+            boolean _hasElements_7 = false;
             for(final ETypedElement attr_6 : _filter_2) {
-              if (!_hasElements_6) {
-                _hasElements_6 = true;
+              if (!_hasElements_7) {
+                _hasElements_7 = true;
                 _builder.append(").toString),\n");
               } else {
                 _builder.appendImmediate(",\n", "");
               }
               _builder.append("      ");
-              String _columnName_7 = OMLUtilities.columnName(attr_6);
-              _builder.append(_columnName_7);
+              String _columnName_9 = OMLUtilities.columnName(attr_6);
+              _builder.append(_columnName_9);
             }
-            if (_hasElements_6) {
+            if (_hasElements_7) {
               _builder.append(")\n");
             }
           }
@@ -1606,36 +1659,36 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         } else {
           if (uuidWithGenerator) {
             {
-              boolean _hasElements_7 = false;
+              boolean _hasElements_8 = false;
               for(final ETypedElement attr_7 : keyAttributes) {
-                if (!_hasElements_7) {
-                  _hasElements_7 = true;
+                if (!_hasElements_8) {
+                  _hasElements_8 = true;
                   _builder.append("  // Ctor(uuidWithGenerator)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n");
                 } else {
                   _builder.appendImmediate(",\n", "");
                 }
                 _builder.append("    ");
-                String _columnName_8 = OMLUtilities.columnName(attr_7);
-                _builder.append(_columnName_8);
+                String _columnName_10 = OMLUtilities.columnName(attr_7);
+                _builder.append(_columnName_10);
                 _builder.append(": ");
-                String _constructorTypeRef_3 = OMLUtilities.constructorTypeRef(eClass, attr_7);
-                _builder.append(_constructorTypeRef_3);
+                String _constructorTypeRef_5 = OMLUtilities.constructorTypeRef(eClass, attr_7);
+                _builder.append(_constructorTypeRef_5);
               }
-              if (_hasElements_7) {
+              if (_hasElements_8) {
                 String _lowerCaseInitialOrWord_1 = OMLUtilities.lowerCaseInitialOrWord(eClass.getName());
                 String _plus_4 = (")\n  = this(\n      taggedTypes." + _lowerCaseInitialOrWord_1);
                 String _plus_5 = (_plus_4 + "UUID(oug.namespaceUUID(\n        ");
-                String _name_6 = uuidNS.getName();
-                String _plus_6 = (_plus_5 + _name_6);
+                String _name_7 = uuidNS.getName();
+                String _plus_6 = (_plus_5 + _name_7);
                 String _plus_7 = (_plus_6 + "UUID");
                 _builder.append(_plus_7);
               }
             }
             {
-              boolean _hasElements_8 = false;
+              boolean _hasElements_9 = false;
               for(final EStructuralFeature f_1 : uuidFactors) {
-                if (!_hasElements_8) {
-                  _hasElements_8 = true;
+                if (!_hasElements_9) {
+                  _hasElements_9 = true;
                 } else {
                   _builder.appendImmediate(",", "");
                 }
@@ -1643,11 +1696,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                 _builder.newLineIfNotEmpty();
                 _builder.append("        ");
                 _builder.append("\"");
-                String _name_7 = f_1.getName();
-                _builder.append(_name_7, "        ");
-                _builder.append("\" -> ");
                 String _name_8 = f_1.getName();
                 _builder.append(_name_8, "        ");
+                _builder.append("\" -> ");
+                String _name_9 = f_1.getName();
+                _builder.append(_name_9, "        ");
               }
             }
             {
@@ -1655,19 +1708,19 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                 return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
               };
               Iterable<ETypedElement> _filter_3 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_6);
-              boolean _hasElements_9 = false;
+              boolean _hasElements_10 = false;
               for(final ETypedElement attr_8 : _filter_3) {
-                if (!_hasElements_9) {
-                  _hasElements_9 = true;
+                if (!_hasElements_10) {
+                  _hasElements_10 = true;
                   _builder.append(").toString),\n");
                 } else {
                   _builder.appendImmediate(",\n", "");
                 }
                 _builder.append("      ");
-                String _columnName_9 = OMLUtilities.columnName(attr_8);
-                _builder.append(_columnName_9);
+                String _columnName_11 = OMLUtilities.columnName(attr_8);
+                _builder.append(_columnName_11);
               }
-              if (_hasElements_9) {
+              if (_hasElements_10) {
                 _builder.append(")\n");
               }
             }
@@ -1675,27 +1728,27 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           } else {
             if (uuidWithContainer) {
               {
-                boolean _hasElements_10 = false;
+                boolean _hasElements_11 = false;
                 for(final ETypedElement attr_9 : keyAttributes) {
-                  if (!_hasElements_10) {
-                    _hasElements_10 = true;
+                  if (!_hasElements_11) {
+                    _hasElements_11 = true;
                     _builder.append("  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n");
                   } else {
                     _builder.appendImmediate(",\n", "");
                   }
                   _builder.append("    ");
-                  String _columnName_10 = OMLUtilities.columnName(attr_9);
-                  _builder.append(_columnName_10);
+                  String _columnName_12 = OMLUtilities.columnName(attr_9);
+                  _builder.append(_columnName_12);
                   _builder.append(": ");
-                  String _constructorTypeRef_4 = OMLUtilities.constructorTypeRef(eClass, attr_9);
-                  _builder.append(_constructorTypeRef_4);
+                  String _constructorTypeRef_6 = OMLUtilities.constructorTypeRef(eClass, attr_9);
+                  _builder.append(_constructorTypeRef_6);
                 }
-                if (_hasElements_10) {
+                if (_hasElements_11) {
                   String _lowerCaseInitialOrWord_2 = OMLUtilities.lowerCaseInitialOrWord(eClass.getName());
                   String _plus_8 = (")\n  = this(\n      taggedTypes." + _lowerCaseInitialOrWord_2);
                   String _plus_9 = (_plus_8 + "UUID(oug.namespaceUUID(\n        \"");
-                  String _name_9 = eClass.getName();
-                  String _plus_10 = (_plus_9 + _name_9);
+                  String _name_10 = eClass.getName();
+                  String _plus_10 = (_plus_9 + _name_10);
                   String _plus_11 = (_plus_10 + "\"");
                   _builder.append(_plus_11);
                 }
@@ -1706,8 +1759,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                   _builder.newLineIfNotEmpty();
                   _builder.append("        ");
                   _builder.append("\"");
-                  String _name_10 = f_2.getName();
-                  _builder.append(_name_10, "        ");
+                  String _name_11 = f_2.getName();
+                  _builder.append(_name_11, "        ");
                   _builder.append("\" -> ");
                   String _columnUUID = OMLUtilities.columnUUID(f_2);
                   _builder.append(_columnUUID, "        ");
@@ -1718,19 +1771,19 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                   return Boolean.valueOf(((!Objects.equal(uuid, a)) && (a.getLowerBound() > 0)));
                 };
                 Iterable<ETypedElement> _filter_4 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_7);
-                boolean _hasElements_11 = false;
+                boolean _hasElements_12 = false;
                 for(final ETypedElement attr_10 : _filter_4) {
-                  if (!_hasElements_11) {
-                    _hasElements_11 = true;
+                  if (!_hasElements_12) {
+                    _hasElements_12 = true;
                     _builder.append(").toString),\n");
                   } else {
                     _builder.appendImmediate(",\n", "");
                   }
                   _builder.append("      ");
-                  String _columnName_11 = OMLUtilities.columnName(attr_10);
-                  _builder.append(_columnName_11);
+                  String _columnName_13 = OMLUtilities.columnName(attr_10);
+                  _builder.append(_columnName_13);
                 }
-                if (_hasElements_11) {
+                if (_hasElements_12) {
                   _builder.append(")\n");
                 }
               }
@@ -1759,18 +1812,18 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append("= ");
       {
         Iterable<ETypedElement> _schemaAPIOrOrderingKeyAttributes_3 = OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass);
-        boolean _hasElements_12 = false;
+        boolean _hasElements_13 = false;
         for(final ETypedElement attr_11 : _schemaAPIOrOrderingKeyAttributes_3) {
-          if (!_hasElements_12) {
-            _hasElements_12 = true;
+          if (!_hasElements_13) {
+            _hasElements_13 = true;
             _builder.append("(", "  ");
           } else {
             _builder.appendImmediate(", ", "  ");
           }
-          String _columnName_12 = OMLUtilities.columnName(attr_11);
-          _builder.append(_columnName_12, "  ");
+          String _columnName_14 = OMLUtilities.columnName(attr_11);
+          _builder.append(_columnName_14, "  ");
         }
-        if (_hasElements_12) {
+        if (_hasElements_13) {
           _builder.append(").##", "  ");
         }
       }
@@ -1782,16 +1835,16 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  \t");
       _builder.append("case that: ");
-      String _name_11 = eClass.getName();
-      _builder.append(_name_11, "  \t");
+      String _name_12 = eClass.getName();
+      _builder.append(_name_12, "  \t");
       _builder.append(" =>");
       _builder.newLineIfNotEmpty();
       {
         Iterable<ETypedElement> _schemaAPIOrOrderingKeyAttributes_4 = OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass);
-        boolean _hasElements_13 = false;
+        boolean _hasElements_14 = false;
         for(final ETypedElement attr_12 : _schemaAPIOrOrderingKeyAttributes_4) {
-          if (!_hasElements_13) {
-            _hasElements_13 = true;
+          if (!_hasElements_14) {
+            _hasElements_14 = true;
           } else {
             _builder.appendImmediate(" &&", "  \t  ");
           }
@@ -1804,11 +1857,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                 boolean _equals = (_lowerBound_2 == 0);
                 if (_equals) {
                   _builder.append("((this.");
-                  String _columnName_13 = OMLUtilities.columnName(attr_12);
-                  _builder.append(_columnName_13, "  \t  ");
+                  String _columnName_15 = OMLUtilities.columnName(attr_12);
+                  _builder.append(_columnName_15, "  \t  ");
                   _builder.append(", that.");
-                  String _columnName_14 = OMLUtilities.columnName(attr_12);
-                  _builder.append(_columnName_14, "  \t  ");
+                  String _columnName_16 = OMLUtilities.columnName(attr_12);
+                  _builder.append(_columnName_16, "  \t  ");
                   _builder.append(") match {");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  \t  ");
@@ -1839,21 +1892,21 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                   _builder.append("})");
                 } else {
                   _builder.append("(this.");
-                  String _columnName_15 = OMLUtilities.columnName(attr_12);
-                  _builder.append(_columnName_15, "  \t  ");
+                  String _columnName_17 = OMLUtilities.columnName(attr_12);
+                  _builder.append(_columnName_17, "  \t  ");
                   _builder.append(" == that.");
-                  String _columnName_16 = OMLUtilities.columnName(attr_12);
-                  _builder.append(_columnName_16, "  \t  ");
+                  String _columnName_18 = OMLUtilities.columnName(attr_12);
+                  _builder.append(_columnName_18, "  \t  ");
                   _builder.append(") ");
                 }
               }
             } else {
               _builder.append("(this.");
-              String _columnName_17 = OMLUtilities.columnName(attr_12);
-              _builder.append(_columnName_17, "  \t  ");
+              String _columnName_19 = OMLUtilities.columnName(attr_12);
+              _builder.append(_columnName_19, "  \t  ");
               _builder.append(" == that.");
-              String _columnName_18 = OMLUtilities.columnName(attr_12);
-              _builder.append(_columnName_18, "  \t  ");
+              String _columnName_20 = OMLUtilities.columnName(attr_12);
+              _builder.append(_columnName_20, "  \t  ");
               _builder.append(")");
             }
           }
@@ -1875,13 +1928,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.newLine();
       _builder.append("@JSExportTopLevel(\"");
-      String _name_12 = eClass.getName();
-      _builder.append(_name_12);
+      String _name_13 = eClass.getName();
+      _builder.append(_name_13);
       _builder.append("Helper\")");
       _builder.newLineIfNotEmpty();
       _builder.append("object ");
-      String _name_13 = eClass.getName();
-      _builder.append(_name_13);
+      String _name_14 = eClass.getName();
+      _builder.append(_name_14);
       _builder.append("Helper {");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
@@ -1910,17 +1963,17 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("implicit val decode");
-      String _name_14 = eClass.getName();
-      _builder.append(_name_14, "  ");
-      _builder.append(": Decoder[");
       String _name_15 = eClass.getName();
       _builder.append(_name_15, "  ");
+      _builder.append(": Decoder[");
+      String _name_16 = eClass.getName();
+      _builder.append(_name_16, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= Decoder.instance[");
-      String _name_16 = eClass.getName();
-      _builder.append(_name_16, "  ");
+      String _name_17 = eClass.getName();
+      _builder.append(_name_17, "  ");
       _builder.append("] { c: HCursor =>");
       _builder.newLineIfNotEmpty();
       _builder.append("    ");
@@ -1936,15 +1989,15 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append("    \t  ");
       {
         Iterable<ETypedElement> _schemaAPIOrOrderingKeyAttributes_5 = OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass);
-        boolean _hasElements_14 = false;
+        boolean _hasElements_15 = false;
         for(final ETypedElement attr_13 : _schemaAPIOrOrderingKeyAttributes_5) {
-          if (!_hasElements_14) {
-            _hasElements_14 = true;
+          if (!_hasElements_15) {
+            _hasElements_15 = true;
           } else {
             _builder.appendImmediate("\n", "    \t  ");
           }
-          String _columnName_19 = OMLUtilities.columnName(attr_13);
-          _builder.append(_columnName_19, "    \t  ");
+          String _columnName_21 = OMLUtilities.columnName(attr_13);
+          _builder.append(_columnName_21, "    \t  ");
           _builder.append(" <- ");
           String _circeDecoder = OMLUtilities.circeDecoder(eClass, attr_13);
           _builder.append(_circeDecoder, "    \t  ");
@@ -1953,22 +2006,22 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLineIfNotEmpty();
       _builder.append("    \t");
       _builder.append("} yield ");
-      String _name_17 = eClass.getName();
-      _builder.append(_name_17, "    \t");
+      String _name_18 = eClass.getName();
+      _builder.append(_name_18, "    \t");
       _builder.append("(");
       _builder.newLineIfNotEmpty();
       _builder.append("    \t  ");
       {
         Iterable<ETypedElement> _schemaAPIOrOrderingKeyAttributes_6 = OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass);
-        boolean _hasElements_15 = false;
+        boolean _hasElements_16 = false;
         for(final ETypedElement attr_14 : _schemaAPIOrOrderingKeyAttributes_6) {
-          if (!_hasElements_15) {
-            _hasElements_15 = true;
+          if (!_hasElements_16) {
+            _hasElements_16 = true;
           } else {
             _builder.appendImmediate(",\n", "    \t  ");
           }
-          String _columnName_20 = OMLUtilities.columnName(attr_14);
-          _builder.append(_columnName_20, "    \t  ");
+          String _columnName_22 = OMLUtilities.columnName(attr_14);
+          _builder.append(_columnName_22, "    \t  ");
         }
       }
       _builder.newLineIfNotEmpty();
@@ -1982,23 +2035,23 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("implicit val encode");
-      String _name_18 = eClass.getName();
-      _builder.append(_name_18, "  ");
-      _builder.append(": Encoder[");
       String _name_19 = eClass.getName();
       _builder.append(_name_19, "  ");
+      _builder.append(": Encoder[");
+      String _name_20 = eClass.getName();
+      _builder.append(_name_20, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= new Encoder[");
-      String _name_20 = eClass.getName();
-      _builder.append(_name_20, "  ");
+      String _name_21 = eClass.getName();
+      _builder.append(_name_21, "  ");
       _builder.append("] {");
       _builder.newLineIfNotEmpty();
       _builder.append("    ");
       _builder.append("override final def apply(x: ");
-      String _name_21 = eClass.getName();
-      _builder.append(_name_21, "    ");
+      String _name_22 = eClass.getName();
+      _builder.append(_name_22, "    ");
       _builder.append("): Json ");
       _builder.newLineIfNotEmpty();
       _builder.append("    ");
@@ -2007,16 +2060,16 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append("    \t  ");
       {
         Iterable<ETypedElement> _schemaAPIOrOrderingKeyAttributes_7 = OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass);
-        boolean _hasElements_16 = false;
+        boolean _hasElements_17 = false;
         for(final ETypedElement attr_15 : _schemaAPIOrOrderingKeyAttributes_7) {
-          if (!_hasElements_16) {
-            _hasElements_16 = true;
+          if (!_hasElements_17) {
+            _hasElements_17 = true;
           } else {
             _builder.appendImmediate(",\n", "    \t  ");
           }
           _builder.append("(\"");
-          String _columnName_21 = OMLUtilities.columnName(attr_15);
-          _builder.append(_columnName_21, "    \t  ");
+          String _columnName_23 = OMLUtilities.columnName(attr_15);
+          _builder.append(_columnName_23, "    \t  ");
           _builder.append("\", ");
           String _circeEncoder = OMLUtilities.circeEncoder(eClass, attr_15);
           _builder.append(_circeEncoder, "    \t  ");
@@ -2036,8 +2089,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("def toJSON(c: ");
-      String _name_22 = eClass.getName();
-      _builder.append(_name_22, "  ");
+      String _name_23 = eClass.getName();
+      _builder.append(_name_23, "  ");
       _builder.append(")");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
@@ -2045,8 +2098,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("= encode");
-      String _name_23 = eClass.getName();
-      _builder.append(_name_23, "  ");
+      String _name_24 = eClass.getName();
+      _builder.append(_name_24, "  ");
       _builder.append("(c).noSpaces");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
@@ -2058,8 +2111,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append(": ");
-      String _name_24 = eClass.getName();
-      _builder.append(_name_24, "  ");
+      String _name_25 = eClass.getName();
+      _builder.append(_name_25, "  ");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= parse(c) match {");
@@ -2069,8 +2122,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  \t  ");
       _builder.append("decode");
-      String _name_25 = eClass.getName();
-      _builder.append(_name_25, "  \t  ");
+      String _name_26 = eClass.getName();
+      _builder.append(_name_26, "  \t  ");
       _builder.append("(json.hcursor) match {");
       _builder.newLineIfNotEmpty();
       _builder.append("  \t    \t");
@@ -2103,6 +2156,81 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _xblockexpression = _builder.toString();
     }
     return _xblockexpression;
+  }
+  
+  public String generateTraitFile(final EClass eClass, final String packageQName) {
+    StringConcatenation _builder = new StringConcatenation();
+    String _copyright = OMLUtilities.copyright();
+    _builder.append(_copyright);
+    _builder.newLineIfNotEmpty();
+    _builder.append(" ");
+    _builder.newLine();
+    _builder.append("package ");
+    _builder.append(packageQName);
+    _builder.newLineIfNotEmpty();
+    _builder.newLine();
+    _builder.append("trait ");
+    String _name = eClass.getName();
+    _builder.append(_name);
+    {
+      Iterable<EClass> _ESuperClasses = OMLUtilities.ESuperClasses(eClass);
+      boolean _hasElements = false;
+      for(final EClass sup : _ESuperClasses) {
+        if (!_hasElements) {
+          _hasElements = true;
+          _builder.append(" extends");
+        } else {
+          _builder.appendImmediate(" with", "");
+        }
+        _builder.append(" ");
+        String _name_1 = sup.getName();
+        _builder.append(_name_1);
+      }
+    }
+    _builder.append(" {");
+    _builder.newLineIfNotEmpty();
+    {
+      Iterable<ETypedElement> _schemaAPIOrOrderingKeyAttributes = OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass);
+      for(final ETypedElement attr : _schemaAPIOrOrderingKeyAttributes) {
+        {
+          if ((((null != OMLUtilities.lookupUUIDFeature(eClass)) && Objects.equal(OMLUtilities.columnName(attr), "uuid")) && (!IterableExtensions.isEmpty(OMLUtilities.ESuperClasses(eClass))))) {
+            _builder.append("  ");
+            _builder.append("override val ");
+            String _columnName = OMLUtilities.columnName(attr);
+            _builder.append(_columnName, "  ");
+            _builder.append(": ");
+            String _constructorTypeRef = OMLUtilities.constructorTypeRef(eClass, attr);
+            _builder.append(_constructorTypeRef, "  ");
+            _builder.newLineIfNotEmpty();
+          } else {
+            EClass _EClassContainer = OMLUtilities.EClassContainer(attr);
+            boolean _notEquals = (!Objects.equal(_EClassContainer, eClass));
+            if (_notEquals) {
+              _builder.append("  ");
+              _builder.append("override val ");
+              String _columnName_1 = OMLUtilities.columnName(attr);
+              _builder.append(_columnName_1, "  ");
+              _builder.append(": ");
+              String _constructorTypeRef_1 = OMLUtilities.constructorTypeRef(eClass, attr);
+              _builder.append(_constructorTypeRef_1, "  ");
+              _builder.newLineIfNotEmpty();
+            } else {
+              _builder.append("  ");
+              _builder.append("val ");
+              String _columnName_2 = OMLUtilities.columnName(attr);
+              _builder.append(_columnName_2, "  ");
+              _builder.append(": ");
+              String _constructorTypeRef_2 = OMLUtilities.constructorTypeRef(eClass, attr);
+              _builder.append(_constructorTypeRef_2, "  ");
+              _builder.newLineIfNotEmpty();
+            }
+          }
+        }
+      }
+    }
+    _builder.append("}");
+    _builder.newLine();
+    return _builder.toString();
   }
   
   public String generateJSClassFile(final EClass eClass) {
