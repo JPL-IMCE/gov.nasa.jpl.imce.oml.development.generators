@@ -428,12 +428,12 @@ public class OMLUtilities extends OMLXcorePackages {
             String _xifexpression_4 = null;
             Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
             if ((_isIRIReference).booleanValue()) {
-              _xifexpression_4 = "gov.nasa.jpl.imce.oml.tables.IRI";
+              _xifexpression_4 = "gov.nasa.jpl.imce.oml.tables.taggedTypes.IRI";
             } else {
               String _xifexpression_5 = null;
               Boolean _isLiteralStringFeature = OMLUtilities.isLiteralStringFeature(feature);
               if ((_isLiteralStringFeature).booleanValue()) {
-                _xifexpression_5 = "gov.nasa.jpl.imce.oml.tables.StringDataType";
+                _xifexpression_5 = "gov.nasa.jpl.imce.oml.tables.taggedTypes.StringDataType";
               } else {
                 String _xifexpression_6 = null;
                 Boolean _isLiteralFeature_1 = OMLUtilities.isLiteralFeature(feature);
@@ -479,71 +479,54 @@ public class OMLUtilities extends OMLXcorePackages {
           case "EString":
             _switchResult = "scala.Predef.String";
             break;
-          case "AbbrevIRI":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.AbbrevIRI";
-            break;
           case "DescriptionKind":
             _switchResult = "gov.nasa.jpl.imce.oml.tables.DescriptionKind";
-            break;
-          case "IRI":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.IRI";
-            break;
-          case "LangRange":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LangRange";
-            break;
-          case "LexicalNumber":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalNumber";
-            break;
-          case "LexicalTime":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalTime";
-            break;
-          case "LexicalValue":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LexicalValue";
-            break;
-          case "LocalName":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LocalName";
-            break;
-          case "NamespacePrefix":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.NamespacePrefix";
-            break;
-          case "Pattern":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.Pattern";
-            break;
-          case "UUID":
-            _switchResult = "java.util.UUID";
             break;
           case "TerminologyKind":
             _switchResult = "gov.nasa.jpl.imce.oml.tables.TerminologyKind";
             break;
-          case "PositiveIntegerLiteral":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.PositiveIntegerLiteral";
+          case "UUID":
+            _switchResult = "java.util.UUID";
             break;
-          case "LiteralPattern":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LiteralPattern";
+          case "AbbrevIRI":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.AbbrevIRI";
+            break;
+          case "IRI":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.IRI";
             break;
           case "LanguageTagDataType":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LanguageTagDataType";
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.LanguageTagDataType";
             break;
-          case "LiteralValue":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LiteralValue";
+          case "LiteralPattern":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.LiteralPattern";
             break;
-          case "LiteralNumber":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.LiteralNumber";
+          case "LocalName":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.LocalName";
+            break;
+          case "NamespacePrefix":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.NamespacePrefix";
+            break;
+          case "PositiveIntegerLiteral":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.PositiveIntegerLiteral";
+            break;
+          case "StringDataType":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.taggedTypes.StringDataType";
             break;
           case "LiteralDateTime":
             _switchResult = "gov.nasa.jpl.imce.oml.tables.LiteralDateTime";
             break;
-          case "StringDataType":
-            _switchResult = "gov.nasa.jpl.imce.oml.tables.StringDataType";
+          case "LiteralNumber":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.LiteralNumber";
+            break;
+          case "LiteralValue":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.LiteralValue";
             break;
           default:
-            String _name_1 = type.getName();
-            _switchResult = ("resolver.api." + _name_1);
+            _switchResult = type.getName();
             break;
         }
       } else {
-        String _name_1 = type.getName();
-        _switchResult = ("resolver.api." + _name_1);
+        _switchResult = type.getName();
       }
       _xblockexpression = _switchResult;
     }
@@ -638,6 +621,85 @@ public class OMLUtilities extends OMLXcorePackages {
     return _xblockexpression;
   }
   
+  public static String constructorTypeRef(final EClass eClass, final ETypedElement feature) {
+    String _xblockexpression = null;
+    {
+      final String scalaType = OMLUtilities.scalaTableTypeRef(eClass, feature);
+      String _xifexpression = null;
+      int _lowerBound = feature.getLowerBound();
+      boolean _equals = (_lowerBound == 0);
+      if (_equals) {
+        _xifexpression = (("scala.Option[" + scalaType) + "]");
+      } else {
+        _xifexpression = scalaType;
+      }
+      _xblockexpression = _xifexpression;
+    }
+    return _xblockexpression;
+  }
+  
+  public static String circeDecoder(final EClass eClass, final ETypedElement feature) {
+    String _xblockexpression = null;
+    {
+      final String scalaType = OMLUtilities.circeDecoderType(eClass, feature);
+      String _xifexpression = null;
+      int _lowerBound = feature.getLowerBound();
+      boolean _equals = (_lowerBound == 0);
+      if (_equals) {
+        String _xifexpression_1 = null;
+        if (((Objects.equal(scalaType, "LiteralNumber") || Objects.equal(scalaType, "LiteralValue")) || Objects.equal(scalaType, "LiteralDateTime"))) {
+          String _columnName = OMLUtilities.columnName(feature);
+          String _plus = ((((("Decoder.decodeOption(" + scalaType) + ".decode") + scalaType) + ")(c.downField(\"") + _columnName);
+          _xifexpression_1 = (_plus + "\").success.get)");
+        } else {
+          String _columnName_1 = OMLUtilities.columnName(feature);
+          String _plus_1 = ((("Decoder.decodeOption(taggedTypes.decode" + scalaType) + ")(c.downField(\"") + _columnName_1);
+          _xifexpression_1 = (_plus_1 + "\").success.get)");
+        }
+        _xifexpression = _xifexpression_1;
+      } else {
+        String _xifexpression_2 = null;
+        if (((Objects.equal(scalaType, "LiteralValue") || scalaType.endsWith("Kind")) || scalaType.startsWith("scala."))) {
+          String _columnName_2 = OMLUtilities.columnName(feature);
+          String _plus_2 = ("c.downField(\"" + _columnName_2);
+          String _plus_3 = (_plus_2 + "\").as[");
+          String _plus_4 = (_plus_3 + scalaType);
+          _xifexpression_2 = (_plus_4 + "]");
+        } else {
+          String _columnName_3 = OMLUtilities.columnName(feature);
+          String _plus_5 = ("c.downField(\"" + _columnName_3);
+          String _plus_6 = (_plus_5 + "\").as[taggedTypes.");
+          String _plus_7 = (_plus_6 + scalaType);
+          _xifexpression_2 = (_plus_7 + "]");
+        }
+        _xifexpression = _xifexpression_2;
+      }
+      _xblockexpression = _xifexpression;
+    }
+    return _xblockexpression;
+  }
+  
+  public static String circeEncoder(final EClass eClass, final ETypedElement feature) {
+    String _xblockexpression = null;
+    {
+      final String scalaType = OMLUtilities.circeEncoderFunction(eClass, feature);
+      String _xifexpression = null;
+      int _lowerBound = feature.getLowerBound();
+      boolean _equals = (_lowerBound == 0);
+      if (_equals) {
+        String _columnName = OMLUtilities.columnName(feature);
+        String _plus = ((("Encoder.encodeOption(" + scalaType) + ").apply(x.") + _columnName);
+        _xifexpression = (_plus + ")");
+      } else {
+        String _columnName_1 = OMLUtilities.columnName(feature);
+        String _plus_1 = ((scalaType + "(x.") + _columnName_1);
+        _xifexpression = (_plus_1 + ")");
+      }
+      _xblockexpression = _xifexpression;
+    }
+    return _xblockexpression;
+  }
+  
   public static String javaArgName(final ETypedElement feature) {
     String _xifexpression = null;
     int _lowerBound = feature.getLowerBound();
@@ -698,6 +760,307 @@ public class OMLUtilities extends OMLXcorePackages {
     return _xblockexpression;
   }
   
+  public static String circeDecoderType(final EClass eClass, final ETypedElement feature) {
+    String _xblockexpression = null;
+    {
+      final EClassifier type = feature.getEType();
+      String _switchResult = null;
+      String _name = type.getName();
+      boolean _matched = false;
+      if (Objects.equal(_name, "EInt")) {
+        _matched=true;
+        _switchResult = "scala.Int";
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "EBoolean")) {
+          _matched=true;
+          _switchResult = "scala.Boolean";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "EString")) {
+          _matched=true;
+          _switchResult = "scala.Predef.String";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "DescriptionKind")) {
+          _matched=true;
+          _switchResult = "DescriptionKind";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "TerminologyKind")) {
+          _matched=true;
+          _switchResult = "TerminologyKind";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "UUID")) {
+          _matched=true;
+          String _name_1 = eClass.getName();
+          _switchResult = (_name_1 + "UUID");
+        }
+      }
+      if (!_matched) {
+        if ((type instanceof EDataType)) {
+          _matched=true;
+          _switchResult = type.getName();
+        }
+      }
+      if (!_matched) {
+        if ((type instanceof EClass)) {
+          _matched=true;
+          String _xifexpression = null;
+          Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+          if ((_isIRIReference).booleanValue()) {
+            _xifexpression = "IRI";
+          } else {
+            String _xifexpression_1 = null;
+            Boolean _isLiteralDateTimeFeature = OMLUtilities.isLiteralDateTimeFeature(feature);
+            if ((_isLiteralDateTimeFeature).booleanValue()) {
+              _xifexpression_1 = "LiteralDateTime";
+            } else {
+              String _xifexpression_2 = null;
+              Boolean _isLiteralNumberFeature = OMLUtilities.isLiteralNumberFeature(feature);
+              if ((_isLiteralNumberFeature).booleanValue()) {
+                _xifexpression_2 = "LiteralNumber";
+              } else {
+                String _xifexpression_3 = null;
+                Boolean _isLiteralStringFeature = OMLUtilities.isLiteralStringFeature(feature);
+                if ((_isLiteralStringFeature).booleanValue()) {
+                  _xifexpression_3 = "StringDataType";
+                } else {
+                  String _xifexpression_4 = null;
+                  Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(feature);
+                  if ((_isLiteralFeature).booleanValue()) {
+                    _xifexpression_4 = "LiteralValue";
+                  } else {
+                    String _name_2 = type.getName();
+                    _xifexpression_4 = (_name_2 + "UUID");
+                  }
+                  _xifexpression_3 = _xifexpression_4;
+                }
+                _xifexpression_2 = _xifexpression_3;
+              }
+              _xifexpression_1 = _xifexpression_2;
+            }
+            _xifexpression = _xifexpression_1;
+          }
+          _switchResult = _xifexpression;
+        }
+      }
+      if (!_matched) {
+        _switchResult = type.getName();
+      }
+      _xblockexpression = _switchResult;
+    }
+    return _xblockexpression;
+  }
+  
+  public static String circeEncoderFunction(final EClass eClass, final ETypedElement feature) {
+    String _xblockexpression = null;
+    {
+      final EClassifier type = feature.getEType();
+      String _switchResult = null;
+      String _name = type.getName();
+      boolean _matched = false;
+      if (Objects.equal(_name, "EInt")) {
+        _matched=true;
+        _switchResult = "scala.Int";
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "EBoolean")) {
+          _matched=true;
+          _switchResult = "Encoder.encodeBoolean";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "EString")) {
+          _matched=true;
+          _switchResult = "scala.Predef.String";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "DescriptionKind")) {
+          _matched=true;
+          _switchResult = "DescriptionKind.encodeDescriptionKind";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "TerminologyKind")) {
+          _matched=true;
+          _switchResult = "TerminologyKind.encodeTerminologyKind";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "UUID")) {
+          _matched=true;
+          String _name_1 = eClass.getName();
+          String _plus = ("taggedTypes.encode" + _name_1);
+          _switchResult = (_plus + "UUID");
+        }
+      }
+      if (!_matched) {
+        if ((type instanceof EDataType)) {
+          _matched=true;
+          String _name_2 = type.getName();
+          _switchResult = ("taggedTypes.encode" + _name_2);
+        }
+      }
+      if (!_matched) {
+        if ((type instanceof EClass)) {
+          _matched=true;
+          String _xifexpression = null;
+          Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+          if ((_isIRIReference).booleanValue()) {
+            _xifexpression = "taggedTypes.encodeIRI";
+          } else {
+            String _xifexpression_1 = null;
+            Boolean _isLiteralDateTimeFeature = OMLUtilities.isLiteralDateTimeFeature(feature);
+            if ((_isLiteralDateTimeFeature).booleanValue()) {
+              _xifexpression_1 = "LiteralDateTime.encodeLiteralDateTime";
+            } else {
+              String _xifexpression_2 = null;
+              Boolean _isLiteralNumberFeature = OMLUtilities.isLiteralNumberFeature(feature);
+              if ((_isLiteralNumberFeature).booleanValue()) {
+                _xifexpression_2 = "LiteralNumber.encodeLiteralNumber";
+              } else {
+                String _xifexpression_3 = null;
+                Boolean _isLiteralStringFeature = OMLUtilities.isLiteralStringFeature(feature);
+                if ((_isLiteralStringFeature).booleanValue()) {
+                  _xifexpression_3 = "taggedTypes.encodeStringDataType";
+                } else {
+                  String _xifexpression_4 = null;
+                  Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(feature);
+                  if ((_isLiteralFeature).booleanValue()) {
+                    _xifexpression_4 = "LiteralValue.encodeLiteralValue";
+                  } else {
+                    String _name_3 = type.getName();
+                    String _plus_1 = ("taggedTypes.encode" + _name_3);
+                    _xifexpression_4 = (_plus_1 + "UUID");
+                  }
+                  _xifexpression_3 = _xifexpression_4;
+                }
+                _xifexpression_2 = _xifexpression_3;
+              }
+              _xifexpression_1 = _xifexpression_2;
+            }
+            _xifexpression = _xifexpression_1;
+          }
+          _switchResult = _xifexpression;
+        }
+      }
+      if (!_matched) {
+        String _name_4 = type.getName();
+        _switchResult = ("taggedTypes.encode" + _name_4);
+      }
+      _xblockexpression = _switchResult;
+    }
+    return _xblockexpression;
+  }
+  
+  public static String scalaTableTypeRef(final EClass eClass, final ETypedElement feature) {
+    String _xblockexpression = null;
+    {
+      final EClassifier type = feature.getEType();
+      String _switchResult = null;
+      String _name = type.getName();
+      boolean _matched = false;
+      if (Objects.equal(_name, "EInt")) {
+        _matched=true;
+        _switchResult = "scala.Int";
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "EBoolean")) {
+          _matched=true;
+          _switchResult = "scala.Boolean";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "EString")) {
+          _matched=true;
+          _switchResult = "scala.Predef.String";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "DescriptionKind")) {
+          _matched=true;
+          _switchResult = "DescriptionKind";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "TerminologyKind")) {
+          _matched=true;
+          _switchResult = "TerminologyKind";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "UUID")) {
+          _matched=true;
+          String _name_1 = eClass.getName();
+          String _plus = ("taggedTypes." + _name_1);
+          _switchResult = (_plus + "UUID");
+        }
+      }
+      if (!_matched) {
+        if ((type instanceof EDataType)) {
+          _matched=true;
+          String _name_2 = type.getName();
+          _switchResult = ("taggedTypes." + _name_2);
+        }
+      }
+      if (!_matched) {
+        if ((type instanceof EClass)) {
+          _matched=true;
+          String _xifexpression = null;
+          Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+          if ((_isIRIReference).booleanValue()) {
+            _xifexpression = "taggedTypes.IRI";
+          } else {
+            String _xifexpression_1 = null;
+            Boolean _isLiteralDateTimeFeature = OMLUtilities.isLiteralDateTimeFeature(feature);
+            if ((_isLiteralDateTimeFeature).booleanValue()) {
+              _xifexpression_1 = "LiteralDateTime";
+            } else {
+              String _xifexpression_2 = null;
+              Boolean _isLiteralNumberFeature = OMLUtilities.isLiteralNumberFeature(feature);
+              if ((_isLiteralNumberFeature).booleanValue()) {
+                _xifexpression_2 = "LiteralNumber";
+              } else {
+                String _xifexpression_3 = null;
+                Boolean _isLiteralStringFeature = OMLUtilities.isLiteralStringFeature(feature);
+                if ((_isLiteralStringFeature).booleanValue()) {
+                  _xifexpression_3 = "taggedTypes.StringDataType";
+                } else {
+                  String _xifexpression_4 = null;
+                  Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(feature);
+                  if ((_isLiteralFeature).booleanValue()) {
+                    _xifexpression_4 = "LiteralValue";
+                  } else {
+                    String _name_3 = type.getName();
+                    String _plus_1 = ("taggedTypes." + _name_3);
+                    _xifexpression_4 = (_plus_1 + "UUID");
+                  }
+                  _xifexpression_3 = _xifexpression_4;
+                }
+                _xifexpression_2 = _xifexpression_3;
+              }
+              _xifexpression_1 = _xifexpression_2;
+            }
+            _xifexpression = _xifexpression_1;
+          }
+          _switchResult = _xifexpression;
+        }
+      }
+      if (!_matched) {
+        _switchResult = type.getName();
+      }
+      _xblockexpression = _switchResult;
+    }
+    return _xblockexpression;
+  }
+  
   public static String scalaTableTypeName(final ETypedElement feature) {
     String _xblockexpression = null;
     {
@@ -749,7 +1112,8 @@ public class OMLUtilities extends OMLXcorePackages {
                   if ((_isLiteralFeature).booleanValue()) {
                     _xifexpression_4 = "LiteralValue";
                   } else {
-                    _xifexpression_4 = "UUID";
+                    String _name_1 = type.getName();
+                    _xifexpression_4 = (_name_1 + "UUID");
                   }
                   _xifexpression_3 = _xifexpression_4;
                 }
@@ -1567,6 +1931,18 @@ public class OMLUtilities extends OMLXcorePackages {
     return _xifexpression;
   }
   
+  public static String lowerCaseInitialOrWord(final String s) {
+    String _xifexpression = null;
+    boolean _startsWith = s.startsWith("IRI");
+    if (_startsWith) {
+      String _substring = s.substring(3);
+      _xifexpression = ("iri" + _substring);
+    } else {
+      _xifexpression = StringExtensions.toFirstLower(s);
+    }
+    return _xifexpression;
+  }
+  
   public static String tableVariableName(final EClass eClass) {
     String _xblockexpression = null;
     {
@@ -1616,6 +1992,30 @@ public class OMLUtilities extends OMLXcorePackages {
       _xifexpression = feature.getName();
     }
     return _xifexpression;
+  }
+  
+  public static Boolean isXRefColumn(final ETypedElement feature) {
+    boolean _xifexpression = false;
+    if ((feature instanceof EReference)) {
+      boolean _xifexpression_1 = false;
+      Boolean _isIRIReference = OMLUtilities.isIRIReference(feature);
+      if ((_isIRIReference).booleanValue()) {
+        _xifexpression_1 = false;
+      } else {
+        boolean _xifexpression_2 = false;
+        Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(feature);
+        if ((_isLiteralFeature).booleanValue()) {
+          _xifexpression_2 = false;
+        } else {
+          _xifexpression_2 = true;
+        }
+        _xifexpression_1 = _xifexpression_2;
+      }
+      _xifexpression = _xifexpression_1;
+    } else {
+      _xifexpression = false;
+    }
+    return Boolean.valueOf(_xifexpression);
   }
   
   public static String columnName(final ETypedElement feature) {
