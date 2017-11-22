@@ -134,9 +134,9 @@ class OMLUtilities extends OMLXcorePackages {
 //				else if (isContainer)
 //					"scala.Option[java.util.UUID] /* reference to a "+typePrefix+type.name+" */"
 				else if (feature.isIRIReference)
-					"gov.nasa.jpl.imce.oml.tables.IRI"
+					"gov.nasa.jpl.imce.oml.tables.taggedTypes.IRI"
 				else if (feature.isLiteralStringFeature)
-					"gov.nasa.jpl.imce.oml.tables.StringDataType"
+					"gov.nasa.jpl.imce.oml.tables.taggedTypes.StringDataType"
 				else if (feature.isLiteralFeature)
 					scalaType
 				else
@@ -152,26 +152,26 @@ class OMLUtilities extends OMLXcorePackages {
 			case "EInt": "scala.Int"
 			case "EBoolean": "scala.Boolean"
 			case "EString": "scala.Predef.String"
-			case "AbbrevIRI": "gov.nasa.jpl.imce.oml.tables.AbbrevIRI"
+			
 			case "DescriptionKind": "gov.nasa.jpl.imce.oml.tables.DescriptionKind"
-			case "IRI": "gov.nasa.jpl.imce.oml.tables.IRI"
-			case "LangRange": "gov.nasa.jpl.imce.oml.tables.LangRange"
-			case "LexicalNumber": "gov.nasa.jpl.imce.oml.tables.LexicalNumber"
-			case "LexicalTime": "gov.nasa.jpl.imce.oml.tables.LexicalTime"
-			case "LexicalValue": "gov.nasa.jpl.imce.oml.tables.LexicalValue"
-			case "LocalName": "gov.nasa.jpl.imce.oml.tables.LocalName"
-			case "NamespacePrefix": "gov.nasa.jpl.imce.oml.tables.NamespacePrefix"
-			case "Pattern": "gov.nasa.jpl.imce.oml.tables.Pattern"
-			case "UUID": "java.util.UUID"
 			case "TerminologyKind": "gov.nasa.jpl.imce.oml.tables.TerminologyKind"
-			case "PositiveIntegerLiteral": "gov.nasa.jpl.imce.oml.tables.PositiveIntegerLiteral"
-			case "LiteralPattern": "gov.nasa.jpl.imce.oml.tables.LiteralPattern"
-			case "LanguageTagDataType": "gov.nasa.jpl.imce.oml.tables.LanguageTagDataType"
-			case "LiteralValue": "gov.nasa.jpl.imce.oml.tables.LiteralValue"
-			case "LiteralNumber": "gov.nasa.jpl.imce.oml.tables.LiteralNumber"
+			
+			case "UUID": "java.util.UUID"
+			
+			case "AbbrevIRI": "gov.nasa.jpl.imce.oml.tables.taggedTypes.AbbrevIRI"
+			case "IRI": "gov.nasa.jpl.imce.oml.tables.taggedTypes.IRI"
+			case "LanguageTagDataType": "gov.nasa.jpl.imce.oml.tables.taggedTypes.LanguageTagDataType"
+			case "LiteralPattern": "gov.nasa.jpl.imce.oml.tables.taggedTypes.LiteralPattern"
+			case "LocalName": "gov.nasa.jpl.imce.oml.tables.taggedTypes.LocalName"
+			case "NamespacePrefix": "gov.nasa.jpl.imce.oml.tables.taggedTypes.NamespacePrefix"
+			case "PositiveIntegerLiteral": "gov.nasa.jpl.imce.oml.tables.taggedTypes.PositiveIntegerLiteral"
+			case "StringDataType": "gov.nasa.jpl.imce.oml.tables.taggedTypes.StringDataType"
+			
 			case "LiteralDateTime": "gov.nasa.jpl.imce.oml.tables.LiteralDateTime"
-			case "StringDataType": "gov.nasa.jpl.imce.oml.tables.StringDataType"
-			default: "resolver.api."+type.name
+			case "LiteralNumber": "gov.nasa.jpl.imce.oml.tables.LiteralNumber"
+			case "LiteralValue": "gov.nasa.jpl.imce.oml.tables.LiteralValue"
+			
+			default: type.name
 		}
 	}
 	
@@ -209,6 +209,35 @@ class OMLUtilities extends OMLXcorePackages {
 	      scalaType
 	}
 	
+	static def String constructorTypeRef(EClass eClass, ETypedElement feature) {
+		val scalaType = scalaTableTypeRef(eClass, feature)
+		if (feature.lowerBound == 0)
+		  "scala.Option["+scalaType+"]"
+	    else
+	      scalaType
+	}
+	
+	static def String circeDecoder(EClass eClass, ETypedElement feature) {
+		val scalaType = circeDecoderType(eClass, feature)
+		if (feature.lowerBound == 0) {
+			if (scalaType == "LiteralNumber" || scalaType == "LiteralValue" || scalaType == "LiteralDateTime")
+			  "Decoder.decodeOption("+scalaType+".decode"+scalaType+")(c.downField(\""+feature.columnName+"\").success.get)"
+			else
+			  "Decoder.decodeOption(taggedTypes.decode"+scalaType+")(c.downField(\""+feature.columnName+"\").success.get)"
+	    } else if (scalaType == "LiteralValue" || scalaType.endsWith("Kind") || scalaType.startsWith("scala."))
+	      "c.downField(\""+feature.columnName+"\").as["+scalaType+"]"
+	    else
+	      "c.downField(\""+feature.columnName+"\").as[taggedTypes."+scalaType+"]"
+	}
+	
+	static def String circeEncoder(EClass eClass, ETypedElement feature) {
+		val scalaType = circeEncoderFunction(eClass, feature)
+		if (feature.lowerBound == 0)
+		  "Encoder.encodeOption("+scalaType+").apply(x."+feature.columnName+")"
+	    else
+	      scalaType+"(x."+feature.columnName+")"
+	}
+	
 	static def String javaArgName(ETypedElement feature) {
 		if (feature.lowerBound == 0)
 		  feature.columnName+".asScala"
@@ -239,6 +268,92 @@ class OMLUtilities extends OMLXcorePackages {
 		  scalaType
 	}
 	
+	static def String circeDecoderType(EClass eClass, ETypedElement feature) {
+		val type = feature.EType
+		switch (type.name) {
+			case "EInt": "scala.Int"
+			case "EBoolean": "scala.Boolean"
+			case "EString": "scala.Predef.String"
+			case "DescriptionKind": "DescriptionKind"
+			case "TerminologyKind": "TerminologyKind"
+			case "UUID": eClass.name+"UUID"
+			case type instanceof EDataType:
+				type.name
+			case type instanceof EClass: 
+				if (feature.isIRIReference)
+					"IRI"
+				else if (feature.isLiteralDateTimeFeature)
+					"LiteralDateTime"
+				else if (feature.isLiteralNumberFeature)
+					"LiteralNumber"
+				else if (feature.isLiteralStringFeature)
+					"StringDataType"
+				else if (feature.isLiteralFeature)
+					"LiteralValue"
+				else
+					type.name+"UUID"
+			default: 
+			    type.name
+		}
+	}
+	
+	static def String circeEncoderFunction(EClass eClass, ETypedElement feature) {
+		val type = feature.EType
+		switch (type.name) {
+			case "EInt": "scala.Int"
+			case "EBoolean": "Encoder.encodeBoolean"
+			case "EString": "scala.Predef.String"
+			case "DescriptionKind": "DescriptionKind.encodeDescriptionKind"
+			case "TerminologyKind": "TerminologyKind.encodeTerminologyKind"
+			case "UUID": "taggedTypes.encode"+eClass.name+"UUID"
+			case type instanceof EDataType:
+				"taggedTypes.encode"+type.name
+			case type instanceof EClass: 
+				if (feature.isIRIReference)
+					"taggedTypes.encodeIRI"
+				else if (feature.isLiteralDateTimeFeature)
+					"LiteralDateTime.encodeLiteralDateTime"
+				else if (feature.isLiteralNumberFeature)
+					"LiteralNumber.encodeLiteralNumber"
+				else if (feature.isLiteralStringFeature)
+					"taggedTypes.encodeStringDataType"
+				else if (feature.isLiteralFeature)
+					"LiteralValue.encodeLiteralValue"
+				else
+					"taggedTypes.encode"+type.name+"UUID"
+			default: 
+			    "taggedTypes.encode"+type.name
+		}
+	}
+	
+	static def String scalaTableTypeRef(EClass eClass, ETypedElement feature) {
+		val type = feature.EType
+		switch (type.name) {
+			case "EInt": "scala.Int"
+			case "EBoolean": "scala.Boolean"
+			case "EString": "scala.Predef.String"
+			case "DescriptionKind": "DescriptionKind"
+			case "TerminologyKind": "TerminologyKind"
+			case "UUID": "taggedTypes."+eClass.name+"UUID"
+			case type instanceof EDataType:
+				"taggedTypes."+type.name
+			case type instanceof EClass: 
+				if (feature.isIRIReference)
+					"taggedTypes.IRI"
+				else if (feature.isLiteralDateTimeFeature)
+					"LiteralDateTime"
+				else if (feature.isLiteralNumberFeature)
+					"LiteralNumber"
+				else if (feature.isLiteralStringFeature)
+					"taggedTypes.StringDataType"
+				else if (feature.isLiteralFeature)
+					"LiteralValue"
+				else
+					"taggedTypes."+type.name+"UUID"
+			default: type.name
+		}
+	}
+	
 	static def String scalaTableTypeName(ETypedElement feature) {
 		val type = feature.EType
 		switch (type.name) {
@@ -257,7 +372,7 @@ class OMLUtilities extends OMLXcorePackages {
 				else if (feature.isLiteralFeature)
 					"LiteralValue"
 				else
-					"UUID"
+					type.name+"UUID"
 			default: type.name
 		}
 	}
@@ -722,6 +837,13 @@ class OMLUtilities extends OMLXcorePackages {
 	  	s+"s"
 	}
 	
+	static def String lowerCaseInitialOrWord(String s) {
+		if (s.startsWith("IRI"))
+			"iri" + s.substring(3)
+		else
+			s.toFirstLower
+	}
+	
 	static def String tableVariableName(EClass eClass) {
 	  val n = eClass.name
 	  if (n.startsWith("IRI")) {
@@ -922,6 +1044,18 @@ class OMLUtilities extends OMLXcorePackages {
 				feature.name+"UUID" 
 		} else 
 			feature.name
+	}
+	
+	static def Boolean isXRefColumn(ETypedElement feature) {
+		if (feature instanceof EReference) { 
+			if (feature.isIRIReference)
+				false
+			else if (feature.isLiteralFeature)
+				false
+			else
+				true
+		} else 
+			false
 	}
 	
 	static def String columnName(ETypedElement feature) {
