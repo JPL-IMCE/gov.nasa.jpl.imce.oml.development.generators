@@ -140,13 +140,22 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		} finally {
 			tablesFile.close
 		}
-		for(eClass : ePackages.map[EClassifiers].flatten.filter(EClass).filter[isFunctionalAPI])  {
-			val classFile = new FileOutputStream(new File(targetFolder + File::separator + eClass.name + ".scala"))
-			try {
-				classFile.write(generateClassFile(eClass, packageQName).bytes)
-			} finally {
-				classFile.close
-			}
+		for(eClass : ePackages.map[EClassifiers].flatten.filter(EClass))  {
+			if (eClass.isFunctionalAPI) {
+				val classFile = new FileOutputStream(new File(targetFolder + File::separator + eClass.name + ".scala"))			
+				try {
+					classFile.write(generateClassFile(eClass, packageQName).bytes)			
+				} finally {
+					classFile.close
+				}
+			} else if (!eClass.name.startsWith("Literal") && eClass.name != "Extent") {
+				val classFile = new FileOutputStream(new File(targetFolder + File::separator + eClass.name + ".scala"))			
+				try {
+					classFile.write(generateTraitFile(eClass, packageQName).bytes)		
+				} finally {
+					classFile.close
+				}
+			} 
 		}
 	}
 	
@@ -507,9 +516,15 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		case class «eClass.name»
 		(
 		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ","»
-		  @(JSExport @field) «attr.columnName»: «constructorTypeRef(eClass, attr)»
+		  «IF null !== eClass.lookupUUIDFeature && attr.columnName == "uuid" && !eClass.ESuperClasses.empty»
+		  @(JSExport @field) override val «attr.columnName»: «constructorTypeRef(eClass, attr)»
+		  «ELSEIF (attr.EClassContainer != eClass)»
+		  @(JSExport @field) override val «attr.columnName»: «constructorTypeRef(eClass, attr)»
+		  «ELSE»
+		  @(JSExport @field) val «attr.columnName»: «constructorTypeRef(eClass, attr)»
+		  «ENDIF»
 		  «ENDFOR»
-		) {
+		)«FOR sup : eClass.ESuperClasses BEFORE " extends" SEPARATOR " with"» «sup.name»«ENDFOR» {
 		«IF eClass.hasSchemaOptionalAttributes»
 		  def this(
 		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | a.lowerBound > 0) SEPARATOR ",\n" AFTER ")"»  «attr.columnName»: «constructorTypeRef(eClass, attr)»«ENDFOR»
@@ -611,6 +626,26 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  	  throw failure
 		  }
 		
+		}
+	'''
+	}
+	
+	def String generateTraitFile(EClass eClass, String packageQName) {
+	'''
+		«copyright»
+		 
+		package «packageQName»
+		
+		trait «eClass.name»«FOR sup : eClass.ESuperClasses BEFORE " extends" SEPARATOR " with"» «sup.name»«ENDFOR» {
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes»
+		  «IF null !== eClass.lookupUUIDFeature && attr.columnName == "uuid" && !eClass.ESuperClasses.empty»
+		  override val «attr.columnName»: «constructorTypeRef(eClass, attr)»
+		  «ELSEIF (attr.EClassContainer != eClass)»
+		  override val «attr.columnName»: «constructorTypeRef(eClass, attr)»
+		  «ELSE»
+		  val «attr.columnName»: «constructorTypeRef(eClass, attr)»
+		  «ENDIF»
+		  «ENDFOR»
 		}
 	'''
 	}
