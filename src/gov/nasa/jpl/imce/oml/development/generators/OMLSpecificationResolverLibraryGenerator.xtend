@@ -164,7 +164,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		if (null === container) {
 			if (eClass.isExtentManaged) '''
 				override def create«eClass.name»
-				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= {
 				  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isContainer] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
@@ -174,7 +174,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 				}
 			''' else '''
 				override def create«eClass.name»
-				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= scala.Tuple2(
 					extent,
@@ -183,7 +183,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 			'''
 		} else '''
 			override def create«eClass.name»
-			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 			: (resolver.api.Extent, resolver.api.«eClass.name»)
 			= {
 			  // factoryMethodWithUUIDGenerator
@@ -206,7 +206,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		val newVal = eClass.name.toFirstLower
 		'''
 			override def create«eClass.name»
-			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 			: (resolver.api.Extent, resolver.api.«eClass.name»)
 			= {
 			  // factoryMethodWithUUIDGenerator (scala...)
@@ -242,7 +242,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		if (null === container) {
 			if (eClass.isExtentManaged) '''
 				override def create«eClass.name»
-				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= {
 				  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature.filter[!isContainer] BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
@@ -252,7 +252,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 				}
 			''' else '''
 				override def create«eClass.name»
-				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= scala.Tuple2(
 				    extent, 
@@ -261,7 +261,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 			'''
 		} else '''
 			override def create«eClass.name»
-			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 			: (resolver.api.Extent, resolver.api.«eClass.name»)
 			= {
 			  // factoryMethodWithDerivedUUID
@@ -285,7 +285,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		if (null === container) {
 			if (eClass.isExtentManaged) '''
 				override def create«eClass.name»
-				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= {
 				  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
@@ -295,7 +295,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 				}
 			''' else '''
 				override def create«eClass.name»
-				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+				«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 				: (resolver.api.Extent, resolver.api.«eClass.name»)
 				= scala.Tuple2(
 				    extent, 
@@ -304,7 +304,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 			'''
 		} else '''
 			override def create«eClass.name»
-			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: java.util.UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: java.util.UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
 			: (resolver.api.Extent, resolver.api.«eClass.name»)
 			= {
 			  // factoryMethodWithImplicitlyDerivedUUID
@@ -321,53 +321,55 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		'''
 	}
 
-	def String generateClassFile(EClass eClass) '''
+	def String generateClassFile(EClass eClass) {
+		
+		val apiStructuralFeatures = eClass.APIStructuralFeatures
+		val apiOperations = eClass.APIOperations
+		val hasUUID = apiStructuralFeatures.exists[f|f.name == "uuid"] || apiOperations.exists[op|op.name == "uuid"]
+		
+	'''
 		«copyright»
 		package gov.nasa.jpl.imce.oml.resolver.impl
 		
 		import gov.nasa.jpl.imce.oml._
 		
-		«IF (eClass.abstract)»trait «ELSE»case class «ENDIF»«eClass.classDeclaration»
+		«IF (eClass.abstract)»trait «ELSE»case class «ENDIF»«eClass.classDeclaration»«IF (eClass.abstract)»
 		{
-		«IF (eClass.abstract)»«FOR f : eClass.APIStructuralFeatures SEPARATOR "\n  " AFTER "\n  "»«f.doc("  ")»override val «f.name»: «f.queryResolverType('resolver.api.')»«ENDFOR»«ENDIF»
-				
+		  override val uuid: resolver.api.taggedTypes.«eClass.name»UUID«FOR f : eClass.APIStructuralFeatures.filter[name != "uuid"] BEFORE "\n" SEPARATOR "\n" AFTER "\n  "»«f.doc("  ")»override val «f.name»: «f.queryResolverType('resolver.api.')»«ENDFOR»«ELSE»
+		{«ENDIF»
+		
 		«FOR op : eClass.ScalaOperations.filter[null === getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal")]»  «op.doc("  ")»«op.queryResolverName('resolver.api.')»
 			  : «op.queryResolverType('resolver.api.')»
 			  = «op.queryBody»
-			  
-		«ENDFOR»		  
 		
+		«ENDFOR»«IF (eClass.isSpecializationOfRootClass)»  override def canEqual(that: scala.Any): scala.Boolean = that match {
+			  case _: «eClass.name» => true
+		 	  case _ => false
+		  }
 		
-		«IF (eClass.isSpecializationOfRootClass)»
-			
-			  override def canEqual(that: scala.Any): scala.Boolean = that match {
-			  	case _: «eClass.name» => true
-			  	case _ => false
-			  }
-		«ENDIF»
-		«IF (!eClass.abstract)»
-			
+		«ENDIF»«IF (!eClass.abstract)»
 			  override val hashCode
 			  : scala.Int
 			  = «FOR keyFeature: eClass.getSortedAttributeSignature BEFORE "(" SEPARATOR ", " AFTER ").##"»«keyFeature.name»«ENDFOR»
 			
 			  override def equals(other: scala.Any): scala.Boolean = other match {
-			   case that: «eClass.name» =>
-			     (that canEqual this) &&
-			     «FOR keyFeature: eClass.getSortedAttributeSignature SEPARATOR " &&\n"»(this.«keyFeature.name» == that.«keyFeature.name»)«ENDFOR»
+			    case that: «eClass.name» =>
+			      (that canEqual this) &&
+			      «FOR keyFeature: eClass.getSortedAttributeSignature SEPARATOR " &&\n"»(this.«keyFeature.name» == that.«keyFeature.name»)«ENDFOR»
 			
-				  case _ =>
-				    false
-			}
+			    case _ =>
+			      false
+			  }
 		«ENDIF»
 		}
 	'''
-
+	}
+	
 	static def String classDeclaration(EClass eClass) '''
 		«eClass.name»«IF (!eClass.abstract)» private[impl] 
 			(
 			 «FOR attr : eClass.getSortedAttributeSignature SEPARATOR ","»
-			 	override val «attr.name»: «attr.queryResolverType('resolver.api.')»
+			 	override val «attr.name»: «IF (attr.name == "uuid")»resolver.api.taggedTypes.«eClass.name + "UUID"»«ELSE»«attr.queryResolverType('resolver.api.')»«ENDIF»
 			 «ENDFOR»
 		)«ENDIF»
 		extends resolver.api.«eClass.name»

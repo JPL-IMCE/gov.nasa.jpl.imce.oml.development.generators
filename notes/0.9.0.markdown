@@ -11,3 +11,7 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.0 is a significant update
 - [#10 Generate companion object query functions for Extent-based queries methods](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/10)
 
 - [#11 Code generation for @DerivedUUID needs to ignore optional attributes.](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/11)
+
+- [#12 Code generators for improved type safety of the tabular representation](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/12)
+  - tables API uses tagged String types.
+  - resolver API uses tagged UUID types.
