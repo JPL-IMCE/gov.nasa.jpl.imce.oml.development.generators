@@ -233,7 +233,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       {
         boolean _equals = Objects.equal("OMLSpecificationTables", tableName);
         if (_equals) {
-          _builder.append("import scala.collection.immutable.Seq");
+          _builder.append("import scala.collection.immutable.{Seq,Set}");
           _builder.newLine();
         } else {
           _builder.append("import scala.collection.immutable.Seq");
@@ -505,12 +505,16 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           }
           String _tableVariableName_3 = OMLUtilities.tableVariableName(eClass_4);
           _builder.append(_tableVariableName_3, "  ");
-          _builder.append(" = t1.");
+          _builder.append(" = ");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("(t1.");
           String _tableVariableName_4 = OMLUtilities.tableVariableName(eClass_4);
           _builder.append(_tableVariableName_4, "  ");
-          _builder.append(" ++ t2.");
+          _builder.append(".to[Set] ++ t2.");
           String _tableVariableName_5 = OMLUtilities.tableVariableName(eClass_4);
           _builder.append(_tableVariableName_5, "  ");
+          _builder.append(".to[Set]).to[Seq].sortBy(_.uuid)");
         }
         if (_hasElements_3) {
           _builder.append(")", "  ");
@@ -715,11 +719,23 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     _builder.append("= copy(");
     String _tableVariableName = OMLUtilities.tableVariableName(eClass);
     _builder.append(_tableVariableName);
-    _builder.append(" = readJSonTable(is, ");
-    String _name = eClass.getName();
-    _builder.append(_name);
-    _builder.append("Helper.fromJSON))");
+    _builder.append(" = ");
     _builder.newLineIfNotEmpty();
+    _builder.append("  ");
+    _builder.append("(");
+    String _tableVariableName_1 = OMLUtilities.tableVariableName(eClass);
+    _builder.append(_tableVariableName_1, "  ");
+    _builder.append(".to[Set] ++ ");
+    _builder.newLineIfNotEmpty();
+    _builder.append("   ");
+    _builder.append("readJSonTable(is, ");
+    String _name = eClass.getName();
+    _builder.append(_name, "   ");
+    _builder.append("Helper.fromJSON).to[Set]");
+    _builder.newLineIfNotEmpty();
+    _builder.append("  ");
+    _builder.append(").to[Seq].sortBy(_.uuid))");
+    _builder.newLine();
     return _builder.toString();
   }
   
@@ -929,6 +945,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     _builder.newLine();
     _builder.append("import io.circe.{Decoder,Encoder}");
     _builder.newLine();
+    _builder.append("import scala.{Int,Ordering}");
+    _builder.newLine();
     _builder.append("import scala.Predef.String");
     _builder.newLine();
     _builder.newLine();
@@ -997,8 +1015,6 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         _builder.append(_name_9, "  ");
         _builder.append("Tag]");
         _builder.newLineIfNotEmpty();
-        _builder.append("  ");
-        _builder.newLine();
       }
     }
     _builder.append("  ");
@@ -1044,10 +1060,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final Function1<EPackage, EList<EClassifier>> _function_6 = (EPackage it) -> {
         return it.getEClassifiers();
       };
-      final Function1<EClass, String> _function_7 = (EClass it) -> {
+      final Function1<EClass, Boolean> _function_7 = (EClass it) -> {
+        return Boolean.valueOf(((!it.getName().startsWith("Literal")) && (!Objects.equal(it.getName(), "Extent"))));
+      };
+      final Function1<EClass, String> _function_8 = (EClass it) -> {
         return it.getName();
       };
-      List<EClass> _sortBy_3 = IterableExtensions.<EClass, String>sortBy(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function_6)), EClass.class), _function_7);
+      List<EClass> _sortBy_3 = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function_6)), EClass.class), _function_7), _function_8);
       for(final EClass eClass_1 : _sortBy_3) {
         _builder.append("  ");
         _builder.append("type ");
@@ -1123,6 +1142,51 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         _builder.newLineIfNotEmpty();
         _builder.append("  ");
         _builder.newLine();
+        _builder.append("  ");
+        _builder.append("implicit val ordering");
+        String _name_22 = eClass_1.getName();
+        _builder.append(_name_22, "  ");
+        _builder.append("UUID");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append(": Ordering[");
+        String _name_23 = eClass_1.getName();
+        _builder.append(_name_23, "  ");
+        _builder.append("UUID] ");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("= new Ordering[");
+        String _name_24 = eClass_1.getName();
+        _builder.append(_name_24, "  ");
+        _builder.append("UUID] {");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("\t");
+        _builder.append("override def compare");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("\t");
+        _builder.append("(x: ");
+        String _name_25 = eClass_1.getName();
+        _builder.append(_name_25, "  \t");
+        _builder.append("UUID, ");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("\t ");
+        _builder.append("y: ");
+        String _name_26 = eClass_1.getName();
+        _builder.append(_name_26, "  \t ");
+        _builder.append("UUID)");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("\t");
+        _builder.append(": Int = x.compareTo(y)");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("}");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.newLine();
       }
     }
     _builder.append("}");
@@ -1153,7 +1217,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     _builder.newLine();
     _builder.append("import io.circe.{Decoder,Encoder}");
     _builder.newLine();
-    _builder.append("import scala.{Left,Right}");
+    _builder.append("import scala.{Int,Left,Ordering,Right}");
     _builder.newLine();
     _builder.newLine();
     _builder.append("object taggedTypes {");
@@ -1204,10 +1268,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
         return it.getEClassifiers();
       };
-      final Function1<EClass, String> _function_1 = (EClass it) -> {
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return Boolean.valueOf(((!it.getName().startsWith("Literal")) && (!Objects.equal(it.getName(), "Extent"))));
+      };
+      final Function1<EClass, String> _function_2 = (EClass it) -> {
         return it.getName();
       };
-      List<EClass> _sortBy = IterableExtensions.<EClass, String>sortBy(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1);
+      List<EClass> _sortBy = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1), _function_2);
       for(final EClass eClass : _sortBy) {
         _builder.append("  ");
         _builder.append("type ");
@@ -1272,6 +1339,50 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         _builder.append(_name_9, "  ");
         _builder.append("Tag]");
         _builder.newLineIfNotEmpty();
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("implicit val ordering");
+        String _name_10 = eClass.getName();
+        _builder.append(_name_10, "  ");
+        _builder.append("UUID");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append(": Ordering[");
+        String _name_11 = eClass.getName();
+        _builder.append(_name_11, "  ");
+        _builder.append("UUID]");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("= new Ordering[");
+        String _name_12 = eClass.getName();
+        _builder.append(_name_12, "  ");
+        _builder.append("UUID] {");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("\t");
+        _builder.append("override def compare");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("\t");
+        _builder.append("(x: ");
+        String _name_13 = eClass.getName();
+        _builder.append(_name_13, "  \t");
+        _builder.append("UUID, ");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("\t ");
+        _builder.append("y: ");
+        String _name_14 = eClass.getName();
+        _builder.append(_name_14, "  \t ");
+        _builder.append("UUID)");
+        _builder.newLineIfNotEmpty();
+        _builder.append("  ");
+        _builder.append("\t");
+        _builder.append(": Int = x.compareTo(y)");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("}");
+        _builder.newLine();
         _builder.append("  ");
         _builder.newLine();
       }
@@ -1307,10 +1418,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
         return it.getEClassifiers();
       };
-      final Function1<EClass, String> _function_1 = (EClass it) -> {
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return Boolean.valueOf(((!it.getName().startsWith("Literal")) && (!Objects.equal(it.getName(), "Extent"))));
+      };
+      final Function1<EClass, String> _function_2 = (EClass it) -> {
         return it.getName();
       };
-      List<EClass> _sortBy = IterableExtensions.<EClass, String>sortBy(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1);
+      List<EClass> _sortBy = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1), _function_2);
       for(final EClass eClass : _sortBy) {
         _builder.append("  ");
         _builder.append("val ");
