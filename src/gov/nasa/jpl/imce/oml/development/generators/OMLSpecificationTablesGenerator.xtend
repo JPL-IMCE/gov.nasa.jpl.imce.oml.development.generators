@@ -170,7 +170,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import org.apache.commons.compress.archivers.zip.{ZipArchiveEntry, ZipFile}
 		
 		«IF 'OMLSpecificationTables' == tableName»
-		import scala.collection.immutable.Seq
+		import scala.collection.immutable.{Seq,Set}
 		«ELSE»
 		import scala.collection.immutable.Seq
 		«ENDIF»
@@ -244,7 +244,8 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  def mergeTables
 		  (t1: «tableName», t2: «tableName»)
 		  : «tableName»
-		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = t1.«eClass.tableVariableName» ++ t2.«eClass.tableVariableName»«ENDFOR»
+		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = 
+		  (t1.«eClass.tableVariableName».to[Set] ++ t2.«eClass.tableVariableName».to[Set]).to[Seq].sortBy(_.uuid)«ENDFOR»
 		  
 		  def readZipArchive
 		  (zipFile: ZipFile)
@@ -308,7 +309,10 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 	'''
 	def «eClass.tableReaderName»(is: InputStream)
 	: «tableName»
-	= copy(«eClass.tableVariableName» = readJSonTable(is, «eClass.name»Helper.fromJSON))
+	= copy(«eClass.tableVariableName» = 
+	  («eClass.tableVariableName».to[Set] ++ 
+	   readJSonTable(is, «eClass.name»Helper.fromJSON).to[Set]
+	  ).to[Seq].sortBy(_.uuid))
 	'''
 	
 	def generateJS(EPackage ePackage, String targetJSFolder) {
@@ -375,6 +379,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.covariantTag
 		import gov.nasa.jpl.imce.oml.covariantTag.@@
 		import io.circe.{Decoder,Encoder}
+		import scala.{Int,Ordering}
 		import scala.Predef.String
 		
 		object taggedTypes {
@@ -386,14 +391,13 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  
 		  implicit val decode«type.name»: Decoder[«type.name»] = decodeTag[«type.name»Tag]
 		  implicit val encode«type.name»: Encoder[«type.name»] = encodeTag[«type.name»Tag]
-		  
 		  «ENDFOR»
 		  
 		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EClass).sortBy[name]»
 		  trait «eClass.name»Tag«FOR eSup: eClass.ESuperClasses.sortBy[name] BEFORE " <: " SEPARATOR " with "»«eSup.name»Tag«ENDFOR»
 		  «ENDFOR»
 		  
-		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EClass).sortBy[name]»
+		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EClass).filter[!name.startsWith("Literal") && name != "Extent"].sortBy[name]»
 		  type «eClass.name»UUID 
 		  = String @@ «eClass.name»Tag
 		  
@@ -408,6 +412,15 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  implicit val encode«eClass.name»UUID
 		  : Encoder[«eClass.name»UUID]
 		  = encodeTag[«eClass.name»Tag]
+		  
+		  implicit val ordering«eClass.name»UUID
+		  : Ordering[«eClass.name»UUID] 
+		  = new Ordering[«eClass.name»UUID] {
+		  	override def compare
+		  	(x: «eClass.name»UUID, 
+		  	 y: «eClass.name»UUID)
+		  	: Int = x.compareTo(y)
+		  }
 		  
 		  «ENDFOR»
 		}
@@ -426,7 +439,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		
 		import io.circe.{HCursor,Json}
 		import io.circe.{Decoder,Encoder}
-		import scala.{Left,Right}
+		import scala.{Int,Left,Ordering,Right}
 		
 		object taggedTypes {
 		
@@ -445,7 +458,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  : UUID @@ Tag 
 		  = covariantTag[Tag][UUID](UUID.fromString(uuid))
 		  
-		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EClass).sortBy[name]»
+		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EClass).filter[!name.startsWith("Literal") && name != "Extent"].sortBy[name]»
 		  type «eClass.name»UUID
 		  = UUID @@ gov.nasa.jpl.imce.oml.tables.taggedTypes.«eClass.name»Tag
 		  
@@ -457,6 +470,15 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  
 		  implicit val encode«eClass.name»UUID: Encoder[«eClass.name»UUID]
 		  = encodeTag[gov.nasa.jpl.imce.oml.tables.taggedTypes.«eClass.name»Tag]
+
+		  implicit val ordering«eClass.name»UUID
+		  : Ordering[«eClass.name»UUID]
+		  = new Ordering[«eClass.name»UUID] {
+		  	override def compare
+		  	(x: «eClass.name»UUID, 
+		  	 y: «eClass.name»UUID)
+		  	: Int = x.compareTo(y)
+		  }
 		  
 		  «ENDFOR»
 		}
@@ -475,7 +497,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		
 		  val uuid = Gen.uuid
 		
-		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EClass).sortBy[name]»
+		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EClass).filter[!name.startsWith("Literal") && name != "Extent"].sortBy[name]»
 		  val «eClass.name.lowerCaseInitialOrWord»UUID = uuid.map(id => taggedTypes.«eClass.name.lowerCaseInitialOrWord»UUID(id.toString))
 		  «ENDFOR»
 		
