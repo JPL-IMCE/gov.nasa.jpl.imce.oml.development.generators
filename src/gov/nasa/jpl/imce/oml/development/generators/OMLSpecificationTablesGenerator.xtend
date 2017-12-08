@@ -509,7 +509,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
 		val uuidNS = eClass.lookupUUIDNamespaceFeature
 		val uuidFactors = eClass.lookupUUIDNamespaceFactors
-		val pairs = eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature && lowerBound>0]
+		val pairs = eClass.getSortedAttributeFactorySignature.filter[lowerBound>0] // [isUUIDFeature && lowerBound>0]
 		val keyAttributes = eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0)
 		val uuidWithGenerator = (null !== uuidNS) && (null !== uuidFactors)
 		val uuidWithoutContainer = (null !== uuid) && (null === container) && (null !== uuidNS)
@@ -523,7 +523,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		import scala.scalajs.js.annotation.{JSExport,JSExportTopLevel}
 		«IF !uuidFactors.empty»
 		import scala.Predef.ArrowAssoc
-		«ELSEIF !pairs.empty»
+		«ELSEIF !uuidWithoutContainer && !pairs.empty»
 		import scala.Predef.ArrowAssoc
 		«ENDIF»
 		
@@ -568,7 +568,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		          "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithContainer»
 		  «FOR attr : keyAttributes BEFORE "  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      taggedTypes."+eClass.name.lowerCaseInitialOrWord+"UUID(oug.namespaceUUID(\n        \""+eClass.name+"\""»    «attr.columnName»: «constructorTypeRef(eClass, attr)»«ENDFOR»«FOR f : pairs»,
-		          "«f.name»" -> «f.columnUUID»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		          "«f.name»" -> «IF f.isUUIDFeature»«f.columnUUID»«ELSEIF f.EType.name == "LiteralString"»«f.name»«ELSE»«f.name».value«ENDIF»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ENDIF»
 		
 		«IF null !== eClass.lookupUUIDFeature»

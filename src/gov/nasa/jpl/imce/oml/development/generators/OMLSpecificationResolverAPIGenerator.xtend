@@ -205,10 +205,11 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	}
 	
 	def String factoryMethodWithDerivedUUID(EClass eClass) {
-		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature && isEssential]»«IF (attr.isIRIReference)» ++
+		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isEssential]»«IF (attr.isIRIReference)» ++
   Seq("«attr.name»" -> namespaceUUID(«attr.name»).toString)«ELSEIF (0 == attr.lowerBound)» ++
-  «attr.name».map { vt => "«attr.name»" -> vt.uuid.toString }«ELSE» ++
-  Seq("«attr.name»" -> «attr.name».uuid.toString)«ENDIF»«ENDFOR»'''
+  «attr.name».map { vt => "«attr.name»" -> vt.uuid.toString }«ELSEIF attr.isUUIDFeature» ++
+    Seq("«attr.name»" -> «attr.name».uuid.toString)«ELSE» ++
+    Seq("«attr.name»" -> «attr.name».value)«ENDIF»«ENDFOR»'''
 		
 		'''
 		def create«eClass.name»
@@ -230,10 +231,11 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	}
 	
 	def String factoryMethodWithImplicitlyDerivedUUID(EClass eClass) {
-		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature.filter[isUUIDFeature]»«IF (attr.isIRIReference)» ++
+		val pairs = '''«FOR attr : eClass.getSortedAttributeFactorySignature»«IF (attr.isIRIReference)» ++
   Seq("«attr.name»" -> namespaceUUID(«attr.name»).toString«ELSEIF (0 == attr.lowerBound)» ++
-  «attr.name».map { vt => "«attr.name»" -> vt.uuid.toString }«ELSE» ++
-  Seq("«attr.name»" -> «attr.name».uuid.toString)«ENDIF»«ENDFOR»'''
+  «attr.name».map { vt => "«attr.name»" -> vt.uuid.toString }«ELSEIF attr.isUUIDFeature» ++
+    Seq("«attr.name»" -> «attr.name».uuid.toString)«ELSE» ++
+    Seq("«attr.name»" -> «attr.name».toString)«ENDIF»«ENDFOR»'''
 		
 		'''
 		def create«eClass.name»
@@ -414,8 +416,8 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	  	  «ENDIF»
 		  «ENDFOR»
 		
-		  def lookupElement(uuid: taggedTypes.ElementUUID)
-		  : Option[Element]
+		  def lookupLogicalElement(uuid: taggedTypes.LogicalElementUUID)
+		  : Option[LogicalElement]
 		  = lookupModule(uuid.asInstanceOf[taggedTypes.ModuleUUID])«FOR c : containers.filter[name != "annotations"] BEFORE " orElse\n  " SEPARATOR " orElse\n  " AFTER "\n"»lookup«c.EType.name»(uuid.asInstanceOf[taggedTypes.«c.EType.name»UUID])«ENDFOR»
 		
 		}
