@@ -15,3 +15,7 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.0 is a significant update
 - [#12 Code generators for improved type safety of the tabular representation](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/12)
   - tables API uses tagged String types.
   - resolver API uses tagged UUID types.
+  
+- [#14 Code generation for OML Tables reader fix](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/14)
+
+- [#15 Code generation for ValueCrossReferenceKind](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/15)
