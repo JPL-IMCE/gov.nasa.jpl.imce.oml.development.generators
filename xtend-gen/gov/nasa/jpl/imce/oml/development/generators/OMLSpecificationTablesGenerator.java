@@ -1454,7 +1454,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final EStructuralFeature uuidNS = OMLUtilities.lookupUUIDNamespaceFeature(eClass);
       final Iterable<EStructuralFeature> uuidFactors = OMLUtilities.lookupUUIDNamespaceFactors(eClass);
       final Function1<EStructuralFeature, Boolean> _function_1 = (EStructuralFeature it) -> {
-        return Boolean.valueOf(((OMLUtilities.isUUIDFeature(it)).booleanValue() && (it.getLowerBound() > 0)));
+        int _lowerBound = it.getLowerBound();
+        return Boolean.valueOf((_lowerBound > 0));
       };
       final Iterable<EStructuralFeature> pairs = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function_1);
       final Function1<ETypedElement, Boolean> _function_2 = (ETypedElement a) -> {
@@ -1485,9 +1486,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.append("import scala.Predef.ArrowAssoc");
           _builder.newLine();
         } else {
-          boolean _isEmpty_1 = IterableExtensions.isEmpty(pairs);
-          boolean _not_1 = (!_isEmpty_1);
-          if (_not_1) {
+          if (((!uuidWithoutContainer) && (!IterableExtensions.isEmpty(pairs)))) {
             _builder.append("import scala.Predef.ArrowAssoc");
             _builder.newLine();
           }
@@ -1518,8 +1517,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       {
         Boolean _hasSchemaOptionalAttributes = OMLUtilities.hasSchemaOptionalAttributes(eClass);
-        boolean _not_2 = (!(_hasSchemaOptionalAttributes).booleanValue());
-        if (_not_2) {
+        boolean _not_1 = (!(_hasSchemaOptionalAttributes).booleanValue());
+        if (_not_1) {
           _builder.append("@JSExportTopLevel(\"");
           String _name = eClass.getName();
           _builder.append(_name);
@@ -1876,8 +1875,24 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                   String _name_11 = f_2.getName();
                   _builder.append(_name_11, "        ");
                   _builder.append("\" -> ");
-                  String _columnUUID = OMLUtilities.columnUUID(f_2);
-                  _builder.append(_columnUUID, "        ");
+                  {
+                    Boolean _isUUIDFeature = OMLUtilities.isUUIDFeature(f_2);
+                    if ((_isUUIDFeature).booleanValue()) {
+                      String _columnUUID = OMLUtilities.columnUUID(f_2);
+                      _builder.append(_columnUUID, "        ");
+                    } else {
+                      String _name_12 = f_2.getEType().getName();
+                      boolean _equals = Objects.equal(_name_12, "LiteralString");
+                      if (_equals) {
+                        String _name_13 = f_2.getName();
+                        _builder.append(_name_13, "        ");
+                      } else {
+                        String _name_14 = f_2.getName();
+                        _builder.append(_name_14, "        ");
+                        _builder.append(".value");
+                      }
+                    }
+                  }
                 }
               }
               {
@@ -1949,8 +1964,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  \t");
       _builder.append("case that: ");
-      String _name_12 = eClass.getName();
-      _builder.append(_name_12, "  \t");
+      String _name_15 = eClass.getName();
+      _builder.append(_name_15, "  \t");
       _builder.append(" =>");
       _builder.newLineIfNotEmpty();
       {
@@ -1968,8 +1983,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
             if ((_isXRefColumn).booleanValue()) {
               {
                 int _lowerBound_2 = attr_12.getLowerBound();
-                boolean _equals = (_lowerBound_2 == 0);
-                if (_equals) {
+                boolean _equals_1 = (_lowerBound_2 == 0);
+                if (_equals_1) {
                   _builder.append("((this.");
                   String _columnName_15 = OMLUtilities.columnName(attr_12);
                   _builder.append(_columnName_15, "  \t  ");
@@ -2042,13 +2057,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.newLine();
       _builder.append("@JSExportTopLevel(\"");
-      String _name_13 = eClass.getName();
-      _builder.append(_name_13);
+      String _name_16 = eClass.getName();
+      _builder.append(_name_16);
       _builder.append("Helper\")");
       _builder.newLineIfNotEmpty();
       _builder.append("object ");
-      String _name_14 = eClass.getName();
-      _builder.append(_name_14);
+      String _name_17 = eClass.getName();
+      _builder.append(_name_17);
       _builder.append("Helper {");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
@@ -2077,17 +2092,17 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("implicit val decode");
-      String _name_15 = eClass.getName();
-      _builder.append(_name_15, "  ");
+      String _name_18 = eClass.getName();
+      _builder.append(_name_18, "  ");
       _builder.append(": Decoder[");
-      String _name_16 = eClass.getName();
-      _builder.append(_name_16, "  ");
+      String _name_19 = eClass.getName();
+      _builder.append(_name_19, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= Decoder.instance[");
-      String _name_17 = eClass.getName();
-      _builder.append(_name_17, "  ");
+      String _name_20 = eClass.getName();
+      _builder.append(_name_20, "  ");
       _builder.append("] { c: HCursor =>");
       _builder.newLineIfNotEmpty();
       _builder.append("    ");
@@ -2120,8 +2135,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLineIfNotEmpty();
       _builder.append("    \t");
       _builder.append("} yield ");
-      String _name_18 = eClass.getName();
-      _builder.append(_name_18, "    \t");
+      String _name_21 = eClass.getName();
+      _builder.append(_name_21, "    \t");
       _builder.append("(");
       _builder.newLineIfNotEmpty();
       _builder.append("    \t  ");
@@ -2149,23 +2164,23 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("implicit val encode");
-      String _name_19 = eClass.getName();
-      _builder.append(_name_19, "  ");
+      String _name_22 = eClass.getName();
+      _builder.append(_name_22, "  ");
       _builder.append(": Encoder[");
-      String _name_20 = eClass.getName();
-      _builder.append(_name_20, "  ");
+      String _name_23 = eClass.getName();
+      _builder.append(_name_23, "  ");
       _builder.append("]");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= new Encoder[");
-      String _name_21 = eClass.getName();
-      _builder.append(_name_21, "  ");
+      String _name_24 = eClass.getName();
+      _builder.append(_name_24, "  ");
       _builder.append("] {");
       _builder.newLineIfNotEmpty();
       _builder.append("    ");
       _builder.append("override final def apply(x: ");
-      String _name_22 = eClass.getName();
-      _builder.append(_name_22, "    ");
+      String _name_25 = eClass.getName();
+      _builder.append(_name_25, "    ");
       _builder.append("): Json ");
       _builder.newLineIfNotEmpty();
       _builder.append("    ");
@@ -2203,8 +2218,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("def toJSON(c: ");
-      String _name_23 = eClass.getName();
-      _builder.append(_name_23, "  ");
+      String _name_26 = eClass.getName();
+      _builder.append(_name_26, "  ");
       _builder.append(")");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
@@ -2212,8 +2227,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("= encode");
-      String _name_24 = eClass.getName();
-      _builder.append(_name_24, "  ");
+      String _name_27 = eClass.getName();
+      _builder.append(_name_27, "  ");
       _builder.append("(c).noSpaces");
       _builder.newLineIfNotEmpty();
       _builder.newLine();
@@ -2225,8 +2240,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append(": ");
-      String _name_25 = eClass.getName();
-      _builder.append(_name_25, "  ");
+      String _name_28 = eClass.getName();
+      _builder.append(_name_28, "  ");
       _builder.newLineIfNotEmpty();
       _builder.append("  ");
       _builder.append("= parse(c) match {");
@@ -2236,8 +2251,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  \t  ");
       _builder.append("decode");
-      String _name_26 = eClass.getName();
-      _builder.append(_name_26, "  \t  ");
+      String _name_29 = eClass.getName();
+      _builder.append(_name_29, "  \t  ");
       _builder.append("(json.hcursor) match {");
       _builder.newLineIfNotEmpty();
       _builder.append("  \t    \t");

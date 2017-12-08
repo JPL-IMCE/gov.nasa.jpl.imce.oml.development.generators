@@ -832,7 +832,7 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       StringConcatenation _builder = new StringConcatenation();
       {
         final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
-          return Boolean.valueOf(((OMLUtilities.isUUIDFeature(it)).booleanValue() && (OMLUtilities.isEssential(it)).booleanValue()));
+          return OMLUtilities.isEssential(it);
         };
         Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function);
         for(final EStructuralFeature attr : _filter) {
@@ -863,16 +863,30 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
                 _builder.append(_name_3, "  ");
                 _builder.append("\" -> vt.uuid.toString }");
               } else {
-                _builder.append(" ++");
-                _builder.newLineIfNotEmpty();
-                _builder.append("  ");
-                _builder.append("Seq(\"");
-                String _name_4 = attr.getName();
-                _builder.append(_name_4, "  ");
-                _builder.append("\" -> ");
-                String _name_5 = attr.getName();
-                _builder.append(_name_5, "  ");
-                _builder.append(".uuid.toString)");
+                Boolean _isUUIDFeature = OMLUtilities.isUUIDFeature(attr);
+                if ((_isUUIDFeature).booleanValue()) {
+                  _builder.append(" ++");
+                  _builder.newLineIfNotEmpty();
+                  _builder.append("    ");
+                  _builder.append("Seq(\"");
+                  String _name_4 = attr.getName();
+                  _builder.append(_name_4, "    ");
+                  _builder.append("\" -> ");
+                  String _name_5 = attr.getName();
+                  _builder.append(_name_5, "    ");
+                  _builder.append(".uuid.toString)");
+                } else {
+                  _builder.append(" ++");
+                  _builder.newLineIfNotEmpty();
+                  _builder.append("    ");
+                  _builder.append("Seq(\"");
+                  String _name_6 = attr.getName();
+                  _builder.append(_name_6, "    ");
+                  _builder.append("\" -> ");
+                  String _name_7 = attr.getName();
+                  _builder.append(_name_7, "    ");
+                  _builder.append(".value)");
+                }
               }
             }
           }
@@ -881,8 +895,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       final String pairs = _builder.toString();
       StringConcatenation _builder_1 = new StringConcatenation();
       _builder_1.append("def create");
-      String _name_6 = eClass.getName();
-      _builder_1.append(_name_6);
+      String _name_8 = eClass.getName();
+      _builder_1.append(_name_8);
       _builder_1.newLineIfNotEmpty();
       {
         Iterable<EStructuralFeature> _sortedAttributeFactorySignature = OMLUtilities.getSortedAttributeFactorySignature(eClass);
@@ -902,8 +916,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             _builder_1.appendImmediate(",\n ", "");
           }
           _builder_1.append(" ");
-          String _name_7 = attr_1.getName();
-          _builder_1.append(_name_7);
+          String _name_9 = attr_1.getName();
+          _builder_1.append(_name_9);
           _builder_1.append(": ");
           String _queryResolverType = OMLUtilities.queryResolverType(attr_1, "");
           _builder_1.append(_queryResolverType);
@@ -917,12 +931,12 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
         Boolean _isExtentContainer_1 = OMLUtilities.isExtentContainer(eClass);
         if ((_isExtentContainer_1).booleanValue()) {
           _builder_1.append(": ");
-          String _name_8 = eClass.getName();
-          _builder_1.append(_name_8);
+          String _name_10 = eClass.getName();
+          _builder_1.append(_name_10);
         } else {
           _builder_1.append(": (Extent, ");
-          String _name_9 = eClass.getName();
-          _builder_1.append(_name_9);
+          String _name_11 = eClass.getName();
+          _builder_1.append(_name_11);
           _builder_1.append(")");
         }
       }
@@ -943,8 +957,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder_1.newLineIfNotEmpty();
       _builder_1.append("    ");
       _builder_1.append("\"");
-      String _name_10 = eClass.getName();
-      _builder_1.append(_name_10, "    ");
+      String _name_12 = eClass.getName();
+      _builder_1.append(_name_12, "    ");
       _builder_1.append("\",");
       _builder_1.newLineIfNotEmpty();
       _builder_1.append("    ");
@@ -954,8 +968,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder_1.newLineIfNotEmpty();
       _builder_1.append("  ");
       _builder_1.append("create");
-      String _name_11 = eClass.getName();
-      _builder_1.append(_name_11, "  ");
+      String _name_13 = eClass.getName();
+      _builder_1.append(_name_13, "  ");
       _builder_1.append("( ");
       {
         Iterable<EStructuralFeature> _sortedAttributeFactorySignature_1 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
@@ -974,8 +988,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
           } else {
             _builder_1.appendImmediate(", ", "  ");
           }
-          String _name_12 = attr_2.getName();
-          _builder_1.append(_name_12, "  ");
+          String _name_14 = attr_2.getName();
+          _builder_1.append(_name_14, "  ");
         }
       }
       _builder_1.append(" )");
@@ -984,8 +998,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder_1.newLine();
       _builder_1.newLine();
       _builder_1.append("def create");
-      String _name_13 = eClass.getName();
-      _builder_1.append(_name_13);
+      String _name_15 = eClass.getName();
+      _builder_1.append(_name_15);
       _builder_1.newLineIfNotEmpty();
       {
         Iterable<EStructuralFeature> _sortedAttributeFactorySignature_2 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
@@ -996,12 +1010,12 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             String _xifexpression_2 = null;
             Boolean _isExtentContainer_3 = OMLUtilities.isExtentContainer(eClass);
             if ((_isExtentContainer_3).booleanValue()) {
-              String _name_14 = eClass.getName();
-              String _plus = ("( uuid: taggedTypes." + _name_14);
+              String _name_16 = eClass.getName();
+              String _plus = ("( uuid: taggedTypes." + _name_16);
               _xifexpression_2 = (_plus + "UUID,\n ");
             } else {
-              String _name_15 = eClass.getName();
-              String _plus_1 = ("( extent: Extent,\n  uuid: taggedTypes." + _name_15);
+              String _name_17 = eClass.getName();
+              String _plus_1 = ("( extent: Extent,\n  uuid: taggedTypes." + _name_17);
               _xifexpression_2 = (_plus_1 + "UUID,\n ");
             }
             _builder_1.append(_xifexpression_2);
@@ -1009,8 +1023,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             _builder_1.appendImmediate(",\n ", "");
           }
           _builder_1.append(" ");
-          String _name_16 = attr_3.getName();
-          _builder_1.append(_name_16);
+          String _name_18 = attr_3.getName();
+          _builder_1.append(_name_18);
           _builder_1.append(": ");
           String _queryResolverType_1 = OMLUtilities.queryResolverType(attr_3, "");
           _builder_1.append(_queryResolverType_1);
@@ -1024,12 +1038,12 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
         Boolean _isExtentContainer_4 = OMLUtilities.isExtentContainer(eClass);
         if ((_isExtentContainer_4).booleanValue()) {
           _builder_1.append(": ");
-          String _name_17 = eClass.getName();
-          _builder_1.append(_name_17);
+          String _name_19 = eClass.getName();
+          _builder_1.append(_name_19);
         } else {
           _builder_1.append(": (Extent, ");
-          String _name_18 = eClass.getName();
-          _builder_1.append(_name_18);
+          String _name_20 = eClass.getName();
+          _builder_1.append(_name_20);
           _builder_1.append(")");
         }
       }
@@ -1044,11 +1058,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
     {
       StringConcatenation _builder = new StringConcatenation();
       {
-        final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
-          return OMLUtilities.isUUIDFeature(it);
-        };
-        Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), _function);
-        for(final EStructuralFeature attr : _filter) {
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        for(final EStructuralFeature attr : _sortedAttributeFactorySignature) {
           {
             Boolean _isIRIReference = OMLUtilities.isIRIReference(attr);
             if ((_isIRIReference).booleanValue()) {
@@ -1076,16 +1087,30 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
                 _builder.append(_name_3, "  ");
                 _builder.append("\" -> vt.uuid.toString }");
               } else {
-                _builder.append(" ++");
-                _builder.newLineIfNotEmpty();
-                _builder.append("  ");
-                _builder.append("Seq(\"");
-                String _name_4 = attr.getName();
-                _builder.append(_name_4, "  ");
-                _builder.append("\" -> ");
-                String _name_5 = attr.getName();
-                _builder.append(_name_5, "  ");
-                _builder.append(".uuid.toString)");
+                Boolean _isUUIDFeature = OMLUtilities.isUUIDFeature(attr);
+                if ((_isUUIDFeature).booleanValue()) {
+                  _builder.append(" ++");
+                  _builder.newLineIfNotEmpty();
+                  _builder.append("    ");
+                  _builder.append("Seq(\"");
+                  String _name_4 = attr.getName();
+                  _builder.append(_name_4, "    ");
+                  _builder.append("\" -> ");
+                  String _name_5 = attr.getName();
+                  _builder.append(_name_5, "    ");
+                  _builder.append(".uuid.toString)");
+                } else {
+                  _builder.append(" ++");
+                  _builder.newLineIfNotEmpty();
+                  _builder.append("    ");
+                  _builder.append("Seq(\"");
+                  String _name_6 = attr.getName();
+                  _builder.append(_name_6, "    ");
+                  _builder.append("\" -> ");
+                  String _name_7 = attr.getName();
+                  _builder.append(_name_7, "    ");
+                  _builder.append(".toString)");
+                }
               }
             }
           }
@@ -1094,13 +1119,13 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       final String pairs = _builder.toString();
       StringConcatenation _builder_1 = new StringConcatenation();
       _builder_1.append("def create");
-      String _name_6 = eClass.getName();
-      _builder_1.append(_name_6);
+      String _name_8 = eClass.getName();
+      _builder_1.append(_name_8);
       _builder_1.newLineIfNotEmpty();
       {
-        Iterable<EStructuralFeature> _sortedAttributeFactorySignature = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature_1 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
         boolean _hasElements = false;
-        for(final EStructuralFeature attr_1 : _sortedAttributeFactorySignature) {
+        for(final EStructuralFeature attr_1 : _sortedAttributeFactorySignature_1) {
           if (!_hasElements) {
             _hasElements = true;
             String _xifexpression = null;
@@ -1115,8 +1140,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             _builder_1.appendImmediate(",\n ", "");
           }
           _builder_1.append(" ");
-          String _name_7 = attr_1.getName();
-          _builder_1.append(_name_7);
+          String _name_9 = attr_1.getName();
+          _builder_1.append(_name_9);
           _builder_1.append(": ");
           String _queryResolverType = OMLUtilities.queryResolverType(attr_1, "");
           _builder_1.append(_queryResolverType);
@@ -1130,12 +1155,12 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
         Boolean _isExtentContainer_1 = OMLUtilities.isExtentContainer(eClass);
         if ((_isExtentContainer_1).booleanValue()) {
           _builder_1.append(": ");
-          String _name_8 = eClass.getName();
-          _builder_1.append(_name_8);
+          String _name_10 = eClass.getName();
+          _builder_1.append(_name_10);
         } else {
           _builder_1.append(": (Extent, ");
-          String _name_9 = eClass.getName();
-          _builder_1.append(_name_9);
+          String _name_11 = eClass.getName();
+          _builder_1.append(_name_11);
           _builder_1.append(")");
         }
       }
@@ -1156,8 +1181,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder_1.newLineIfNotEmpty();
       _builder_1.append("    ");
       _builder_1.append("\"");
-      String _name_10 = eClass.getName();
-      _builder_1.append(_name_10, "    ");
+      String _name_12 = eClass.getName();
+      _builder_1.append(_name_12, "    ");
       _builder_1.append("\",");
       _builder_1.newLineIfNotEmpty();
       _builder_1.append("    ");
@@ -1167,13 +1192,13 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder_1.newLineIfNotEmpty();
       _builder_1.append("  ");
       _builder_1.append("create");
-      String _name_11 = eClass.getName();
-      _builder_1.append(_name_11, "  ");
+      String _name_13 = eClass.getName();
+      _builder_1.append(_name_13, "  ");
       _builder_1.append("( ");
       {
-        Iterable<EStructuralFeature> _sortedAttributeFactorySignature_1 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature_2 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
         boolean _hasElements_1 = false;
-        for(final EStructuralFeature attr_2 : _sortedAttributeFactorySignature_1) {
+        for(final EStructuralFeature attr_2 : _sortedAttributeFactorySignature_2) {
           if (!_hasElements_1) {
             _hasElements_1 = true;
             String _xifexpression_1 = null;
@@ -1187,8 +1212,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
           } else {
             _builder_1.appendImmediate(", ", "  ");
           }
-          String _name_12 = attr_2.getName();
-          _builder_1.append(_name_12, "  ");
+          String _name_14 = attr_2.getName();
+          _builder_1.append(_name_14, "  ");
         }
       }
       _builder_1.append(" )");
@@ -1197,24 +1222,24 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder_1.newLine();
       _builder_1.newLine();
       _builder_1.append("def create");
-      String _name_13 = eClass.getName();
-      _builder_1.append(_name_13);
+      String _name_15 = eClass.getName();
+      _builder_1.append(_name_15);
       _builder_1.newLineIfNotEmpty();
       {
-        Iterable<EStructuralFeature> _sortedAttributeFactorySignature_2 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature_3 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
         boolean _hasElements_2 = false;
-        for(final EStructuralFeature attr_3 : _sortedAttributeFactorySignature_2) {
+        for(final EStructuralFeature attr_3 : _sortedAttributeFactorySignature_3) {
           if (!_hasElements_2) {
             _hasElements_2 = true;
             String _xifexpression_2 = null;
             Boolean _isExtentContainer_3 = OMLUtilities.isExtentContainer(eClass);
             if ((_isExtentContainer_3).booleanValue()) {
-              String _name_14 = eClass.getName();
-              String _plus = ("( uuid: taggedTypes." + _name_14);
+              String _name_16 = eClass.getName();
+              String _plus = ("( uuid: taggedTypes." + _name_16);
               _xifexpression_2 = (_plus + "UUID,\n ");
             } else {
-              String _name_15 = eClass.getName();
-              String _plus_1 = ("( extent: Extent,\n  uuid: taggedTypes." + _name_15);
+              String _name_17 = eClass.getName();
+              String _plus_1 = ("( extent: Extent,\n  uuid: taggedTypes." + _name_17);
               _xifexpression_2 = (_plus_1 + "UUID,\n ");
             }
             _builder_1.append(_xifexpression_2);
@@ -1222,8 +1247,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             _builder_1.appendImmediate(",\n ", "");
           }
           _builder_1.append(" ");
-          String _name_16 = attr_3.getName();
-          _builder_1.append(_name_16);
+          String _name_18 = attr_3.getName();
+          _builder_1.append(_name_18);
           _builder_1.append(": ");
           String _queryResolverType_1 = OMLUtilities.queryResolverType(attr_3, "");
           _builder_1.append(_queryResolverType_1);
@@ -1237,12 +1262,12 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
         Boolean _isExtentContainer_4 = OMLUtilities.isExtentContainer(eClass);
         if ((_isExtentContainer_4).booleanValue()) {
           _builder_1.append(": ");
-          String _name_17 = eClass.getName();
-          _builder_1.append(_name_17);
+          String _name_19 = eClass.getName();
+          _builder_1.append(_name_19);
         } else {
           _builder_1.append(": (Extent, ");
-          String _name_18 = eClass.getName();
-          _builder_1.append(_name_18);
+          String _name_20 = eClass.getName();
+          _builder_1.append(_name_20);
           _builder_1.append(")");
         }
       }
@@ -2061,10 +2086,10 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       }
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("def lookupElement(uuid: taggedTypes.ElementUUID)");
+      _builder.append("def lookupLogicalElement(uuid: taggedTypes.LogicalElementUUID)");
       _builder.newLine();
       _builder.append("  ");
-      _builder.append(": Option[Element]");
+      _builder.append(": Option[LogicalElement]");
       _builder.newLine();
       _builder.append("  ");
       _builder.append("= lookupModule(uuid.asInstanceOf[taggedTypes.ModuleUUID])");
