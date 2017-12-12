@@ -19,3 +19,5 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.0 is a significant update
 - [#14 Code generation for OML Tables reader fix](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/14)
 
 - [#15 Code generation for ValueCrossReferenceKind](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/15)
+
+- [#16 Code generation for EMF/OMLZIP serialization](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/16)
