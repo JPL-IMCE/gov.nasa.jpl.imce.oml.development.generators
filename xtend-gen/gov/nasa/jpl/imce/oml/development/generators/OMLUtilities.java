@@ -1193,6 +1193,13 @@ public class OMLUtilities extends OMLXcorePackages {
     return Boolean.valueOf(IterableExtensions.<ETypedElement>exists(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function));
   }
   
+  public static Iterable<ETypedElement> schemaAPIOrOrderingKeyReferences(final EClass eClass) {
+    final Function1<ETypedElement, Boolean> _function = (ETypedElement it) -> {
+      return Boolean.valueOf(((OMLUtilities.isClassFeature(it)).booleanValue() && (!(OMLUtilities.isLiteralFeature(it)).booleanValue())));
+    };
+    return IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function);
+  }
+  
   public static Iterable<ETypedElement> schemaAPIOrOrderingKeyAttributes(final EClass eClass) {
     final Function1<ETypedElement, Boolean> _function = (ETypedElement it) -> {
       return Boolean.valueOf(((!(OMLUtilities.isInterface(it)).booleanValue()) && ((OMLUtilities.isSchemaAttributeOrReferenceOrContainer(it)).booleanValue() || (OMLUtilities.isOrderingKey(it)).booleanValue())));
@@ -1752,6 +1759,28 @@ public class OMLUtilities extends OMLXcorePackages {
     return _xblockexpression;
   }
   
+  public static String getFeatureQuery(final ETypedElement feature) {
+    String _xblockexpression = null;
+    {
+      final EClass c = OMLUtilities.EClassContainer(feature);
+      final Function1<EOperation, Boolean> _function = (EOperation it) -> {
+        String _name = it.getName();
+        String _name_1 = feature.getName();
+        return Boolean.valueOf(Objects.equal(_name, _name_1));
+      };
+      final EOperation op = IterableExtensions.<EOperation>findFirst(c.getEAllOperations(), _function);
+      final String name = feature.getName();
+      String _xifexpression = null;
+      if ((null == op)) {
+        _xifexpression = name;
+      } else {
+        _xifexpression = (name + "()");
+      }
+      _xblockexpression = _xifexpression;
+    }
+    return _xblockexpression;
+  }
+  
   public static Boolean isClassFeature(final ETypedElement feature) {
     boolean _xblockexpression = false;
     {
@@ -1939,6 +1968,18 @@ public class OMLUtilities extends OMLXcorePackages {
       _xifexpression = ("iri" + _substring);
     } else {
       _xifexpression = StringExtensions.toFirstLower(s);
+    }
+    return _xifexpression;
+  }
+  
+  public static String upperCaseInitialOrWord(final String s) {
+    String _xifexpression = null;
+    boolean _startsWith = s.startsWith("iri");
+    if (_startsWith) {
+      String _substring = s.substring(3);
+      _xifexpression = ("IRI" + _substring);
+    } else {
+      _xifexpression = StringExtensions.toFirstUpper(s);
     }
     return _xifexpression;
   }
