@@ -422,6 +422,10 @@ class OMLUtilities extends OMLXcorePackages {
 		eClass.schemaAPIOrOrderingKeyAttributes.exists(a | a.lowerBound == 0)
 	}
 	
+	static def Iterable<ETypedElement> schemaAPIOrOrderingKeyReferences(EClass eClass) {
+		eClass.schemaAPIOrOrderingKeyAttributes.filter[isClassFeature && !isLiteralFeature]
+	}
+	
 	static def Iterable<ETypedElement> schemaAPIOrOrderingKeyAttributes(EClass eClass) {
 		eClass
 		.schemaAPIOrOrderingKeyFeatures
@@ -733,6 +737,16 @@ class OMLUtilities extends OMLXcorePackages {
 		}
 	}
 	
+	static def String getFeatureQuery(ETypedElement feature) {
+		val c = feature.EClassContainer
+		val op = c.EAllOperations.findFirst[name == feature.name]
+		val name = feature.name
+		if (null === op)
+		  name
+		else
+		  name+"()"
+	}
+	
 	static def Boolean isClassFeature(ETypedElement feature) {
 		val type = feature.EType
 		type instanceof EClass
@@ -842,6 +856,13 @@ class OMLUtilities extends OMLXcorePackages {
 			"iri" + s.substring(3)
 		else
 			s.toFirstLower
+	}
+	
+	static def String upperCaseInitialOrWord(String s) {
+		if (s.startsWith("iri"))
+			"IRI" + s.substring(3)
+		else
+			s.toFirstUpper
 	}
 	
 	static def String tableVariableName(EClass eClass) {
