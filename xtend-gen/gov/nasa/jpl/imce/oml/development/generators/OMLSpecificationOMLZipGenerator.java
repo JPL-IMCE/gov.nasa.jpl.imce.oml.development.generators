@@ -289,6 +289,10 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction");
       _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.SubDataPropertyOfAxiom");
+      _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.SubObjectPropertyOfAxiom");
+      _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.Structure");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.StructuredDataProperty");
