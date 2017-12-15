@@ -224,9 +224,6 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
               _builder.append("_");
               String _columnName_1 = OMLUtilities.columnName(attr_1);
               _builder.append(_columnName_1, "  ");
-              _builder.append("_");
-              String _upperCaseInitialOrWord_3 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_1)));
-              _builder.append(_upperCaseInitialOrWord_3, "  ");
               _builder.append("`");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -239,8 +236,8 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
               _builder.append("  ");
               _builder.append("  ");
               _builder.append("REFERENCES `OML`.`");
-              String _upperCaseInitialOrWord_4 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_1)));
-              _builder.append(_upperCaseInitialOrWord_4, "    ");
+              String _upperCaseInitialOrWord_3 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_1)));
+              _builder.append(_upperCaseInitialOrWord_3, "    ");
               _builder.append("`(`uuid`)");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -261,7 +258,7 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
           _builder.append("  ");
           _builder.append("UNIQUE INDEX `uuid_UNIQUE` (`uuid` ASC)\t");
           _builder.newLine();
-          _builder.append(")");
+          _builder.append(");");
           _builder.newLine();
           _builder.append("  ");
           _builder.newLine();
