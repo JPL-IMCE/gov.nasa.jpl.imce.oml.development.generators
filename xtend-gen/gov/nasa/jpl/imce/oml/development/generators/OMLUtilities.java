@@ -2200,4 +2200,43 @@ public class OMLUtilities extends OMLXcorePackages {
     _builder.newLine();
     return _builder.toString();
   }
+  
+  public static String copyrightSQL() {
+    StringConcatenation _builder = new StringConcatenation();
+    _builder.append("--");
+    _builder.newLine();
+    _builder.append("-- Copyright 2016 California Institute of Technology (\"Caltech\").");
+    _builder.newLine();
+    _builder.append("-- U.S. Government sponsorship acknowledged.");
+    _builder.newLine();
+    _builder.append("--");
+    _builder.newLine();
+    _builder.append("-- Licensed under the Apache License, Version 2.0 (the \"License\");");
+    _builder.newLine();
+    _builder.append("-- you may not use this file except in compliance with the License.");
+    _builder.newLine();
+    _builder.append("-- You may obtain a copy of the License at");
+    _builder.newLine();
+    _builder.append("--");
+    _builder.newLine();
+    _builder.append("--     http://www.apache.org/licenses/LICENSE-2.0");
+    _builder.newLine();
+    _builder.append("--");
+    _builder.newLine();
+    _builder.append("-- Unless required by applicable law or agreed to in writing, software");
+    _builder.newLine();
+    _builder.append("-- distributed under the License is distributed on an \"AS IS\" BASIS,");
+    _builder.newLine();
+    _builder.append("-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.");
+    _builder.newLine();
+    _builder.append("-- See the License for the specific language governing permissions and");
+    _builder.newLine();
+    _builder.append("-- limitations under the License.");
+    _builder.newLine();
+    _builder.append("-- License Terms");
+    _builder.newLine();
+    _builder.append("--");
+    _builder.newLine();
+    return _builder.toString();
+  }
 }
