@@ -106,14 +106,14 @@ class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
 		  «ELSEIF attr.isClassFeature && attr.lowerBound == 0»BINARY(16) NULL
 		  «ELSEIF attr.isClassFeature && attr.lowerBound > 0»BINARY(16) NOT NULL
 		  «ELSE»TEXT«ENDIF»«ENDFOR»
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter[isClassFeature] SEPARATOR ",\n\n" AFTER ",\n"»CONSTRAINT `fk_«eClass.tableVariableName.upperCaseInitialOrWord»_«attr.columnName»_«attr.EClassType.tableVariableName.upperCaseInitialOrWord»`
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter[isClassFeature] SEPARATOR ",\n\n" AFTER ",\n"»CONSTRAINT `fk_«eClass.tableVariableName.upperCaseInitialOrWord»_«attr.columnName»`
 		    FOREIGN KEY (`«attr.columnName»`)
 		    REFERENCES `OML`.`«attr.EClassType.tableVariableName.upperCaseInitialOrWord»`(`uuid`)
 		    ON DELETE CASCADE
 		    ON UPDATE CASCADE«ENDFOR»
 		  
 		  UNIQUE INDEX `uuid_UNIQUE` (`uuid` ASC)	
-		)
+		);
 		  
 		«ENDFOR»
 		  		  
