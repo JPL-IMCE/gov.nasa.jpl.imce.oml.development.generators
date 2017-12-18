@@ -112,6 +112,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyValue
 		import gov.nasa.jpl.imce.oml.model.common.Extent
 		import gov.nasa.jpl.imce.oml.model.common.LogicalElement
+		import gov.nasa.jpl.imce.oml.model.common.Module
 		import gov.nasa.jpl.imce.oml.model.descriptions.ConceptInstance
 		import gov.nasa.jpl.imce.oml.model.descriptions.ConceptualEntitySingletonInstance
 		import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
@@ -198,6 +199,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  protected val Map<String, Pair<«eClass.name», Map<String,String>>> «eClass.tableVariableName»
 		  «ENDFOR»
 		
+		  protected val Map<String, Pair<Module, Map<String,String>>> modules
 		  protected val Map<String, Pair<LogicalElement, Map<String,String>>> logicalElements
 		  protected val Map<String, Pair<Entity, Map<String,String>>> entities
 		  protected val Map<String, Pair<EntityRelationship, Map<String,String>>> entityRelationships
@@ -225,7 +227,8 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	
 		  	«FOR eClass : eClasses SEPARATOR "\n"»«eClass.tableVariableName» = new HashMap<String, Pair<«eClass.name», Map<String,String>>>()«ENDFOR»
 		  
-		    logicalElements = new HashMap<String, Pair<LogicalElement, Map<String,String>>>()
+		    modules = new HashMap<String, Pair<Module, Map<String,String>>>()
+		    	logicalElements = new HashMap<String, Pair<LogicalElement, Map<String,String>>>()
 		    entities = new HashMap<String, Pair<Entity, Map<String,String>>>()
 		    entityRelationships = new HashMap<String, Pair<EntityRelationship, Map<String,String>>>()
 		    dataRanges = new HashMap<String, Pair<DataRange, Map<String,String>>>()
@@ -375,7 +378,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    «ENDFOR»
 		    
 		    	val ext = createExtent()
-		    	ext.getAnnotationProperties.addAll(annotationProperties.values.map[key])
 		    	ext.getModules.addAll(terminologyGraphs.values.map[key])
 		    	ext.getModules.addAll(bundles.values.map[key])
 		    	ext.getModules.addAll(descriptionBoxes.values.map[key])

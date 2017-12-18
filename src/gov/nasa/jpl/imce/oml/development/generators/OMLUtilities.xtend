@@ -1086,6 +1086,8 @@ class OMLUtilities extends OMLXcorePackages {
 				feature.name+"IRI" 
 			else if (feature.isLiteralFeature)
 				feature.name
+			else if (feature.name == "iri")
+				"iri"
 			else
 				feature.name+"UUID" 
 		} else 

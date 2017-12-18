@@ -289,9 +289,11 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		«copyright»
 		package gov.nasa.jpl.imce.oml.resolver.api
 		
-		import scala.collection.immutable.{Map, HashMap, Set}
+		import java.lang.IllegalArgumentException
+		import scala.collection.immutable.{::, HashMap, Map, Nil, Set}
+		import scala.util.{Failure,Success,Try}
 		import scala.Option
-		 
+		
 		«FOR ct : containerTypes BEFORE "// Container types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
 		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
 		«eClass.doc("")»case class «eClass.name»
@@ -323,6 +325,25 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  
 		  «ENDIF»
 		  «ENDFOR»
+		
+		  def singleModule
+		  : Try[Module]
+		  = ( terminologyGraphs.values.toList,
+		      bundles.values.toList,
+		      descriptionBoxes.values.toList ) match {
+		    case (Nil, Nil, Nil) =>
+		      Failure(new IllegalArgumentException("No OML Modules"))
+		    case (g :: Nil, Nil, Nil) =>
+		      Success(g)
+		    case (Nil, b :: Nil, Nil) =>
+		      Success(b)
+		    case (Nil, Nil, d :: Nil) =>
+		      Success(d)
+		    case (gs, bs, ds) =>
+		      Failure(new IllegalArgumentException(
+		        s"There should be exactly 1 OML Module, instead there are ${gs.size} Graphs, ${bs.size} Bundles and ${ds.size} Descriptions"))
+		  }
+		
 		  def lookupModule
 		  (uuid: Option[taggedTypes.ModuleUUID])
 		  : Option[Module]

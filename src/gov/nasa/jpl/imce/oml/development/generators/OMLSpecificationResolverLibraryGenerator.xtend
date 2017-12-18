@@ -323,10 +323,6 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 
 	def String generateClassFile(EClass eClass) {
 		
-		val apiStructuralFeatures = eClass.APIStructuralFeatures
-		val apiOperations = eClass.APIOperations
-		val hasUUID = apiStructuralFeatures.exists[f|f.name == "uuid"] || apiOperations.exists[op|op.name == "uuid"]
-		
 	'''
 		«copyright»
 		package gov.nasa.jpl.imce.oml.resolver.impl

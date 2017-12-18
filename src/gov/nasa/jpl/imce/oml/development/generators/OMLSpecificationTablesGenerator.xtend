@@ -508,6 +508,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		val uuid = eClass.lookupUUIDFeature
 		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
 		val uuidNS = eClass.lookupUUIDNamespaceFeature
+		val uuidName = if (uuidNS?.name == "iri") "iri" else uuidNS?.name+"UUID"
 		val uuidFactors = eClass.lookupUUIDNamespaceFactors
 		val pairs = eClass.getSortedAttributeFactorySignature.filter[lowerBound>0] // [isUUIDFeature && lowerBound>0]
 		val keyAttributes = eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0)
@@ -564,7 +565,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «FOR attr : keyAttributes BEFORE "  // Ctor(uuidWithoutContainer)\n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      taggedTypes."+eClass.name.lowerCaseInitialOrWord+"UUID(oug.namespaceUUID(\n        "+uuidNS.name+".toString"»    «attr.columnName»: «constructorTypeRef(eClass, attr)»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","»,
 		          "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithGenerator»
-		  «FOR attr : keyAttributes BEFORE "  // Ctor(uuidWithGenerator)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      taggedTypes."+eClass.name.lowerCaseInitialOrWord+"UUID(oug.namespaceUUID(\n        "+uuidNS.name+"UUID"»    «attr.columnName»: «constructorTypeRef(eClass, attr)»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","»,
+		  «FOR attr : keyAttributes BEFORE "  // Ctor(uuidWithGenerator)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      taggedTypes."+eClass.name.lowerCaseInitialOrWord+"UUID(oug.namespaceUUID(\n        "+uuidName»    «attr.columnName»: «constructorTypeRef(eClass, attr)»«ENDFOR»«FOR f : uuidFactors SEPARATOR ","»,
 		          "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithContainer»
 		  «FOR attr : keyAttributes BEFORE "  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      taggedTypes."+eClass.name.lowerCaseInitialOrWord+"UUID(oug.namespaceUUID(\n        \""+eClass.name+"\""»    «attr.columnName»: «constructorTypeRef(eClass, attr)»«ENDFOR»«FOR f : pairs»,
