@@ -887,6 +887,7 @@ class OMLUtilities extends OMLXcorePackages {
 		"AnnotationSubjectPropertyValue",
 		"AnnotationSubjectTable",
 		"Extent", 
+		"TerminologyBox",
 		"TerminologyGraph", 
 		"Bundle", 
 		"ConceptDesignationTerminologyAxiom",
