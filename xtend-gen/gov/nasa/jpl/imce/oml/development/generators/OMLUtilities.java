@@ -63,7 +63,7 @@ import org.eclipse.xtext.xbase.lib.StringExtensions;
 @SuppressWarnings("all")
 public class OMLUtilities extends OMLXcorePackages {
   public static class OMLTableCompare implements Comparator<EClass> {
-    private final List<String> knownTables = Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList("Annotation", "AnnotationEntry", "AnnotationProperty", "AnnotationPropertyTable", "AnnotationSubjectPropertyValue", "AnnotationSubjectTable", "Extent", "TerminologyBox", "TerminologyGraph", "Bundle", "ConceptDesignationTerminologyAxiom", "TerminologyExtensionAxiom", "TerminologyNestingAxiom", "Aspect", "Concept", "ReifiedRelationship", "UnreifiedRelationship", "Scalar", "Structure", "BinaryScalarRestriction", "IRIScalarRestriction", "NumericScalarRestriction", "PlainLiteralScalarRestriction", "ScalarOneOfRestriction", "StringScalarRestriction", "SynonymScalarRestriction", "TimeScalarRestriction", "EntityScalarDataProperty", "EntityStructuredDataProperty", "ScalarDataProperty", "StructuredDataProperty", "AspectSpecializationAxiom", "ConceptSpecializationAxiom", "ReifiedRelationshipSpecializationAxiom", "EntityExistentialRestrictionAxiom", "EntityUniversalRestrictionAxiom", "EntityScalarDataPropertyExistentialRestrictionAxiom", "EntityScalarDataPropertyParticularRestrictionAxiom", "EntityScalarDataPropertyUniversalRestrictionAxiom", "ScalarOneOfLiteralAxiom", "BundledTerminologyAxiom", "AnonymousConceptTaxonomyAxiom", "RootConceptTaxonomyAxiom", "SpecificDisjointConceptAxiom"));
+    private final List<String> knownTables = Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList("Extent", "TerminologyBox", "TerminologyGraph", "Bundle", "DescriptionBox", "AnnotationProperty", "Aspect", "Concept", "Scalar", "Structure", "ConceptDesignationTerminologyAxiom", "TerminologyExtensionAxiom", "TerminologyNestingAxiom", "BundledTerminologyAxiom", "DescriptionBoxExtendsClosedWorldDefinitions", "DescriptionBoxRefinement", "BinaryScalarRestriction", "IRIScalarRestriction", "NumericScalarRestriction", "PlainLiteralScalarRestriction", "ScalarOneOfRestriction", "ScalarOneOfLiteralAxiom", "StringScalarRestriction", "SynonymScalarRestriction", "TimeScalarRestriction", "EntityScalarDataProperty", "EntityStructuredDataProperty", "ScalarDataProperty", "StructuredDataProperty", "ReifiedRelationship", "UnreifiedRelationship", "ChainRule", "RuleBodySegment", "AspectPredicate", "ConceptPredicate", "ReifiedRelationshipPredicate", "ReifiedRelationshipPropertyPredicate", "ReifiedRelationshipSourcePropertyPredicate", "ReifiedRelationshipTargetPropertyPredicate", "UnreifiedRelationshipPropertyPredicate", "ReifiedRelationshipInversePropertyPredicate", "ReifiedRelationshipSourceInversePropertyPredicate", "ReifiedRelationshipTargetInversePropertyPredicate", "UnreifiedRelationshipInversePropertyPredicate", "EntityExistentialRestrictionAxiom", "EntityUniversalRestrictionAxiom", "EntityScalarDataPropertyExistentialRestrictionAxiom", "EntityScalarDataPropertyParticularRestrictionAxiom", "EntityScalarDataPropertyUniversalRestrictionAxiom", "EntityStructuredDataPropertyParticularRestrictionAxiom", "RestrictionStructuredDataPropertyTuple", "RestrictionScalarDataPropertyValue", "AspectSpecializationAxiom", "ConceptSpecializationAxiom", "ReifiedRelationshipSpecializationAxiom", "SubDataPropertyOfAxiom", "SubObjectPropertyOfAxiom", "RootConceptTaxonomyAxiom", "AnonymousConceptUnionAxiom", "SpecificDisjointConceptAxiom", "ConceptInstance", "ReifiedRelationshipInstance", "ReifiedRelationshipInstanceDomain", "ReifiedRelationshipInstanceRange", "UnreifiedRelationshipInstanceTuple", "SingletonInstanceStructuredDataPropertyValue", "SingletonInstanceScalarDataPropertyValue", "StructuredDataPropertyTuple", "ScalarDataPropertyValue", "AnnotationPropertyValue"));
     
     @Override
     public int compare(final EClass c1, final EClass c2) {
@@ -2073,8 +2073,16 @@ public class OMLUtilities extends OMLXcorePackages {
         if ((_isLiteralFeature).booleanValue()) {
           _xifexpression_2 = ((EReference)feature).getName();
         } else {
+          String _xifexpression_3 = null;
           String _name_1 = ((EReference)feature).getName();
-          _xifexpression_2 = (_name_1 + "UUID");
+          boolean _equals = Objects.equal(_name_1, "iri");
+          if (_equals) {
+            _xifexpression_3 = "iri";
+          } else {
+            String _name_2 = ((EReference)feature).getName();
+            _xifexpression_3 = (_name_2 + "UUID");
+          }
+          _xifexpression_2 = _xifexpression_3;
         }
         _xifexpression_1 = _xifexpression_2;
       }

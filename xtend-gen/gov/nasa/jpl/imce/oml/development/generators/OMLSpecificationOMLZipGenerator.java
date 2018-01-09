@@ -171,6 +171,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.common.LogicalElement");
       _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.model.common.Module");
+      _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.descriptions.ConceptInstance");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.descriptions.ConceptualEntitySingletonInstance");
@@ -351,6 +353,9 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       }
       _builder.newLine();
       _builder.append("  ");
+      _builder.append("protected val Map<String, Pair<Module, Map<String,String>>> modules");
+      _builder.newLine();
+      _builder.append("  ");
       _builder.append("protected val Map<String, Pair<LogicalElement, Map<String,String>>> logicalElements");
       _builder.newLine();
       _builder.append("  ");
@@ -442,6 +447,9 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("  ");
       _builder.newLine();
       _builder.append("    ");
+      _builder.append("modules = new HashMap<String, Pair<Module, Map<String,String>>>()");
+      _builder.newLine();
+      _builder.append("    \t");
       _builder.append("logicalElements = new HashMap<String, Pair<LogicalElement, Map<String,String>>>()");
       _builder.newLine();
       _builder.append("    ");
@@ -1224,9 +1232,6 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("    \t");
       _builder.append("val ext = createExtent()");
-      _builder.newLine();
-      _builder.append("    \t");
-      _builder.append("ext.getAnnotationProperties.addAll(annotationProperties.values.map[key])");
       _builder.newLine();
       _builder.append("    \t");
       _builder.append("ext.getModules.addAll(terminologyGraphs.values.map[key])");

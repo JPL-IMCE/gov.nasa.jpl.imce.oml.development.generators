@@ -290,65 +290,74 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
                 if ((_isUUID).booleanValue()) {
                   _builder.append("CHAR(36) NOT NULL PRIMARY KEY");
                 } else {
-                  Boolean _isIRIReference = OMLUtilities.isIRIReference(attr);
-                  if ((_isIRIReference).booleanValue()) {
-                    _builder.append("CHAR(36) NOT NULL COMMENT \'");
-                    String _abbreviatedTableName_6 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(OMLUtilities.EClassType(attr));
-                    _builder.append(_abbreviatedTableName_6, "  ");
-                    _builder.append(" (");
+                  String _columnName_1 = OMLUtilities.columnName(attr);
+                  boolean _equals = Objects.equal(_columnName_1, "kind");
+                  if (_equals) {
+                    _builder.append("INT NOT NULL COMMENT \'");
                     String _name = attr.getEType().getName();
                     _builder.append(_name, "  ");
-                    _builder.append(")\'");
+                    _builder.append("\'");
                   } else {
-                    Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(attr);
-                    if ((_isLiteralFeature).booleanValue()) {
-                      _builder.append("TEXT COMMENT \'(");
+                    Boolean _isIRIReference = OMLUtilities.isIRIReference(attr);
+                    if ((_isIRIReference).booleanValue()) {
+                      _builder.append("TEXT NOT NULL COMMENT \'");
+                      String _abbreviatedTableName_6 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(OMLUtilities.EClassType(attr));
+                      _builder.append(_abbreviatedTableName_6, "  ");
+                      _builder.append(" (");
                       String _name_1 = attr.getEType().getName();
                       _builder.append(_name_1, "  ");
-                      _builder.append(" value)\',");
-                      _builder.newLineIfNotEmpty();
-                      _builder.append("  ");
-                      _builder.append("`");
-                      String _columnName_1 = OMLUtilities.columnName(attr);
-                      _builder.append(_columnName_1, "  ");
-                      _builder.append("LiteralType` VARCHAR(20) COMMENT \'(");
-                      String _name_2 = attr.getEType().getName();
-                      _builder.append(_name_2, "  ");
-                      _builder.append(" kind)\'");
+                      _builder.append(")\'");
                     } else {
-                      if (((OMLUtilities.isClassFeature(attr)).booleanValue() && (attr.getLowerBound() == 0))) {
-                        _builder.append("CHAR(36) NULL COMMENT \'");
-                        String _abbreviatedTableName_7 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(OMLUtilities.EClassType(attr));
-                        _builder.append(_abbreviatedTableName_7, "  ");
-                        _builder.append(" (");
+                      Boolean _isLiteralFeature = OMLUtilities.isLiteralFeature(attr);
+                      if ((_isLiteralFeature).booleanValue()) {
+                        _builder.append("TEXT COMMENT \'(");
+                        String _name_2 = attr.getEType().getName();
+                        _builder.append(_name_2, "  ");
+                        _builder.append(" value)\',");
+                        _builder.newLineIfNotEmpty();
+                        _builder.append("  ");
+                        _builder.append("`");
+                        String _columnName_2 = OMLUtilities.columnName(attr);
+                        _builder.append(_columnName_2, "  ");
+                        _builder.append("LiteralType` VARCHAR(30) COMMENT \'(");
                         String _name_3 = attr.getEType().getName();
                         _builder.append(_name_3, "  ");
-                        _builder.append(")\'");
+                        _builder.append(" kind)\'");
                       } else {
-                        if (((OMLUtilities.isClassFeature(attr)).booleanValue() && (attr.getLowerBound() > 0))) {
-                          _builder.append("CHAR(36) NOT NULL COMMENT \'");
-                          String _abbreviatedTableName_8 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(OMLUtilities.EClassType(attr));
-                          _builder.append(_abbreviatedTableName_8, "  ");
+                        if (((OMLUtilities.isClassFeature(attr)).booleanValue() && (attr.getLowerBound() == 0))) {
+                          _builder.append("CHAR(36) NULL COMMENT \'");
+                          String _abbreviatedTableName_7 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(OMLUtilities.EClassType(attr));
+                          _builder.append(_abbreviatedTableName_7, "  ");
                           _builder.append(" (");
                           String _name_4 = attr.getEType().getName();
                           _builder.append(_name_4, "  ");
                           _builder.append(")\'");
                         } else {
-                          if ((Objects.equal(attr.getEType().getName(), "EBoolean") && (attr.getLowerBound() > 0))) {
-                            _builder.append("BOOLEAN NOT NULL");
+                          if (((OMLUtilities.isClassFeature(attr)).booleanValue() && (attr.getLowerBound() > 0))) {
+                            _builder.append("CHAR(36) NOT NULL COMMENT \'");
+                            String _abbreviatedTableName_8 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(OMLUtilities.EClassType(attr));
+                            _builder.append(_abbreviatedTableName_8, "  ");
+                            _builder.append(" (");
+                            String _name_5 = attr.getEType().getName();
+                            _builder.append(_name_5, "  ");
+                            _builder.append(")\'");
                           } else {
-                            int _lowerBound = attr.getLowerBound();
-                            boolean _greaterThan = (_lowerBound > 0);
-                            if (_greaterThan) {
-                              _builder.append("TEXT NOT NULL COMMENT \'");
-                              String _name_5 = attr.getEType().getName();
-                              _builder.append(_name_5, "  ");
-                              _builder.append("\'");
+                            if ((Objects.equal(attr.getEType().getName(), "EBoolean") && (attr.getLowerBound() > 0))) {
+                              _builder.append("BOOLEAN NOT NULL");
                             } else {
-                              _builder.append("TEXT COMMENT \'");
-                              String _name_6 = attr.getEType().getName();
-                              _builder.append(_name_6, "  ");
-                              _builder.append("\'");
+                              int _lowerBound = attr.getLowerBound();
+                              boolean _greaterThan = (_lowerBound > 0);
+                              if (_greaterThan) {
+                                _builder.append("TEXT NOT NULL COMMENT \'");
+                                String _name_6 = attr.getEType().getName();
+                                _builder.append(_name_6, "  ");
+                                _builder.append("\'");
+                              } else {
+                                _builder.append("TEXT COMMENT \'");
+                                String _name_7 = attr.getEType().getName();
+                                _builder.append(_name_7, "  ");
+                                _builder.append("\'");
+                              }
                             }
                           }
                         }
@@ -368,7 +377,7 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
           _builder.append("  ");
           {
             final Function1<ETypedElement, Boolean> _function_9 = (ETypedElement it) -> {
-              return Boolean.valueOf(((OMLUtilities.isClassFeature(it)).booleanValue() && (eAbstract.contains(OMLUtilities.EClassType(it)) || eConcrete.contains(OMLUtilities.EClassType(it)))));
+              return Boolean.valueOf((((OMLUtilities.isClassFeature(it)).booleanValue() && (!(OMLUtilities.isIRIReference(it)).booleanValue())) && (eAbstract.contains(OMLUtilities.EClassType(it)) || eConcrete.contains(OMLUtilities.EClassType(it)))));
             };
             Iterable<ETypedElement> _filter_1 = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass_3), _function_9);
             boolean _hasElements_1 = false;
@@ -382,15 +391,15 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
               String _abbreviatedTableName_9 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_3);
               _builder.append(_abbreviatedTableName_9, "  ");
               _builder.append("_");
-              String _columnName_2 = OMLUtilities.columnName(attr_1);
-              _builder.append(_columnName_2, "  ");
+              String _columnName_3 = OMLUtilities.columnName(attr_1);
+              _builder.append(_columnName_3, "  ");
               _builder.append("`");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("  ");
               _builder.append("FOREIGN KEY (`");
-              String _columnName_3 = OMLUtilities.columnName(attr_1);
-              _builder.append(_columnName_3, "    ");
+              String _columnName_4 = OMLUtilities.columnName(attr_1);
+              _builder.append(_columnName_4, "    ");
               _builder.append("`)");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -435,14 +444,14 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.newLine();
       {
-        for(final EClass eClass_4 : eAbstract) {
+        for(final EClass eClass_4 : eConcrete) {
           {
             boolean _isEmpty = IterableExtensions.isEmpty(OMLUtilities.ESuperClasses(eClass_4));
             boolean _not = (!_isEmpty);
             if (_not) {
               _builder.append("-- -----------------------------------------------------");
               _builder.newLine();
-              _builder.append("-- Abstract Classification Table `OML`.`");
+              _builder.append("-- Concrete Information Table `OML`.`");
               String _abbreviatedTableName_11 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
               _builder.append(_abbreviatedTableName_11);
               _builder.append("` (");
@@ -453,149 +462,82 @@ public class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
               _builder.append("-- -----------------------------------------------------");
               _builder.newLine();
               _builder.newLine();
+              _builder.append("DELIMITER $$");
+              _builder.newLine();
+              _builder.append("USE `OML`$$");
+              _builder.newLine();
+              _builder.append("CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`");
+              String _abbreviatedTableName_12 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
+              _builder.append(_abbreviatedTableName_12);
+              _builder.append("_AFTER_INSERT` AFTER INSERT ON `");
+              String _abbreviatedTableName_13 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
+              _builder.append(_abbreviatedTableName_13);
+              _builder.append("` FOR EACH ROW");
+              _builder.newLineIfNotEmpty();
+              _builder.append("BEGIN");
+              _builder.newLine();
               {
                 final Function1<EClass, String> _function_10 = (EClass it) -> {
                   return OMLSpecificationOMLSQLGenerator.abbreviatedTableName(it);
                 };
-                List<EClass> _sortBy_2 = IterableExtensions.<EClass, String>sortBy(OMLUtilities.ESuperClasses(eClass_4), _function_10);
+                List<EClass> _sortBy_2 = IterableExtensions.<EClass, String>sortBy(eClass_4.getEAllSuperTypes(), _function_10);
                 for(final EClass eSup : _sortBy_2) {
-                  _builder.append("-- `OML`.`");
-                  String _abbreviatedTableName_12 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup);
-                  _builder.append(_abbreviatedTableName_12);
-                  _builder.append("`(x) iff `OML`.`");
-                  String _abbreviatedTableName_13 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
-                  _builder.append(_abbreviatedTableName_13);
-                  _builder.append("`(x)");
+                  _builder.append("-- ");
+                  String _upperCaseInitialOrWord_5 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eSup));
+                  _builder.append(_upperCaseInitialOrWord_5);
+                  _builder.append("(x) if ");
+                  String _upperCaseInitialOrWord_6 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_4));
+                  _builder.append(_upperCaseInitialOrWord_6);
+                  _builder.append("(x)");
                   _builder.newLineIfNotEmpty();
-                  _builder.append("DELIMITER $$");
-                  _builder.newLine();
-                  _builder.append("USE `OML`$$");
-                  _builder.newLine();
-                  _builder.append("CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`");
-                  String _abbreviatedTableName_14 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
-                  _builder.append(_abbreviatedTableName_14);
-                  _builder.append("_AFTER_INSERT` AFTER INSERT ON `");
-                  String _abbreviatedTableName_15 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
-                  _builder.append(_abbreviatedTableName_15);
-                  _builder.append("` FOR EACH ROW");
-                  _builder.newLineIfNotEmpty();
-                  _builder.append("BEGIN");
-                  _builder.newLine();
                   _builder.append("insert into `OML`.`");
-                  String _abbreviatedTableName_16 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup);
-                  _builder.append(_abbreviatedTableName_16);
-                  _builder.append("`() value (uuid);");
+                  String _abbreviatedTableName_14 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup);
+                  _builder.append(_abbreviatedTableName_14);
+                  _builder.append("`(`uuid`) values(new.`uuid`);");
                   _builder.newLineIfNotEmpty();
-                  _builder.append("END$$");
-                  _builder.newLine();
-                  _builder.newLine();
-                  _builder.append("DELIMITER $$");
-                  _builder.newLine();
-                  _builder.append("USE `OML`$$");
-                  _builder.newLine();
-                  _builder.append("CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`");
-                  String _abbreviatedTableName_17 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
-                  _builder.append(_abbreviatedTableName_17);
-                  _builder.append("_AFTER_DELETE` AFTER DELETE ON `");
-                  String _abbreviatedTableName_18 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
-                  _builder.append(_abbreviatedTableName_18);
-                  _builder.append("` FOR EACH ROW");
-                  _builder.newLineIfNotEmpty();
-                  _builder.append("BEGIN");
-                  _builder.newLine();
-                  _builder.append("delete from `OML`.`");
-                  String _abbreviatedTableName_19 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup);
-                  _builder.append(_abbreviatedTableName_19);
-                  _builder.append("`;");
-                  _builder.newLineIfNotEmpty();
-                  _builder.append("END$$");
-                  _builder.newLine();
-                  _builder.newLine();
                 }
               }
-            }
-          }
-        }
-      }
-      {
-        for(final EClass eClass_5 : eConcrete) {
-          {
-            boolean _isEmpty_1 = IterableExtensions.isEmpty(OMLUtilities.ESuperClasses(eClass_5));
-            boolean _not_1 = (!_isEmpty_1);
-            if (_not_1) {
-              _builder.append("-- -----------------------------------------------------");
+              _builder.append("END$$");
               _builder.newLine();
-              _builder.append("-- Concrete Information Table `OML`.`");
-              String _abbreviatedTableName_20 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_5);
-              _builder.append(_abbreviatedTableName_20);
-              _builder.append("` (");
-              String _upperCaseInitialOrWord_5 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_5));
-              _builder.append(_upperCaseInitialOrWord_5);
-              _builder.append(")");
+              _builder.newLine();
+              _builder.append("DELIMITER $$");
+              _builder.newLine();
+              _builder.append("USE `OML`$$");
+              _builder.newLine();
+              _builder.append("CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`");
+              String _abbreviatedTableName_15 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
+              _builder.append(_abbreviatedTableName_15);
+              _builder.append("_AFTER_DELETE` AFTER DELETE ON `");
+              String _abbreviatedTableName_16 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_4);
+              _builder.append(_abbreviatedTableName_16);
+              _builder.append("` FOR EACH ROW");
               _builder.newLineIfNotEmpty();
-              _builder.append("-- -----------------------------------------------------");
-              _builder.newLine();
+              _builder.append("BEGIN");
               _builder.newLine();
               {
                 final Function1<EClass, String> _function_11 = (EClass it) -> {
                   return OMLSpecificationOMLSQLGenerator.abbreviatedTableName(it);
                 };
-                List<EClass> _sortBy_3 = IterableExtensions.<EClass, String>sortBy(OMLUtilities.ESuperClasses(eClass_5), _function_11);
+                List<EClass> _sortBy_3 = IterableExtensions.<EClass, String>sortBy(eClass_4.getEAllSuperTypes(), _function_11);
                 for(final EClass eSup_1 : _sortBy_3) {
-                  _builder.append("-- `OML`.`");
-                  String _abbreviatedTableName_21 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup_1);
-                  _builder.append(_abbreviatedTableName_21);
-                  _builder.append("`(x) iff `OML`.`");
-                  String _abbreviatedTableName_22 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_5);
-                  _builder.append(_abbreviatedTableName_22);
-                  _builder.append("`(x)");
+                  _builder.append("-- ");
+                  String _upperCaseInitialOrWord_7 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eSup_1));
+                  _builder.append(_upperCaseInitialOrWord_7);
+                  _builder.append("(x) if ");
+                  String _upperCaseInitialOrWord_8 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_4));
+                  _builder.append(_upperCaseInitialOrWord_8);
+                  _builder.append("(x)");
                   _builder.newLineIfNotEmpty();
-                  _builder.append("DELIMITER $$");
-                  _builder.newLine();
-                  _builder.append("USE `OML`$$");
-                  _builder.newLine();
-                  _builder.append("CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`");
-                  String _abbreviatedTableName_23 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_5);
-                  _builder.append(_abbreviatedTableName_23);
-                  _builder.append("_AFTER_INSERT` AFTER INSERT ON `");
-                  String _abbreviatedTableName_24 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_5);
-                  _builder.append(_abbreviatedTableName_24);
-                  _builder.append("` FOR EACH ROW");
-                  _builder.newLineIfNotEmpty();
-                  _builder.append("BEGIN");
-                  _builder.newLine();
-                  _builder.append("insert into `OML`.`");
-                  String _abbreviatedTableName_25 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup_1);
-                  _builder.append(_abbreviatedTableName_25);
-                  _builder.append("`() value (uuid);");
-                  _builder.newLineIfNotEmpty();
-                  _builder.append("END$$");
-                  _builder.newLine();
-                  _builder.newLine();
-                  _builder.append("DELIMITER $$");
-                  _builder.newLine();
-                  _builder.append("USE `OML`$$");
-                  _builder.newLine();
-                  _builder.append("CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`");
-                  String _abbreviatedTableName_26 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_5);
-                  _builder.append(_abbreviatedTableName_26);
-                  _builder.append("_AFTER_DELETE` AFTER DELETE ON `");
-                  String _abbreviatedTableName_27 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_5);
-                  _builder.append(_abbreviatedTableName_27);
-                  _builder.append("` FOR EACH ROW");
-                  _builder.newLineIfNotEmpty();
-                  _builder.append("BEGIN");
-                  _builder.newLine();
                   _builder.append("delete from `OML`.`");
-                  String _abbreviatedTableName_28 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup_1);
-                  _builder.append(_abbreviatedTableName_28);
+                  String _abbreviatedTableName_17 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eSup_1);
+                  _builder.append(_abbreviatedTableName_17);
                   _builder.append("`;");
                   _builder.newLineIfNotEmpty();
-                  _builder.append("END$$");
-                  _builder.newLine();
-                  _builder.newLine();
                 }
               }
+              _builder.append("END$$");
+              _builder.newLine();
+              _builder.newLine();
             }
           }
         }

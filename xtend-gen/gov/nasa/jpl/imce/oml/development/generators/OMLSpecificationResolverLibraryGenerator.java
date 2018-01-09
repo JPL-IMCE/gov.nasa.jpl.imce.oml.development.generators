@@ -1731,208 +1731,195 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
   }
   
   public String generateClassFile(final EClass eClass) {
-    String _xblockexpression = null;
+    StringConcatenation _builder = new StringConcatenation();
+    String _copyright = OMLUtilities.copyright();
+    _builder.append(_copyright);
+    _builder.newLineIfNotEmpty();
+    _builder.append("package gov.nasa.jpl.imce.oml.resolver.impl");
+    _builder.newLine();
+    _builder.newLine();
+    _builder.append("import gov.nasa.jpl.imce.oml._");
+    _builder.newLine();
+    _builder.newLine();
     {
-      final Iterable<EStructuralFeature> apiStructuralFeatures = OMLUtilities.APIStructuralFeatures(eClass);
-      final Iterable<EOperation> apiOperations = OMLUtilities.APIOperations(eClass);
-      final boolean hasUUID = (IterableExtensions.<EStructuralFeature>exists(apiStructuralFeatures, ((Function1<EStructuralFeature, Boolean>) (EStructuralFeature f) -> {
-        String _name = f.getName();
-        return Boolean.valueOf(Objects.equal(_name, "uuid"));
-      })) || IterableExtensions.<EOperation>exists(apiOperations, ((Function1<EOperation, Boolean>) (EOperation op) -> {
-        String _name = op.getName();
-        return Boolean.valueOf(Objects.equal(_name, "uuid"));
-      })));
-      StringConcatenation _builder = new StringConcatenation();
-      String _copyright = OMLUtilities.copyright();
-      _builder.append(_copyright);
-      _builder.newLineIfNotEmpty();
-      _builder.append("package gov.nasa.jpl.imce.oml.resolver.impl");
-      _builder.newLine();
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml._");
-      _builder.newLine();
-      _builder.newLine();
-      {
-        boolean _isAbstract = eClass.isAbstract();
-        if (_isAbstract) {
-          _builder.append("trait ");
-        } else {
-          _builder.append("case class ");
-        }
+      boolean _isAbstract = eClass.isAbstract();
+      if (_isAbstract) {
+        _builder.append("trait ");
+      } else {
+        _builder.append("case class ");
       }
-      String _classDeclaration = OMLSpecificationResolverLibraryGenerator.classDeclaration(eClass);
-      _builder.append(_classDeclaration);
-      {
-        boolean _isAbstract_1 = eClass.isAbstract();
-        if (_isAbstract_1) {
-          _builder.newLineIfNotEmpty();
-          _builder.append("{");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append("override val uuid: resolver.api.taggedTypes.");
-          String _name = eClass.getName();
-          _builder.append(_name, "  ");
-          _builder.append("UUID");
-          {
-            final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
-              String _name_1 = it.getName();
-              return Boolean.valueOf((!Objects.equal(_name_1, "uuid")));
-            };
-            Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.APIStructuralFeatures(eClass), _function);
-            boolean _hasElements = false;
-            for(final EStructuralFeature f : _filter) {
-              if (!_hasElements) {
-                _hasElements = true;
-                _builder.append("\n", "  ");
-              } else {
-                _builder.appendImmediate("\n", "  ");
-              }
-              String _doc = OMLUtilities.doc(f, "  ");
-              _builder.append(_doc, "  ");
-              _builder.append("override val ");
-              String _name_1 = f.getName();
-              _builder.append(_name_1, "  ");
-              _builder.append(": ");
-              String _queryResolverType = OMLUtilities.queryResolverType(f, "resolver.api.");
-              _builder.append(_queryResolverType, "  ");
-            }
-            if (_hasElements) {
-              _builder.append("\n  ", "  ");
-            }
-          }
-        } else {
-          _builder.newLineIfNotEmpty();
-          _builder.append("{");
-        }
-      }
-      _builder.newLineIfNotEmpty();
-      _builder.newLine();
-      {
-        final Function1<EOperation, Boolean> _function_1 = (EOperation it) -> {
-          EAnnotation _eAnnotation = it.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal");
-          return Boolean.valueOf((null == _eAnnotation));
-        };
-        Iterable<EOperation> _filter_1 = IterableExtensions.<EOperation>filter(OMLUtilities.ScalaOperations(eClass), _function_1);
-        for(final EOperation op : _filter_1) {
-          _builder.append("  ");
-          String _doc_1 = OMLUtilities.doc(op, "  ");
-          _builder.append(_doc_1);
-          String _queryResolverName = OMLUtilities.queryResolverName(op, "resolver.api.");
-          _builder.append(_queryResolverName);
-          _builder.newLineIfNotEmpty();
-          _builder.append("\t  ");
-          _builder.append(": ");
-          String _queryResolverType_1 = OMLUtilities.queryResolverType(op, "resolver.api.");
-          _builder.append(_queryResolverType_1, "\t  ");
-          _builder.newLineIfNotEmpty();
-          _builder.append("\t  ");
-          _builder.append("= ");
-          String _queryBody = OMLUtilities.queryBody(op);
-          _builder.append(_queryBody, "\t  ");
-          _builder.newLineIfNotEmpty();
-          _builder.newLine();
-        }
-      }
-      {
-        Boolean _isSpecializationOfRootClass = OMLUtilities.isSpecializationOfRootClass(eClass);
-        if ((_isSpecializationOfRootClass).booleanValue()) {
-          _builder.append("  override def canEqual(that: scala.Any): scala.Boolean = that match {");
-          _builder.newLineIfNotEmpty();
-          _builder.append("\t  ");
-          _builder.append("case _: ");
-          String _name_2 = eClass.getName();
-          _builder.append(_name_2, "\t  ");
-          _builder.append(" => true");
-          _builder.newLineIfNotEmpty();
-          _builder.append(" \t  ");
-          _builder.append("case _ => false");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append("}");
-          _builder.newLine();
-          _builder.newLine();
-        }
-      }
-      {
-        boolean _isAbstract_2 = eClass.isAbstract();
-        boolean _not = (!_isAbstract_2);
-        if (_not) {
-          _builder.append("  ");
-          _builder.append("override val hashCode");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append(": scala.Int");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append("= ");
-          {
-            Iterable<EStructuralFeature> _sortedAttributeSignature = OMLUtilities.getSortedAttributeSignature(eClass);
-            boolean _hasElements_1 = false;
-            for(final EStructuralFeature keyFeature : _sortedAttributeSignature) {
-              if (!_hasElements_1) {
-                _hasElements_1 = true;
-                _builder.append("(", "  ");
-              } else {
-                _builder.appendImmediate(", ", "  ");
-              }
-              String _name_3 = keyFeature.getName();
-              _builder.append(_name_3, "  ");
-            }
-            if (_hasElements_1) {
-              _builder.append(").##", "  ");
-            }
-          }
-          _builder.newLineIfNotEmpty();
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append("override def equals(other: scala.Any): scala.Boolean = other match {");
-          _builder.newLine();
-          _builder.append("    ");
-          _builder.append("case that: ");
-          String _name_4 = eClass.getName();
-          _builder.append(_name_4, "    ");
-          _builder.append(" =>");
-          _builder.newLineIfNotEmpty();
-          _builder.append("      ");
-          _builder.append("(that canEqual this) &&");
-          _builder.newLine();
-          _builder.append("      ");
-          {
-            Iterable<EStructuralFeature> _sortedAttributeSignature_1 = OMLUtilities.getSortedAttributeSignature(eClass);
-            boolean _hasElements_2 = false;
-            for(final EStructuralFeature keyFeature_1 : _sortedAttributeSignature_1) {
-              if (!_hasElements_2) {
-                _hasElements_2 = true;
-              } else {
-                _builder.appendImmediate(" &&\n", "      ");
-              }
-              _builder.append("(this.");
-              String _name_5 = keyFeature_1.getName();
-              _builder.append(_name_5, "      ");
-              _builder.append(" == that.");
-              String _name_6 = keyFeature_1.getName();
-              _builder.append(_name_6, "      ");
-              _builder.append(")");
-            }
-          }
-          _builder.newLineIfNotEmpty();
-          _builder.newLine();
-          _builder.append("    ");
-          _builder.append("case _ =>");
-          _builder.newLine();
-          _builder.append("      ");
-          _builder.append("false");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append("}");
-          _builder.newLine();
-        }
-      }
-      _builder.append("}");
-      _builder.newLine();
-      _xblockexpression = _builder.toString();
     }
-    return _xblockexpression;
+    String _classDeclaration = OMLSpecificationResolverLibraryGenerator.classDeclaration(eClass);
+    _builder.append(_classDeclaration);
+    {
+      boolean _isAbstract_1 = eClass.isAbstract();
+      if (_isAbstract_1) {
+        _builder.newLineIfNotEmpty();
+        _builder.append("{");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("override val uuid: resolver.api.taggedTypes.");
+        String _name = eClass.getName();
+        _builder.append(_name, "  ");
+        _builder.append("UUID");
+        {
+          final Function1<EStructuralFeature, Boolean> _function = (EStructuralFeature it) -> {
+            String _name_1 = it.getName();
+            return Boolean.valueOf((!Objects.equal(_name_1, "uuid")));
+          };
+          Iterable<EStructuralFeature> _filter = IterableExtensions.<EStructuralFeature>filter(OMLUtilities.APIStructuralFeatures(eClass), _function);
+          boolean _hasElements = false;
+          for(final EStructuralFeature f : _filter) {
+            if (!_hasElements) {
+              _hasElements = true;
+              _builder.append("\n", "  ");
+            } else {
+              _builder.appendImmediate("\n", "  ");
+            }
+            String _doc = OMLUtilities.doc(f, "  ");
+            _builder.append(_doc, "  ");
+            _builder.append("override val ");
+            String _name_1 = f.getName();
+            _builder.append(_name_1, "  ");
+            _builder.append(": ");
+            String _queryResolverType = OMLUtilities.queryResolverType(f, "resolver.api.");
+            _builder.append(_queryResolverType, "  ");
+          }
+          if (_hasElements) {
+            _builder.append("\n  ", "  ");
+          }
+        }
+      } else {
+        _builder.newLineIfNotEmpty();
+        _builder.append("{");
+      }
+    }
+    _builder.newLineIfNotEmpty();
+    _builder.newLine();
+    {
+      final Function1<EOperation, Boolean> _function_1 = (EOperation it) -> {
+        EAnnotation _eAnnotation = it.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal");
+        return Boolean.valueOf((null == _eAnnotation));
+      };
+      Iterable<EOperation> _filter_1 = IterableExtensions.<EOperation>filter(OMLUtilities.ScalaOperations(eClass), _function_1);
+      for(final EOperation op : _filter_1) {
+        _builder.append("  ");
+        String _doc_1 = OMLUtilities.doc(op, "  ");
+        _builder.append(_doc_1);
+        String _queryResolverName = OMLUtilities.queryResolverName(op, "resolver.api.");
+        _builder.append(_queryResolverName);
+        _builder.newLineIfNotEmpty();
+        _builder.append("\t  ");
+        _builder.append(": ");
+        String _queryResolverType_1 = OMLUtilities.queryResolverType(op, "resolver.api.");
+        _builder.append(_queryResolverType_1, "\t  ");
+        _builder.newLineIfNotEmpty();
+        _builder.append("\t  ");
+        _builder.append("= ");
+        String _queryBody = OMLUtilities.queryBody(op);
+        _builder.append(_queryBody, "\t  ");
+        _builder.newLineIfNotEmpty();
+        _builder.newLine();
+      }
+    }
+    {
+      Boolean _isSpecializationOfRootClass = OMLUtilities.isSpecializationOfRootClass(eClass);
+      if ((_isSpecializationOfRootClass).booleanValue()) {
+        _builder.append("  override def canEqual(that: scala.Any): scala.Boolean = that match {");
+        _builder.newLineIfNotEmpty();
+        _builder.append("\t  ");
+        _builder.append("case _: ");
+        String _name_2 = eClass.getName();
+        _builder.append(_name_2, "\t  ");
+        _builder.append(" => true");
+        _builder.newLineIfNotEmpty();
+        _builder.append(" \t  ");
+        _builder.append("case _ => false");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("}");
+        _builder.newLine();
+        _builder.newLine();
+      }
+    }
+    {
+      boolean _isAbstract_2 = eClass.isAbstract();
+      boolean _not = (!_isAbstract_2);
+      if (_not) {
+        _builder.append("  ");
+        _builder.append("override val hashCode");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append(": scala.Int");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("= ");
+        {
+          Iterable<EStructuralFeature> _sortedAttributeSignature = OMLUtilities.getSortedAttributeSignature(eClass);
+          boolean _hasElements_1 = false;
+          for(final EStructuralFeature keyFeature : _sortedAttributeSignature) {
+            if (!_hasElements_1) {
+              _hasElements_1 = true;
+              _builder.append("(", "  ");
+            } else {
+              _builder.appendImmediate(", ", "  ");
+            }
+            String _name_3 = keyFeature.getName();
+            _builder.append(_name_3, "  ");
+          }
+          if (_hasElements_1) {
+            _builder.append(").##", "  ");
+          }
+        }
+        _builder.newLineIfNotEmpty();
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("override def equals(other: scala.Any): scala.Boolean = other match {");
+        _builder.newLine();
+        _builder.append("    ");
+        _builder.append("case that: ");
+        String _name_4 = eClass.getName();
+        _builder.append(_name_4, "    ");
+        _builder.append(" =>");
+        _builder.newLineIfNotEmpty();
+        _builder.append("      ");
+        _builder.append("(that canEqual this) &&");
+        _builder.newLine();
+        _builder.append("      ");
+        {
+          Iterable<EStructuralFeature> _sortedAttributeSignature_1 = OMLUtilities.getSortedAttributeSignature(eClass);
+          boolean _hasElements_2 = false;
+          for(final EStructuralFeature keyFeature_1 : _sortedAttributeSignature_1) {
+            if (!_hasElements_2) {
+              _hasElements_2 = true;
+            } else {
+              _builder.appendImmediate(" &&\n", "      ");
+            }
+            _builder.append("(this.");
+            String _name_5 = keyFeature_1.getName();
+            _builder.append(_name_5, "      ");
+            _builder.append(" == that.");
+            String _name_6 = keyFeature_1.getName();
+            _builder.append(_name_6, "      ");
+            _builder.append(")");
+          }
+        }
+        _builder.newLineIfNotEmpty();
+        _builder.newLine();
+        _builder.append("    ");
+        _builder.append("case _ =>");
+        _builder.newLine();
+        _builder.append("      ");
+        _builder.append("false");
+        _builder.newLine();
+        _builder.append("  ");
+        _builder.append("}");
+        _builder.newLine();
+      }
+    }
+    _builder.append("}");
+    _builder.newLine();
+    return _builder.toString();
   }
   
   public static String classDeclaration(final EClass eClass) {

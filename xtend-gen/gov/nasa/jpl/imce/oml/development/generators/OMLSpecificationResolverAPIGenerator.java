@@ -1371,11 +1371,14 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.append("package gov.nasa.jpl.imce.oml.resolver.api");
       _builder.newLine();
       _builder.newLine();
-      _builder.append("import scala.collection.immutable.{Map, HashMap, Set}");
+      _builder.append("import java.lang.IllegalArgumentException");
       _builder.newLine();
-      _builder.append("import scala.Option");
+      _builder.append("import scala.collection.immutable.{::, HashMap, Map, Nil, Set}");
       _builder.newLine();
-      _builder.append(" ");
+      _builder.append("import scala.util.{Failure,Success,Try}");
+      _builder.newLine();
+      _builder.append("import scala.{Option,StringContext}");
+      _builder.newLine();
       _builder.newLine();
       {
         boolean _hasElements = false;
@@ -1681,6 +1684,59 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
           }
         }
       }
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("def singleModule");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append(": Try[Module]");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("= ( terminologyGraphs.values.toList,");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("bundles.values.toList,");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("descriptionBoxes.values.toList ) match {");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("case (Nil, Nil, Nil) =>");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("Failure(new IllegalArgumentException(\"No OML Modules\"))");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("case (g :: Nil, Nil, Nil) =>");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("Success(g)");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("case (Nil, b :: Nil, Nil) =>");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("Success(b)");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("case (Nil, Nil, d :: Nil) =>");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("Success(d)");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("case (gs, bs, ds) =>");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("Failure(new IllegalArgumentException(");
+      _builder.newLine();
+      _builder.append("        ");
+      _builder.append("s\"There should be exactly 1 OML Module, instead there are ${gs.size} Graphs, ${bs.size} Bundles and ${ds.size} Descriptions\"))");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.newLine();
       _builder.append("  ");
       _builder.append("def lookupModule");
       _builder.newLine();
@@ -2095,8 +2151,7 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.append("= lookupModule(uuid.asInstanceOf[taggedTypes.ModuleUUID])");
       {
         final Function1<EStructuralFeature, Boolean> _function_9 = (EStructuralFeature it) -> {
-          String _name_74 = it.getName();
-          return Boolean.valueOf((!Objects.equal(_name_74, "annotations")));
+          return Boolean.valueOf(((!Objects.equal(it.getName(), "annotations")) && (!Objects.equal(it.getName(), "annotationProperties"))));
         };
         Iterable<EStructuralFeature> _filter_2 = IterableExtensions.<EStructuralFeature>filter(containers, _function_9);
         boolean _hasElements_8 = false;
