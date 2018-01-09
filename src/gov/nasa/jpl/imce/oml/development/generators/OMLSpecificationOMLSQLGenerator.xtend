@@ -132,10 +132,10 @@ class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
 		-- Table `OML`.`«eClass.abbreviatedTableName»`
 		-- -----------------------------------------------------
 		CREATE TABLE IF NOT EXISTS `OML`.`«eClass.abbreviatedTableName»` (
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ",\n" AFTER ",\n"»`«attr.columnName»` «IF attr.isUUID»CHAR(36) NOT NULL PRIMARY KEY«ELSEIF attr.isIRIReference»CHAR(36) NOT NULL COMMENT '«attr.EClassType.abbreviatedTableName» («attr.EType.name»)'«ELSEIF attr.isLiteralFeature»TEXT COMMENT '(«attr.EType.name» value)',
-		  `«attr.columnName»LiteralType` VARCHAR(20) COMMENT '(«attr.EType.name» kind)'«ELSEIF attr.isClassFeature && attr.lowerBound == 0»CHAR(36) NULL COMMENT '«attr.EClassType.abbreviatedTableName» («attr.EType.name»)'«ELSEIF attr.isClassFeature && attr.lowerBound > 0»CHAR(36) NOT NULL COMMENT '«attr.EClassType.abbreviatedTableName» («attr.EType.name»)'«ELSEIF attr.EType.name == "EBoolean" && attr.lowerBound > 0»BOOLEAN NOT NULL«ELSEIF attr.lowerBound > 0»TEXT NOT NULL COMMENT '«attr.EType.name»'«ELSE»TEXT COMMENT '«attr.EType.name»'«ENDIF»«ENDFOR»
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ",\n" AFTER ",\n"»`«attr.columnName»` «IF attr.isUUID»CHAR(36) NOT NULL PRIMARY KEY«ELSEIF attr.columnName == 'kind'»INT NOT NULL COMMENT '«attr.EType.name»'«ELSEIF attr.isIRIReference»TEXT NOT NULL COMMENT '«attr.EClassType.abbreviatedTableName» («attr.EType.name»)'«ELSEIF attr.isLiteralFeature»TEXT COMMENT '(«attr.EType.name» value)',
+		  `«attr.columnName»LiteralType` VARCHAR(30) COMMENT '(«attr.EType.name» kind)'«ELSEIF attr.isClassFeature && attr.lowerBound == 0»CHAR(36) NULL COMMENT '«attr.EClassType.abbreviatedTableName» («attr.EType.name»)'«ELSEIF attr.isClassFeature && attr.lowerBound > 0»CHAR(36) NOT NULL COMMENT '«attr.EClassType.abbreviatedTableName» («attr.EType.name»)'«ELSEIF attr.EType.name == "EBoolean" && attr.lowerBound > 0»BOOLEAN NOT NULL«ELSEIF attr.lowerBound > 0»TEXT NOT NULL COMMENT '«attr.EType.name»'«ELSE»TEXT COMMENT '«attr.EType.name»'«ENDIF»«ENDFOR»
 		  
-		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter[isClassFeature && (eAbstract.contains(EClassType) || eConcrete.contains(EClassType))] SEPARATOR ",\n\n" AFTER ",\n"»CONSTRAINT `fk_«eClass.abbreviatedTableName»_«attr.columnName»`
+		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter[isClassFeature && !isIRIReference && (eAbstract.contains(EClassType) || eConcrete.contains(EClassType))] SEPARATOR ",\n\n" AFTER ",\n"»CONSTRAINT `fk_«eClass.abbreviatedTableName»_«attr.columnName»`
 		    FOREIGN KEY (`«attr.columnName»`)
 		    REFERENCES `OML`.`«attr.EClassType.abbreviatedTableName»`(`uuid`)
 		    ON DELETE CASCADE
@@ -150,50 +150,32 @@ class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
 		USE `OML`;
 		DELIMITER $$
 		
-		«FOR eClass : eAbstract»«IF !eClass.ESuperClasses.empty»
-		-- -----------------------------------------------------
-		-- Abstract Classification Table `OML`.`«eClass.abbreviatedTableName»` («eClass.tableVariableName.upperCaseInitialOrWord»)
-		-- -----------------------------------------------------
-		
-		«FOR eSup : eClass.ESuperClasses.sortBy[abbreviatedTableName]»
-		-- `OML`.`«eSup.abbreviatedTableName»`(x) iff `OML`.`«eClass.abbreviatedTableName»`(x)
-		DELIMITER $$
-		USE `OML`$$
-		CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`«eClass.abbreviatedTableName»_AFTER_INSERT` AFTER INSERT ON `«eClass.abbreviatedTableName»` FOR EACH ROW
-		BEGIN
-		insert into `OML`.`«eSup.abbreviatedTableName»`() value (uuid);
-		END$$
-
-		DELIMITER $$
-		USE `OML`$$
-		CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`«eClass.abbreviatedTableName»_AFTER_DELETE` AFTER DELETE ON `«eClass.abbreviatedTableName»` FOR EACH ROW
-		BEGIN
-		delete from `OML`.`«eSup.abbreviatedTableName»`;
-		END$$
-		
-		«ENDFOR»	«ENDIF»«ENDFOR»
 		«FOR eClass : eConcrete»«IF !eClass.ESuperClasses.empty»
 		-- -----------------------------------------------------
 		-- Concrete Information Table `OML`.`«eClass.abbreviatedTableName»` («eClass.tableVariableName.upperCaseInitialOrWord»)
 		-- -----------------------------------------------------
 		
-		«FOR eSup : eClass.ESuperClasses.sortBy[abbreviatedTableName]»
-		-- `OML`.`«eSup.abbreviatedTableName»`(x) iff `OML`.`«eClass.abbreviatedTableName»`(x)
 		DELIMITER $$
 		USE `OML`$$
 		CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`«eClass.abbreviatedTableName»_AFTER_INSERT` AFTER INSERT ON `«eClass.abbreviatedTableName»` FOR EACH ROW
 		BEGIN
-		insert into `OML`.`«eSup.abbreviatedTableName»`() value (uuid);
+		«FOR eSup : eClass.EAllSuperTypes.sortBy[abbreviatedTableName]»
+		-- «eSup.tableVariableName.upperCaseInitialOrWord»(x) if «eClass.tableVariableName.upperCaseInitialOrWord»(x)
+		insert into `OML`.`«eSup.abbreviatedTableName»`(`uuid`) values(new.`uuid`);
+		«ENDFOR»	
 		END$$
 
 		DELIMITER $$
 		USE `OML`$$
 		CREATE DEFINER = CURRENT_USER TRIGGER `OML`.`«eClass.abbreviatedTableName»_AFTER_DELETE` AFTER DELETE ON `«eClass.abbreviatedTableName»` FOR EACH ROW
 		BEGIN
+		«FOR eSup : eClass.EAllSuperTypes.sortBy[abbreviatedTableName]»
+		-- «eSup.tableVariableName.upperCaseInitialOrWord»(x) if «eClass.tableVariableName.upperCaseInitialOrWord»(x)
 		delete from `OML`.`«eSup.abbreviatedTableName»`;
+		«ENDFOR»
 		END$$
 		
-		«ENDFOR»	«ENDIF»«ENDFOR»
+		«ENDIF»«ENDFOR»
 		
 		DELIMITER ;
 		

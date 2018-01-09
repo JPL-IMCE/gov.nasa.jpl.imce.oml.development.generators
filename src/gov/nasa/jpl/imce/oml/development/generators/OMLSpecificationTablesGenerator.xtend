@@ -522,11 +522,11 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		
 		import scala.annotation.meta.field
 		import scala.scalajs.js.annotation.{JSExport,JSExportTopLevel}
-		«IF !uuidFactors.empty»
+		«IF (uuidWithGenerator || uuidWithoutContainer)»«IF !uuidFactors.empty»
 		import scala.Predef.ArrowAssoc
-		«ELSEIF !uuidWithoutContainer && !pairs.empty»
+		«ENDIF»«ELSEIF uuidWithContainer»«IF !pairs.empty»
 		import scala.Predef.ArrowAssoc
-		«ENDIF»
+		«ENDIF»«ENDIF»
 		
 		/**
 		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes»

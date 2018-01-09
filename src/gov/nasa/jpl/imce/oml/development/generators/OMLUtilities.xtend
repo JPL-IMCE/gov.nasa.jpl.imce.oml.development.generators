@@ -880,50 +880,174 @@ class OMLUtilities extends OMLXcorePackages {
 	static class OMLTableCompare implements Comparator<EClass> {
 		
 		val knownTables = #[
-		"Annotation",
-		"AnnotationEntry",
-		"AnnotationProperty",
-		"AnnotationPropertyTable",
-		"AnnotationSubjectPropertyValue",
-		"AnnotationSubjectTable",
-		"Extent", 
+		"Extent",
+		
+		// Modules
+		
 		"TerminologyBox",
 		"TerminologyGraph", 
 		"Bundle", 
+		"DescriptionBox",
+		
+		"AnnotationProperty",
+		
+		// LogicalElement
+		
+		// ModuleElement (LogicalElement)
+		
+		// TerminologyBoxStatement (ModuleElement)
+		
+		// Term (TerminologyBoxStatement)
+		
+		// UnaryTermKind (Term
+		
+		"Aspect",
+		"Concept",
+		
+		"Scalar",
+		"Structure", 
+		
+		// ModuleEdges
+		
+		// ModuleEdges (TerminologyBox)
+		
 		"ConceptDesignationTerminologyAxiom",
 		"TerminologyExtensionAxiom", 
 		"TerminologyNestingAxiom",
-		"Aspect",
-		"Concept",
-		"ReifiedRelationship", 
-		"UnreifiedRelationship",
-		"Scalar",
-		"Structure", 
+		
+		// ModuleEdges (Bundle)
+		
+		"BundledTerminologyAxiom",
+		
+		// ModuleEdges (DescriptionBox)
+		
+		"DescriptionBoxExtendsClosedWorldDefinitions",
+		"DescriptionBoxRefinement",
+		
+		// DataRange (Term)
+		
 		"BinaryScalarRestriction", 
 		"IRIScalarRestriction", 
 		"NumericScalarRestriction",
 		"PlainLiteralScalarRestriction",
 		"ScalarOneOfRestriction",
+		"ScalarOneOfLiteralAxiom",
 		"StringScalarRestriction",
 		"SynonymScalarRestriction",
 		"TimeScalarRestriction",
+		
+		// DirectedBinaryRelationshipKind (Term)
+		
+		// DataRelationship (DirectedBinaryRelationshipKind)
+		
 		"EntityScalarDataProperty",
 		"EntityStructuredDataProperty",
+		
 		"ScalarDataProperty",
 		"StructuredDataProperty",
-		"AspectSpecializationAxiom",
-		"ConceptSpecializationAxiom",
-		"ReifiedRelationshipSpecializationAxiom",
+		
+		// EntityRelationship (DirectedBinaryRelationshipKind)
+		
+		"ReifiedRelationship", 
+		"UnreifiedRelationship",
+		
+		// Rule (Term)
+		
+		"ChainRule",
+		
+		// ElementCrossReferenceTuple
+		
+		"RuleBodySegment",
+		
+		// SegmentPredicate (ElementCrossReferenceTuple)
+		
+		// UnarySegmentPredicate (SegmentPredicate)
+		
+		"AspectPredicate",
+		"ConceptPredicate",
+		"ReifiedRelationshipPredicate",
+		
+		// BinarySegmentPredicate (SegmentPredicate)
+		
+		// BinarySegmentForwardPropertyPredicate (BinarySegmentPredicate)
+		
+		"ReifiedRelationshipPropertyPredicate",
+		"ReifiedRelationshipSourcePropertyPredicate",
+		"ReifiedRelationshipTargetPropertyPredicate",
+		"UnreifiedRelationshipPropertyPredicate",
+		
+		// BinarySegmentReversePropertyPredicate (BinarySegmentPredicate)
+		
+		"ReifiedRelationshipInversePropertyPredicate",
+		"ReifiedRelationshipSourceInversePropertyPredicate",
+		"ReifiedRelationshipTargetInversePropertyPredicate",
+		"UnreifiedRelationshipInversePropertyPredicate",
+		
+		// TermAxiom (TerminologyBoxStatement)
+		
+		// EntityRestrictionAxiom (TermAxiom)
+		
 		"EntityExistentialRestrictionAxiom",
 		"EntityUniversalRestrictionAxiom",
+		
+		// EntityScalarDataPropertyRestrictionAxiom (TermAxiom)
+		
 		"EntityScalarDataPropertyExistentialRestrictionAxiom",
 		"EntityScalarDataPropertyParticularRestrictionAxiom",
 		"EntityScalarDataPropertyUniversalRestrictionAxiom",
-		"ScalarOneOfLiteralAxiom",
-		"BundledTerminologyAxiom",
-		"AnonymousConceptTaxonomyAxiom",
+		
+		// EntityStructuredDataPropertyRestrictionAxiom (TermAxiom)
+		
+		"EntityStructuredDataPropertyParticularRestrictionAxiom",
+		
+		// EntityStructuredDataPropertyRestrictionAxiom (nested)
+		
+		"RestrictionStructuredDataPropertyTuple",
+		"RestrictionScalarDataPropertyValue",
+		
+		// SpecializationAxiom (TermAxiom)
+		
+		"AspectSpecializationAxiom",
+		"ConceptSpecializationAxiom",
+		"ReifiedRelationshipSpecializationAxiom",
+		
+		// Other TermAxioms
+		
+		"SubDataPropertyOfAxiom",
+		"SubObjectPropertyOfAxiom",
+		
+		// TerminologyBundleStatement (ModuleElement)
+		
 		"RootConceptTaxonomyAxiom",
-		"SpecificDisjointConceptAxiom"
+		
+		// RootConceptTaxonomyAxiom (nested)
+		
+		"AnonymousConceptUnionAxiom",
+		"SpecificDisjointConceptAxiom",
+		
+		// TerminologyInstanceAssertion (ModuleElement)
+		
+		// ConceptualEntitySingletonInstance (TerminologyInstanceAssertion)
+		
+		"ConceptInstance",
+		"ReifiedRelationshipInstance",
+		
+		// TerminologyInstanceAssertion (ElementCrossReferenceTuple)
+		
+		"ReifiedRelationshipInstanceDomain",
+		"ReifiedRelationshipInstanceRange",
+		"UnreifiedRelationshipInstanceTuple",
+		
+		// TerminologyInstanceAssertion (ElementCrossReferenceTuple or ValueCrossReferenceTuple) 
+		
+		"SingletonInstanceStructuredDataPropertyValue",
+		"SingletonInstanceScalarDataPropertyValue",
+		"StructuredDataPropertyTuple",
+		"ScalarDataPropertyValue",
+		
+		// NonLogicalElement
+		
+		"AnnotationPropertyValue"
 		]
 		
 		override compare(EClass c1, EClass c2) {

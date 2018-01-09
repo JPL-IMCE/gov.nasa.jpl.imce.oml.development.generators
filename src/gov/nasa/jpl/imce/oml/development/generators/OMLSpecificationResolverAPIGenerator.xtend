@@ -292,7 +292,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		import java.lang.IllegalArgumentException
 		import scala.collection.immutable.{::, HashMap, Map, Nil, Set}
 		import scala.util.{Failure,Success,Try}
-		import scala.Option
+		import scala.{Option,StringContext}
 		
 		«FOR ct : containerTypes BEFORE "// Container types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
 		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
@@ -439,7 +439,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		
 		  def lookupLogicalElement(uuid: taggedTypes.LogicalElementUUID)
 		  : Option[LogicalElement]
-		  = lookupModule(uuid.asInstanceOf[taggedTypes.ModuleUUID])«FOR c : containers.filter[name != "annotations"] BEFORE " orElse\n  " SEPARATOR " orElse\n  " AFTER "\n"»lookup«c.EType.name»(uuid.asInstanceOf[taggedTypes.«c.EType.name»UUID])«ENDFOR»
+		  = lookupModule(uuid.asInstanceOf[taggedTypes.ModuleUUID])«FOR c : containers.filter[name != "annotations" && name != "annotationProperties"] BEFORE " orElse\n  " SEPARATOR " orElse\n  " AFTER "\n"»lookup«c.EType.name»(uuid.asInstanceOf[taggedTypes.«c.EType.name»UUID])«ENDFOR»
 		
 		}
 	'''

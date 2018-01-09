@@ -20,10 +20,12 @@ package gov.nasa.jpl.imce.oml.development.generators
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Paths
+import java.util.ArrayList
 import java.util.List
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EEnum
 import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.ETypedElement
 
 class OMLSpecificationFramelessGenerator extends OMLUtilities {
 	
@@ -96,6 +98,15 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 			smartProjectFile.write(generateSmartProjectsFile(ePackages, packageQName).bytes)
 		} finally {
 			smartProjectFile.close
+		}
+		val rfile = new File(targetFolder + File::separator  + "OMLReaders.scala")
+		if (rfile.exists)
+			rfile.delete
+		val readersFile = new FileOutputStream(rfile)
+		try {
+			readersFile.write(generateReadersFile(ePackages, packageQName).bytes)
+		} finally {
+			readersFile.close
 		}
 		for(eClass : ePackages.map[EClassifiers].flatten.filter(EClass))  {
 			if (!eClass.name.startsWith("Literal") && eClass.name != "Extent") {
@@ -203,13 +214,197 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 	'''
 	}
 	
-	def String generatePackageFile(List<EPackage> ePackages, String packageQName, String tableName) {
+	static def String rowColumnType(ETypedElement col) {
+		val tname = col.EType.name
+		if (tname == "LiteralNumber")
+			"String, String"
+		else if (tname == "LiteralValue")
+			"String, String"
+		else if (tname == "EBoolean")
+			"Boolean"
+		else if (tname.endsWith("Kind"))
+			"Int"
+		else
+			"String"
+	}
+	
+	static def String rowColumnQuery(ETypedElement col) {
+		val tname = col.EType.name
+		if (tname == "LiteralNumber")
+			'''row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("value"),row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("literalType")'''
+		else if (tname == "LiteralValue")
+			'''row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("value"),row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("literalType")'''
+		else if (tname == "EBoolean")
+			'''row.getAs[Boolean]("«col.columnName»")'''
+		else if (tname.endsWith("Kind"))
+			'''row.getAs[Int]("«col.columnName»")'''
+		else
+			'''row.getAs[String]("«col.columnName»")'''
+	}
+	
+	static def String sqlColumnQuery(ETypedElement col) {
+		val tname = col.EType.name
+		if (tname == "LiteralNumber")
+			'''row.getAs[String]("«col.columnName»"),row.getAs[String]("«col.columnName»LiteralType")'''
+		else if (tname == "LiteralValue")
+			'''row.getAs[String]("«col.columnName»"),row.getAs[String]("«col.columnName»LiteralType")'''
+		else if (tname == "EBoolean")
+			'''row.getAs[Boolean]("«col.columnName»")'''
+		else if (tname.endsWith("Kind"))
+			'''row.getAs[Int]("«col.columnName»")'''
+		else
+			'''row.getAs[String]("«col.columnName»")'''
+	}
+	
+	static def String rowColumnDecl(ETypedElement col) {
+		val tname = col.EType.name
+		if (tname == "LiteralNumber")
+			'''«col.columnName»: String, «col.columnName»LiteralType: String'''
+		else if (tname == "LiteralValue")
+			'''«col.columnName»: String, «col.columnName»LiteralType: String'''
+		else if (tname == "EBoolean")
+			'''«col.columnName»: Boolean'''
+		else if (tname.endsWith("Kind"))
+			'''«col.columnName»: Int'''
+		else
+			'''«col.columnName»: String'''
+	}
+	
+	static def String rowColumnVars(ETypedElement col) {
+		val tname = col.EType.name
+		if (tname == "LiteralNumber")
+			'''«col.columnName», «col.columnName»LiteralType'''
+		else if (tname == "LiteralValue")
+			'''«col.columnName», «col.columnName»LiteralType'''
+		else if (tname == "EBoolean")
+			'''«col.columnName»'''
+		else if (tname.endsWith("Kind"))
+			'''«col.columnName»'''
+		else
+			'''«col.columnName»'''
+	}
+	
+	
+	def String generateReadersFile(List<EPackage> ePackages, String packageQName) {
 		val eClasses = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isFunctionalAPI && !isInterface && !isValueTable].sortBy[name]
 	
 	'''
 		«copyright»
+		 
+		package «packageQName»
+		
+		import org.apache.spark.sql.Row
+		import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+		import gov.nasa.jpl.imce.oml.tables
+		import scala.{Boolean,Int,None,Some,StringContext}
+		import scala.Predef.{identity,String}
+		
+		object OMLReaders {
+			
+			def terminologyKind(kind: Int)
+			: tables.TerminologyKind
+			= kind match {
+				case 0 =>
+				  tables.OpenWorldDefinitions
+				case 1 =>
+				  tables.ClosedWorldDesignations
+		    }
+
+			def terminologyKind(kind: tables.TerminologyKind)
+			: Int
+			= kind match {
+				case tables.OpenWorldDefinitions =>
+				  0
+				case tables.ClosedWorldDesignations =>
+				  1
+		    }
+
+			def descriptionKind(kind: Int)
+			: tables.DescriptionKind
+			= kind match {
+				case 0 =>
+				  tables.Final
+				case 1 =>
+				  tables.Partial
+		    }
+
+			def descriptionKind(kind: tables.DescriptionKind)
+			: Int
+			= kind match {
+				case tables.Final =>
+				  0
+				case tables.Partial =>
+				  1
+		    }
+		
+			«FOR eClass: eClasses»
+			«val cols = eClass.schemaAPIOrOrderingKeyAttributes»
+			case class «eClass.name»Tuple
+			«FOR col : cols BEFORE "(" SEPARATOR ",\n " AFTER ")"»«rowColumnDecl(col)»«ENDFOR»
+
+			def «eClass.name»Row2Tuple
+			(row: Row)
+			: «eClass.name»Tuple
+			= «FOR col : cols BEFORE eClass.name+"Tuple(\n  " SEPARATOR ",\n  " AFTER "\n)"»«rowColumnQuery(col)»«ENDFOR»
+
+			def «eClass.name»SQL2Tuple
+			(row: Row)
+			: «eClass.name»Tuple
+			= «FOR col : cols BEFORE eClass.name+"Tuple(\n  " SEPARATOR ",\n  " AFTER "\n)"»«sqlColumnQuery(col)»«ENDFOR»
+						
+			def «eClass.name»Tuple2Type
+			(tuple: «eClass.name»Tuple)
+			: tables.«eClass.name»
+			= «FOR col : cols BEFORE "tables."+eClass.name+"(\n  " SEPARATOR ",\n  " AFTER "\n)"»«val tname = 
+			  if (col.columnName == "uuid") "tables.taggedTypes."+eClass.name.lowerCaseInitialOrWord+"UUID(tuple."+col.columnName+")" 
+			  else if (col.isIRIReference || col.name == "iri") "tables.taggedTypes.iri(tuple."+col.columnName+")"
+			  else if (col.EType.name == "EBoolean") "tuple."+col.columnName
+			  else if (col.EType.name == "LiteralValue") '''tables.LiteralValue.fromJSON(s"""{"literalType":"${tuple.«col.columnName»LiteralType}","value":"${tuple.«col.columnName»}"}""")'''
+			  else if (col.EType.name == "LiteralNumber") '''tables.LiteralNumber.fromJSON(s"""{"literalType":"${tuple.«col.columnName»LiteralType}","value":"${tuple.«col.columnName»}"}""")'''
+			  else if (col.EType.name == "LiteralString") '''tables.taggedTypes.stringDataType(tuple.«col.columnName»)'''
+			  else if (col.EType.name == "LiteralDateTime") '''if (tuple.«col.columnName».isEmpty) None else tables.LiteralDateTime.parseDateTime(tuple.«col.columnName»)'''
+			  else if (col.isClassFeature) "tables.taggedTypes."+col.EType.name.lowerCaseInitialOrWord+"UUID(tuple."+col.columnName+")"
+			  else if (col.name == "kind") col.EType.name.lowerCaseInitialOrWord+"(tuple."+col.columnName+")"
+			  else "tables.taggedTypes."+col.EType.name.lowerCaseInitialOrWord+"(tuple."+col.columnName+")"»«IF (col.lowerBound == 0 && col.EType.name != "LiteralDateTime")»if («IF (col.EType.name == "LiteralNumber")»(null == tuple.«col.columnName»LiteralType || tuple.«col.columnName»LiteralType.isEmpty) && (null == tuple.«col.columnName» || tuple.«col.columnName».isEmpty)«ELSE»null == tuple.«col.columnName» || tuple.«col.columnName».isEmpty«ENDIF») None else Some(«tname»)«ELSE»«tname»«ENDIF»«ENDFOR»
+
+			def «eClass.name»Type2Tuple
+			(e: tables.«eClass.name»)
+			: «eClass.name»Tuple
+			= «FOR col : cols BEFORE eClass.name+"Tuple(\n  " SEPARATOR ",\n  " AFTER "\n)"»«val tname = 
+			  if (col.columnName == "uuid") "e."+col.columnName
+			  else if (col.isIRIReference || col.name == "iri") "e."+col.columnName
+			  else if (col.EType.name == "EBoolean") "e."+col.columnName
+			  else if (col.EType.name == "LiteralValue" && col.lowerBound == 0) '''e.«col.columnName».fold[String](null) { n => n.value }, e.«col.columnName».fold[String](null) { n => n.literalType.toString }'''
+			  else if (col.EType.name == "LiteralValue" && col.lowerBound == 1) '''e.«col.columnName».value, e.«col.columnName».literalType.toString'''
+			  else if (col.EType.name == "LiteralNumber") '''e.«col.columnName».fold[String](null) { n => n.value }, e.«col.columnName».fold[String](null) { n => n.literalType.toString }'''
+			  else if (col.EType.name == "LiteralString") '''e.«col.columnName»'''
+			  else if (col.EType.name == "LiteralDateTime") '''e.«col.columnName».fold[String](null)(_.value)'''
+			  else if (col.name == "kind") col.EType.name.lowerCaseInitialOrWord+"(e."+col.columnName+")"
+			  else if (col.lowerBound == 0) '''e.«col.columnName».fold[String](null)(identity)'''
+			  else '''e.«col.columnName»'''»«tname»«ENDFOR»
+			«ENDFOR»	
+		}
+	'''
+	}
+	
+	def String generatePackageFile(List<EPackage> ePackages, String packageQName, String tableName) {
+		val eClasses = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isFunctionalAPI && !isInterface && !isValueTable].sortBy[name]
+		
+		val cClasses = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isFunctionalAPI && !isInterface && !isValueTable].sortWith(new OMLTableCompare())
+		val cClasses1 = cClasses.takeWhile[name != 'BinaryScalarRestriction']
+		val cClasses2 = new ArrayList<EClass>()
+		cClasses2.addAll(cClasses)
+		cClasses2.removeAll(cClasses1)
+		val cClasses3 = cClasses2.filter[!name.endsWith('Restriction')]
+	
+		val restrictions = cClasses.filter[name.endsWith('Restriction')]
+		
+	'''
+		«copyright»
 
 		package «packageQName»
+		
+		import java.util.Properties
 		
 		import ammonite.ops.Path
 		
@@ -217,8 +412,7 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.covariantTag
 		import gov.nasa.jpl.imce.oml.covariantTag.@@
 		import gov.nasa.jpl.imce.oml.tables
-		import org.apache.spark.sql.SQLContext
-		import org.apache.spark.sql.SparkSession
+		import org.apache.spark.sql.{SQLContext, SaveMode, SparkSession}
 		
 		import scala.collection.immutable.Seq
 		import scala.util.control.Exception._
@@ -277,23 +471,26 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		  = nonFatalCatch[Try[tables.OMLSpecificationTables]]
 		    .withApply {
 		      (cause: java.lang.Throwable) =>
-		        cause.fillInStackTrace()
 		        Failure(cause)
 		    }
 		    .apply {
 		  	  dir.toIO.mkdirs()
 
 		      import spark.implicits._
-			  import scala.Predef.refArrayOps
+		      import scala.Predef.refArrayOps
 			  
+		      «FOR eClass : eClasses SEPARATOR "\n\n"»val «eClass.tableVariableName»
+		      : Seq[tables.«eClass.name»]
+		      = spark
+		        .read
+		        .parquet((dir / "«eClass.name».parquet").toIO.getAbsolutePath)
+		        .map(OMLReaders.«eClass.name»Row2Tuple)
+		        .collect()
+		        .map(OMLReaders.«eClass.name»Tuple2Type)
+		        .to[Seq]«ENDFOR»
+
 		  	  Success(
-		  	    tables.OMLSpecificationTables«FOR eClass : eClasses BEFORE "(\n  " SEPARATOR ",\n\n  " AFTER "\n))"»«eClass.tableVariableName» = 
-		  	      spark
-		  	      .read
-		  	      .parquet((dir / "«eClass.name».parquet").toIO.getAbsolutePath)
-		  	      .as[tables.«eClass.name»]
-		  	      .collect()
-		  	      .to[Seq]«ENDFOR»
+		  	    tables.OMLSpecificationTables«FOR eClass : cClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER "\n))"»«eClass.tableVariableName» = «eClass.tableVariableName»«ENDFOR»
 		  	}
 
 		  def parquetWriteOMLSpecificationTables
@@ -304,22 +501,138 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		  = nonFatalCatch[Try[Unit]]
 		    .withApply {
 		      (cause: java.lang.Throwable) =>
-		        cause.fillInStackTrace()
 		        Failure(cause)
 		    }
 		    .apply {
-		    	  import spark.implicits._
-
+		
 		  	  dir.toIO.mkdirs()
 
 		      «FOR eClass : eClasses»
-		      t
-		      .«eClass.tableVariableName»
-		      .toDF()
-		      .write
-		      .parquet((dir / "«eClass.name».parquet").toIO.getAbsolutePath())
+		      TypedDataset
+		        .create(t.«eClass.tableVariableName»)
+		        .dataset
+		        .write
+		        .parquet((dir / "«eClass.name».parquet").toIO.getAbsolutePath)
 		      
 		      «ENDFOR»
+		  	  Success(())
+		  	}
+
+		  def sqlReadOMLSpecificationTables
+		  (url: String,
+		   props: Properties)
+		  (implicit spark: SparkSession, sqlContext: SQLContext)
+		  : Try[tables.OMLSpecificationTables]
+		  = nonFatalCatch[Try[tables.OMLSpecificationTables]]
+		    .withApply {
+		      (cause: java.lang.Throwable) =>
+		        Failure(cause)
+		    }
+		    .apply {
+		    	
+		      import spark.implicits._
+		      import scala.Predef.refArrayOps
+			  
+		      «FOR eClass : eClasses SEPARATOR "\n\n"»val «eClass.tableVariableName»
+		      : Seq[tables.«eClass.name»]
+		      = spark
+		        .read
+		        .jdbc(url, "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»", props)
+		        .map(OMLReaders.«eClass.name»SQL2Tuple)
+		        .collect()
+		        .map(OMLReaders.«eClass.name»Tuple2Type)
+		        .to[Seq]«ENDFOR»
+
+		  	  Success(
+		  	    tables.OMLSpecificationTables«FOR eClass : cClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER "\n))"»«eClass.tableVariableName» = «eClass.tableVariableName»«ENDFOR»
+		  	}
+
+		  def sqlWriteOMLSpecificationTables
+		  (t: tables.OMLSpecificationTables,
+		   url: String,
+		   props: Properties)
+		  (implicit spark: SparkSession, sqlContext: SQLContext)
+		  : Try[Unit]
+		  = nonFatalCatch[Try[Unit]]
+		    .withApply {
+		      (cause: java.lang.Throwable) =>
+		        Failure(cause)
+		    }
+		    .apply {
+		      import spark.implicits._
+		      
+		      «FOR eClass : cClasses1»
+		      TypedDataset
+		        .create(t.«eClass.tableVariableName»)
+		        .dataset
+		        .map(OMLReaders.«eClass.name»Type2Tuple)
+		        .write
+		        .mode(SaveMode.Append)
+		        .jdbc(url, "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»", props)
+		      
+		      «ENDFOR»
+			    OMLWriters
+			      .writeRestrictions(
+			        url, 
+			        props,
+			        t.scalars.map(_.uuid),«FOR eClass : restrictions SEPARATOR ',\n    ' AFTER ')'»
+			        t.«eClass.tableVariableName», "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»", OMLReaders.«eClass.name»Type2Tuple«ENDFOR»
+
+		      «FOR eClass : cClasses3»
+		      «IF eClass.name == 'RuleBodySegment'»
+		      OMLWriters
+		        .serializeAndWriteRuleBodySegments(
+		          url,
+		          props,
+		          t.ruleBodySegments,
+		          "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»",
+		          OMLReaders.«eClass.name»Type2Tuple,
+		          Seq.empty[tables.taggedTypes.«eClass.name»UUID],
+		          OMLWriters.«eClass.name.toFirstLower»Partitioner)
+
+		      «ELSEIF eClass.name == 'RestrictionStructuredDataPropertyTuple'»
+		      OMLWriters
+		        .serializeAndWriteRestrictionStructuredDataPropertyTuples(
+		          url,
+		          props,
+		          t.restrictionStructuredDataPropertyTuples,
+		          "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»",
+		          OMLReaders.«eClass.name»Type2Tuple,
+		          t.entityStructuredDataPropertyParticularRestrictionAxioms.map(_.uuid),
+		          OMLWriters.«eClass.name.toFirstLower»Partitioner)
+
+		      «ELSEIF eClass.name == 'AnonymousConceptUnionAxiom'»
+		      OMLWriters
+		        .serializeAndWriteAnonymousConceptUnionAxioms(
+		          url,
+		          props,
+		          t.anonymousConceptUnionAxioms,
+		          "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»",
+		          OMLReaders.«eClass.name»Type2Tuple,
+		          t.rootConceptTaxonomyAxioms.map(_.uuid),
+		          OMLWriters.«eClass.name.toFirstLower»Partitioner)
+
+		      «ELSEIF eClass.name == 'StructuredDataPropertyTuple'»
+		      OMLWriters
+		        .serializeAndWriteStructuredDataPropertyTuples(
+		          url,
+		          props,
+		          t.structuredDataPropertyTuples,
+		          "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»",
+		          OMLReaders.«eClass.name»Type2Tuple,
+		          t.singletonInstanceStructuredDataPropertyValues.map(_.uuid),
+		          OMLWriters.«eClass.name.toFirstLower»Partitioner)
+
+		      «ELSE»
+		      TypedDataset
+		        .create(t.«eClass.tableVariableName»)
+		        .dataset
+		        .map(OMLReaders.«eClass.name»Type2Tuple)
+		        .write
+		        .mode(SaveMode.Append)
+		        .jdbc(url, "OML.«OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass)»", props)
+
+		      «ENDIF»«ENDFOR»		      
 		  	  Success(())
 		  	}
 
