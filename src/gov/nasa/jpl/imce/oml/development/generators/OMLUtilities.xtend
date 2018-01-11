@@ -218,24 +218,44 @@ class OMLUtilities extends OMLXcorePackages {
 	}
 	
 	static def String circeDecoder(EClass eClass, ETypedElement feature) {
-		val scalaType = circeDecoderType(eClass, feature)
-		if (feature.lowerBound == 0) {
-			if (scalaType == "LiteralNumber" || scalaType == "LiteralValue" || scalaType == "LiteralDateTime")
-			  "Decoder.decodeOption("+scalaType+".decode"+scalaType+")(c.downField(\""+feature.columnName+"\").success.get)"
+		val ftype = feature.EType.name
+		if (ftype == "LiteralString") {
+			'''c.downField("«feature.columnName»").as[taggedTypes.StringDataType](gov.nasa.jpl.imce.oml.taggedTypes.decodeArrayTag[taggedTypes.StringDataTypeTag])'''
+		} else if (ftype == "LiteralPattern") {
+			'''Decoder.decodeOption(gov.nasa.jpl.imce.oml.taggedTypes.decodeArrayTag[taggedTypes.LiteralPatternTag])(c.downField("«feature.columnName»").success.get)'''
+		} else if (ftype == "LiteralValue") {
+			'''c.downField("«feature.columnName»").as[LiteralValue](LiteralValue.decodeLiteralValueArray)'''
+		} else {
+			val scalaType = circeDecoderType(eClass, feature)
+			if (feature.lowerBound == 0) {
+				if (scalaType == "LiteralNumber" || scalaType == "LiteralValue" || scalaType == "LiteralDateTime")
+					"Decoder.decodeOption(" + scalaType + ".decode" + scalaType + ")(c.downField(\"" +
+						feature.columnName + "\").success.get)"
+				else
+					"Decoder.decodeOption(taggedTypes.decode" + scalaType + ")(c.downField(\"" + feature.columnName +
+						"\").success.get)"
+			} else if (scalaType == "LiteralValue" || scalaType.endsWith("Kind") || scalaType.startsWith("scala."))
+				"c.downField(\"" + feature.columnName + "\").as[" + scalaType + "]"
 			else
-			  "Decoder.decodeOption(taggedTypes.decode"+scalaType+")(c.downField(\""+feature.columnName+"\").success.get)"
-	    } else if (scalaType == "LiteralValue" || scalaType.endsWith("Kind") || scalaType.startsWith("scala."))
-	      "c.downField(\""+feature.columnName+"\").as["+scalaType+"]"
-	    else
-	      "c.downField(\""+feature.columnName+"\").as[taggedTypes."+scalaType+"]"
+				"c.downField(\"" + feature.columnName + "\").as[taggedTypes." + scalaType + "]"
+		}
 	}
 	
 	static def String circeEncoder(EClass eClass, ETypedElement feature) {
-		val scalaType = circeEncoderFunction(eClass, feature)
-		if (feature.lowerBound == 0)
-		  "Encoder.encodeOption("+scalaType+").apply(x."+feature.columnName+")"
-	    else
-	      scalaType+"(x."+feature.columnName+")"
+		val ftype = feature.EType.name
+		if (ftype == "LiteralString") {
+			'''gov.nasa.jpl.imce.oml.taggedTypes.encodeArrayTag[taggedTypes.StringDataTypeTag](x.«feature.columnName»)'''
+		} else if (ftype == "LiteralPattern") {
+			'''Encoder.encodeOption(gov.nasa.jpl.imce.oml.taggedTypes.encodeArrayTag[taggedTypes.LiteralPatternTag]).apply(x.«feature.columnName»)'''
+		} else if (ftype == "LiteralValue") {
+			'''LiteralValue.encodeLiteralValueArray(x.«feature.columnName»)'''
+		} else {
+			val scalaType = circeEncoderFunction(eClass, feature)
+			if (feature.lowerBound == 0)
+				"Encoder.encodeOption("+scalaType+").apply(x."+feature.columnName+")"
+	    		else
+	    			scalaType+"(x."+feature.columnName+")"
+	    }
 	}
 	
 	static def String javaArgName(ETypedElement feature) {

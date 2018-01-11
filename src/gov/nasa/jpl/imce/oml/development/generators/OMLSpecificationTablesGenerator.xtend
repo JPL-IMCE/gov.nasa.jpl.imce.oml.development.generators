@@ -244,8 +244,10 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  def mergeTables
 		  (t1: «tableName», t2: «tableName»)
 		  : «tableName»
-		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = 
-		  (t1.«eClass.tableVariableName».to[Set] ++ t2.«eClass.tableVariableName».to[Set]).to[Seq].sortBy(_.uuid)«ENDFOR»
+		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = (
+		        t1.«eClass.tableVariableName».to[Set] ++ 
+		        t2.«eClass.tableVariableName».to[Set]
+		      ).to[Seq].sortBy(_.uuid)«ENDFOR»
 		  
 		  def readZipArchive
 		  (zipFile: ZipFile)
