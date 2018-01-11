@@ -505,16 +505,25 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           }
           String _tableVariableName_3 = OMLUtilities.tableVariableName(eClass_4);
           _builder.append(_tableVariableName_3, "  ");
-          _builder.append(" = ");
+          _builder.append(" = (");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
-          _builder.append("(t1.");
+          _builder.append("      ");
+          _builder.append("t1.");
           String _tableVariableName_4 = OMLUtilities.tableVariableName(eClass_4);
-          _builder.append(_tableVariableName_4, "  ");
-          _builder.append(".to[Set] ++ t2.");
+          _builder.append(_tableVariableName_4, "        ");
+          _builder.append(".to[Set] ++ ");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("      ");
+          _builder.append("t2.");
           String _tableVariableName_5 = OMLUtilities.tableVariableName(eClass_4);
-          _builder.append(_tableVariableName_5, "  ");
-          _builder.append(".to[Set]).to[Seq].sortBy(_.uuid)");
+          _builder.append(_tableVariableName_5, "        ");
+          _builder.append(".to[Set]");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("    ");
+          _builder.append(").to[Seq].sortBy(_.uuid)");
         }
         if (_hasElements_3) {
           _builder.append(")", "  ");

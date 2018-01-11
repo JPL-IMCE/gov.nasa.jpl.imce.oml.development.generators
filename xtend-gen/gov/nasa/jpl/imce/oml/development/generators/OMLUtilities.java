@@ -641,38 +641,80 @@ public class OMLUtilities extends OMLXcorePackages {
   public static String circeDecoder(final EClass eClass, final ETypedElement feature) {
     String _xblockexpression = null;
     {
-      final String scalaType = OMLUtilities.circeDecoderType(eClass, feature);
+      final String ftype = feature.getEType().getName();
       String _xifexpression = null;
-      int _lowerBound = feature.getLowerBound();
-      boolean _equals = (_lowerBound == 0);
+      boolean _equals = Objects.equal(ftype, "LiteralString");
       if (_equals) {
+        StringConcatenation _builder = new StringConcatenation();
+        _builder.append("c.downField(\"");
+        String _columnName = OMLUtilities.columnName(feature);
+        _builder.append(_columnName);
+        _builder.append("\").as[taggedTypes.StringDataType](gov.nasa.jpl.imce.oml.taggedTypes.decodeArrayTag[taggedTypes.StringDataTypeTag])");
+        _xifexpression = _builder.toString();
+      } else {
         String _xifexpression_1 = null;
-        if (((Objects.equal(scalaType, "LiteralNumber") || Objects.equal(scalaType, "LiteralValue")) || Objects.equal(scalaType, "LiteralDateTime"))) {
-          String _columnName = OMLUtilities.columnName(feature);
-          String _plus = ((((("Decoder.decodeOption(" + scalaType) + ".decode") + scalaType) + ")(c.downField(\"") + _columnName);
-          _xifexpression_1 = (_plus + "\").success.get)");
-        } else {
+        boolean _equals_1 = Objects.equal(ftype, "LiteralPattern");
+        if (_equals_1) {
+          StringConcatenation _builder_1 = new StringConcatenation();
+          _builder_1.append("Decoder.decodeOption(gov.nasa.jpl.imce.oml.taggedTypes.decodeArrayTag[taggedTypes.LiteralPatternTag])(c.downField(\"");
           String _columnName_1 = OMLUtilities.columnName(feature);
-          String _plus_1 = ((("Decoder.decodeOption(taggedTypes.decode" + scalaType) + ")(c.downField(\"") + _columnName_1);
-          _xifexpression_1 = (_plus_1 + "\").success.get)");
+          _builder_1.append(_columnName_1);
+          _builder_1.append("\").success.get)");
+          _xifexpression_1 = _builder_1.toString();
+        } else {
+          String _xifexpression_2 = null;
+          boolean _equals_2 = Objects.equal(ftype, "LiteralValue");
+          if (_equals_2) {
+            StringConcatenation _builder_2 = new StringConcatenation();
+            _builder_2.append("c.downField(\"");
+            String _columnName_2 = OMLUtilities.columnName(feature);
+            _builder_2.append(_columnName_2);
+            _builder_2.append("\").as[LiteralValue](LiteralValue.decodeLiteralValueArray)");
+            _xifexpression_2 = _builder_2.toString();
+          } else {
+            String _xblockexpression_1 = null;
+            {
+              final String scalaType = OMLUtilities.circeDecoderType(eClass, feature);
+              String _xifexpression_3 = null;
+              int _lowerBound = feature.getLowerBound();
+              boolean _equals_3 = (_lowerBound == 0);
+              if (_equals_3) {
+                String _xifexpression_4 = null;
+                if (((Objects.equal(scalaType, "LiteralNumber") || Objects.equal(scalaType, "LiteralValue")) || Objects.equal(scalaType, "LiteralDateTime"))) {
+                  String _columnName_3 = OMLUtilities.columnName(feature);
+                  String _plus = ((((("Decoder.decodeOption(" + scalaType) + ".decode") + scalaType) + ")(c.downField(\"") + _columnName_3);
+                  _xifexpression_4 = (_plus + "\").success.get)");
+                } else {
+                  String _columnName_4 = OMLUtilities.columnName(feature);
+                  String _plus_1 = ((("Decoder.decodeOption(taggedTypes.decode" + scalaType) + ")(c.downField(\"") + _columnName_4);
+                  _xifexpression_4 = (_plus_1 + 
+                    "\").success.get)");
+                }
+                _xifexpression_3 = _xifexpression_4;
+              } else {
+                String _xifexpression_5 = null;
+                if (((Objects.equal(scalaType, "LiteralValue") || scalaType.endsWith("Kind")) || scalaType.startsWith("scala."))) {
+                  String _columnName_5 = OMLUtilities.columnName(feature);
+                  String _plus_2 = ("c.downField(\"" + _columnName_5);
+                  String _plus_3 = (_plus_2 + "\").as[");
+                  String _plus_4 = (_plus_3 + scalaType);
+                  _xifexpression_5 = (_plus_4 + "]");
+                } else {
+                  String _columnName_6 = OMLUtilities.columnName(feature);
+                  String _plus_5 = ("c.downField(\"" + _columnName_6);
+                  String _plus_6 = (_plus_5 + "\").as[taggedTypes.");
+                  String _plus_7 = (_plus_6 + scalaType);
+                  _xifexpression_5 = (_plus_7 + "]");
+                }
+                _xifexpression_3 = _xifexpression_5;
+              }
+              _xblockexpression_1 = _xifexpression_3;
+            }
+            _xifexpression_2 = _xblockexpression_1;
+          }
+          _xifexpression_1 = _xifexpression_2;
         }
         _xifexpression = _xifexpression_1;
-      } else {
-        String _xifexpression_2 = null;
-        if (((Objects.equal(scalaType, "LiteralValue") || scalaType.endsWith("Kind")) || scalaType.startsWith("scala."))) {
-          String _columnName_2 = OMLUtilities.columnName(feature);
-          String _plus_2 = ("c.downField(\"" + _columnName_2);
-          String _plus_3 = (_plus_2 + "\").as[");
-          String _plus_4 = (_plus_3 + scalaType);
-          _xifexpression_2 = (_plus_4 + "]");
-        } else {
-          String _columnName_3 = OMLUtilities.columnName(feature);
-          String _plus_5 = ("c.downField(\"" + _columnName_3);
-          String _plus_6 = (_plus_5 + "\").as[taggedTypes.");
-          String _plus_7 = (_plus_6 + scalaType);
-          _xifexpression_2 = (_plus_7 + "]");
-        }
-        _xifexpression = _xifexpression_2;
       }
       _xblockexpression = _xifexpression;
     }
@@ -682,18 +724,59 @@ public class OMLUtilities extends OMLXcorePackages {
   public static String circeEncoder(final EClass eClass, final ETypedElement feature) {
     String _xblockexpression = null;
     {
-      final String scalaType = OMLUtilities.circeEncoderFunction(eClass, feature);
+      final String ftype = feature.getEType().getName();
       String _xifexpression = null;
-      int _lowerBound = feature.getLowerBound();
-      boolean _equals = (_lowerBound == 0);
+      boolean _equals = Objects.equal(ftype, "LiteralString");
       if (_equals) {
+        StringConcatenation _builder = new StringConcatenation();
+        _builder.append("gov.nasa.jpl.imce.oml.taggedTypes.encodeArrayTag[taggedTypes.StringDataTypeTag](x.");
         String _columnName = OMLUtilities.columnName(feature);
-        String _plus = ((("Encoder.encodeOption(" + scalaType) + ").apply(x.") + _columnName);
-        _xifexpression = (_plus + ")");
+        _builder.append(_columnName);
+        _builder.append(")");
+        _xifexpression = _builder.toString();
       } else {
-        String _columnName_1 = OMLUtilities.columnName(feature);
-        String _plus_1 = ((scalaType + "(x.") + _columnName_1);
-        _xifexpression = (_plus_1 + ")");
+        String _xifexpression_1 = null;
+        boolean _equals_1 = Objects.equal(ftype, "LiteralPattern");
+        if (_equals_1) {
+          StringConcatenation _builder_1 = new StringConcatenation();
+          _builder_1.append("Encoder.encodeOption(gov.nasa.jpl.imce.oml.taggedTypes.encodeArrayTag[taggedTypes.LiteralPatternTag]).apply(x.");
+          String _columnName_1 = OMLUtilities.columnName(feature);
+          _builder_1.append(_columnName_1);
+          _builder_1.append(")");
+          _xifexpression_1 = _builder_1.toString();
+        } else {
+          String _xifexpression_2 = null;
+          boolean _equals_2 = Objects.equal(ftype, "LiteralValue");
+          if (_equals_2) {
+            StringConcatenation _builder_2 = new StringConcatenation();
+            _builder_2.append("LiteralValue.encodeLiteralValueArray(x.");
+            String _columnName_2 = OMLUtilities.columnName(feature);
+            _builder_2.append(_columnName_2);
+            _builder_2.append(")");
+            _xifexpression_2 = _builder_2.toString();
+          } else {
+            String _xblockexpression_1 = null;
+            {
+              final String scalaType = OMLUtilities.circeEncoderFunction(eClass, feature);
+              String _xifexpression_3 = null;
+              int _lowerBound = feature.getLowerBound();
+              boolean _equals_3 = (_lowerBound == 0);
+              if (_equals_3) {
+                String _columnName_3 = OMLUtilities.columnName(feature);
+                String _plus = ((("Encoder.encodeOption(" + scalaType) + ").apply(x.") + _columnName_3);
+                _xifexpression_3 = (_plus + ")");
+              } else {
+                String _columnName_4 = OMLUtilities.columnName(feature);
+                String _plus_1 = ((scalaType + "(x.") + _columnName_4);
+                _xifexpression_3 = (_plus_1 + ")");
+              }
+              _xblockexpression_1 = _xifexpression_3;
+            }
+            _xifexpression_2 = _xblockexpression_1;
+          }
+          _xifexpression_1 = _xifexpression_2;
+        }
+        _xifexpression = _xifexpression_1;
       }
       _xblockexpression = _xifexpression;
     }
