@@ -27,3 +27,5 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.0 is a significant update
 - [#19 Update code generators for OML AnnotationProperty refactoring](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/19)
 
 - [#20 Update OML SQL Schema generation and Frameless/SQL conversions.](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/20)
+
+- [#21 Update generated code for special encoding of raw strings](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/21)
