@@ -201,7 +201,17 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 	}
 
 	def String factoryMethodWithUUIDGenerator(EClass eClass, EStructuralFeature uuidNS, String uuidScala) {
-		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
+		// There may be more than 1 container!
+		val containers = eClass.getSortedAttributeFactorySignature.filter(EReference).filter[isContainer].toList
+		if (1 == containers.size)
+			factoryMethodWithUUIDGenerator1(eClass, uuidNS, uuidScala, containers.get(0))
+		else if (2 == containers.size)
+			factoryMethodWithUUIDGenerator2(eClass, uuidNS, uuidScala, containers.get(0), containers.get(1))
+		else
+			throw new IllegalArgumentException('''factoryMethodWithUUIDGenerator: eClass=«eClass.name»''')
+	}
+	
+	def String factoryMethodWithUUIDGenerator1(EClass eClass, EStructuralFeature uuidNS, String uuidScala, EReference container) {
 		val contained = container?.EOpposite
 		val newVal = eClass.name.toFirstLower
 		'''
@@ -210,6 +220,7 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 			: (resolver.api.Extent, resolver.api.«eClass.name»)
 			= {
 			  // factoryMethodWithUUIDGenerator (scala...)
+			  
 			  // container: «container.name» «container.EType.name»
 			  // contained: «contained.name» «contained.EType.name»
 			  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
@@ -235,6 +246,62 @@ class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
 		'''
 	}
 
+	def String factoryMethodWithUUIDGenerator2(EClass eClass, EStructuralFeature uuidNS, String uuidScala, EReference container1, EReference container2) {
+		val contained1 = container1?.EOpposite
+		val contained2 = container2?.EOpposite
+		val newVal = eClass.name.toFirstLower
+		'''
+			override def create«eClass.name»
+			«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE if (eClass.isExtentContainer) "( uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " else "( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes."+eClass.name+"UUID,\n " SEPARATOR ",\n " AFTER " )"» «attr.name»: «attr.queryResolverType('resolver.api.')»«ENDFOR»
+			: (resolver.api.Extent, resolver.api.«eClass.name»)
+			= {
+			  // factoryMethodWithUUIDGenerator (scala...)
+			  
+			  // container1: «container1.name» «container1.EType.name»
+			  // contained1: «contained1.name» «contained1.EType.name»
+			  // container2: «container2.name» «container2.EType.name»
+			  // contained2: «contained2.name» «contained2.EType.name»
+			  val «newVal» = «eClass.name»«FOR attr : eClass.getSortedAttributeFactorySignature BEFORE "( uuid, " SEPARATOR ", " AFTER " )"»«attr.name»«ENDFOR»
+			  «IF (container1.lowerBound == 0)»
+			  val extent1 = «container1.name».fold {
+			  	extent.copy(
+			  	  «contained1.EType.name.toFirstLower»ByUUID = extent.«contained1.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»)
+			  	)
+			  }{ _«container1.name»_ =>
+			  	extent.copy(
+			  	  «contained1.name» = extent.with«contained1.EType.name»(_«container1.name»_, «newVal»),
+			  	  «container1.EType.name.toFirstLower»Of«contained1.EType.name» = extent.«container1.EType.name.toFirstLower»Of«contained1.EType.name» + («newVal» -> _«container1.name»_),
+			  	  «contained1.EType.name.toFirstLower»ByUUID = extent.«contained1.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»)
+			  	)
+			  }
+			  «ELSE»
+			  val extent1 = extent.copy(
+			  	«contained1.name» = extent.with«contained1.EType.name»(«container1.name», «newVal»),
+			  	«container1.EType.name.toFirstLower»Of«contained1.EType.name» = extent.«container1.EType.name.toFirstLower»Of«contained1.EType.name» + («newVal» -> «container1.name»),
+			  	«contained1.EType.name.toFirstLower»ByUUID = extent.«contained1.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»)),
+			  «ENDIF»
+			  «IF (container2.lowerBound == 0)»
+			  val extent2 = «container2.name».fold {
+			  	extent1.copy(
+			  	  «contained2.EType.name.toFirstLower»ByUUID = extent.«contained2.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»)
+			  	)
+			  }{ _«container2.name»_ =>
+			  	extent1.copy(
+			  	  «contained2.name» = extent.with«contained2.EType.name»(_«container2.name»_, «newVal»),
+			  	  «container2.EType.name.toFirstLower»Of«contained2.EType.name» = extent.«container2.EType.name.toFirstLower»Of«contained2.EType.name» + («newVal» -> _«container2.name»_),
+			  	  «contained2.EType.name.toFirstLower»ByUUID = extent.«contained2.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»)
+			  	)
+			  }
+			  «ELSE»
+			  val extent2 = extent1.copy(
+			  	«contained2.name» = extent.with«contained2.EType.name»(«container1.name», «newVal»),
+			  	«container2.EType.name.toFirstLower»Of«contained2.EType.name» = extent.«container2.EType.name.toFirstLower»Of«contained2.EType.name» + («newVal» -> «container2.name»),
+			  	«contained2.EType.name.toFirstLower»ByUUID = extent.«contained2.EType.name.toFirstLower»ByUUID + (uuid -> «newVal»)),
+			  «ENDIF»
+			  scala.Tuple2(extent2,«newVal»)
+			}
+		'''
+	}
 	def String factoryMethodWithDerivedUUID(EClass eClass) {
 		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
 		val contained = container?.EOpposite

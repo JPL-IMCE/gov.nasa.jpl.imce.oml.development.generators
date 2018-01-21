@@ -508,6 +508,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 	
 	def String generateClassFile(EClass eClass, String packageQName) {
 		val uuid = eClass.lookupUUIDFeature
+		val uuidOp = eClass.lookupUUIDOperation?.scalaTablesAnnotation
 		val container = eClass.getSortedAttributeFactorySignature.filter(EReference).findFirst[isContainer]
 		val uuidNS = eClass.lookupUUIDNamespaceFeature
 		val uuidName = if (uuidNS?.name == "iri") "iri" else uuidNS?.name+"UUID"
@@ -516,6 +517,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		val keyAttributes = eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0)
 		val uuidWithGenerator = (null !== uuidNS) && (null !== uuidFactors)
 		val uuidWithoutContainer = (null !== uuid) && (null === container) && (null !== uuidNS)
+		val uuidWithOperation = (null !== uuidOp)
 		val uuidWithContainer = (null !== uuid) && (null !== container)
 	'''
 		«copyright»
@@ -557,9 +559,9 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes SEPARATOR ",\n" AFTER ")\n"»«IF attr.lowerBound > 0»    «attr.columnName»«ELSE»    scala.None /* «attr.columnName» */«ENDIF»«ENDFOR»
 		
 		  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | a.lowerBound == 0) SEPARATOR ""»
-		  def with«attr.columnName.toFirstUpper»(l: «scalaTableTypeRef(eClass, attr)»)	 
+		  def with«attr.columnName.toFirstUpper»(«IF uuidWithOperation»oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator, «ENDIF»l: «scalaTableTypeRef(eClass, attr)»)	 
 		  : «eClass.name»
-		  = copy(«attr.columnName»=scala.Some(l))
+		  = copy(«attr.columnName»=scala.Some(l))«IF uuidWithOperation».copy(uuid = calculateUUID(oug))«ENDIF»
 		  
 		  «ENDFOR»
 		«ENDIF»
@@ -571,7 +573,11 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		          "«f.name»" -> «f.name»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
 		«ELSEIF uuidWithContainer»
 		  «FOR attr : keyAttributes BEFORE "  // Ctor(uuidWithContainer)   \n  def this(\n    oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator,\n" SEPARATOR ",\n" AFTER ")\n  = this(\n      taggedTypes."+eClass.name.lowerCaseInitialOrWord+"UUID(oug.namespaceUUID(\n        \""+eClass.name+"\""»    «attr.columnName»: «constructorTypeRef(eClass, attr)»«ENDFOR»«FOR f : pairs»,
-		          "«f.name»" -> «IF f.isUUIDFeature»«f.columnUUID»«ELSEIF f.EType.name == "LiteralString"»«f.name»«ELSE»«f.name».value«ENDIF»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		          "«f.name»" -> «IF f.isUUIDFeature»«f.columnUUID»«ELSEIF f.EType.name == "LiteralString" || f.EType.name == "LocalName"»«f.name»«ELSE»«f.name».value«ENDIF»«ENDFOR»«FOR attr : eClass.schemaAPIOrOrderingKeyAttributes.filter(a | uuid != a && a.lowerBound > 0) BEFORE ").toString),\n" SEPARATOR ",\n" AFTER ")\n"»      «attr.columnName»«ENDFOR»
+		«ENDIF»«IF uuidWithOperation»
+		
+		def calculateUUID(oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator): taggedTypes.«eClass.name»UUID = «uuidOp»
+		
 		«ENDIF»
 		
 		«IF null !== eClass.lookupUUIDFeature»

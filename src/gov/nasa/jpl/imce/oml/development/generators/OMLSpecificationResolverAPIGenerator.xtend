@@ -292,7 +292,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		import java.lang.IllegalArgumentException
 		import scala.collection.immutable.{::, HashMap, Map, Nil, Set}
 		import scala.util.{Failure,Success,Try}
-		import scala.{Option,StringContext}
+		import scala.{Option,None,Some,StringContext}
 		
 		«FOR ct : containerTypes BEFORE "// Container types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
 		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
@@ -396,13 +396,6 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  «IF (c.EType.name != "Annotation" && c.EType != c.EClassContainer)»
 		  
 		  def lookup«c.EType.name»
-		  (uuid: Option[taggedTypes.«c.EType.name»UUID])
-		  : Option[«c.EType.name»]
-		  = uuid.flatMap {
-		    lookup«c.EType.name»
-		  }
-		  
-		  def lookup«c.EType.name»
 		  (uuid: taggedTypes.«c.EType.name»UUID)
 		  : Option[«c.EType.name»]
 		  = «c.EType.name.toFirstLower»ByUUID.get(uuid)
@@ -436,6 +429,17 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 	  	  «ENDIF»
 	  	  «ENDIF»
 		  «ENDFOR»
+		
+		  def lookupPredicate(uuid: taggedTypes.PredicateUUID)
+		  : Option[Predicate]
+		  = forwardPropertyByUUID.get(uuid.asInstanceOf[taggedTypes.ForwardPropertyUUID]) orElse
+		    inversePropertyByUUID.get(uuid.asInstanceOf[taggedTypes.InversePropertyUUID]) orElse
+		    lookupTerminologyBoxStatement(uuid.asInstanceOf[taggedTypes.TerminologyBoxStatementUUID]) match {
+		    case Some(p: Predicate) =>
+		      Some(p)
+		    case _ =>
+		      None
+		  }
 		
 		  def lookupLogicalElement(uuid: taggedTypes.LogicalElementUUID)
 		  : Option[LogicalElement]

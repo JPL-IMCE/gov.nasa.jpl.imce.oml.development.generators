@@ -62,9 +62,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       		ePackages, 
       		oml_Folder.toAbsolutePath.toString, 
       		packageQName,
-      		"OMLSpecificationTables")
-      		
-		
+      		"OMLSpecificationTables")	
 	}
 	
 	def generate(List<EPackage> ePackages, String targetFolder, String packageQName, String tableName) {
@@ -99,6 +97,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 		import org.apache.commons.compress.archivers.zip.ZipFile
 		import org.eclipse.emf.common.util.URI
+		import org.eclipse.emf.ecore.resource.ResourceSet
 		import org.eclipse.xtext.xbase.lib.Pair
 		
 		import gov.nasa.jpl.imce.oml.model.extensions.OMLTables
@@ -131,38 +130,33 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
 		import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.Aspect
-		import gov.nasa.jpl.imce.oml.model.terminologies.AspectPredicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.BinaryScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.ChainRule
 		import gov.nasa.jpl.imce.oml.model.terminologies.Concept
-		import gov.nasa.jpl.imce.oml.model.terminologies.ConceptPredicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.DataRange
 		import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToScalar
 		import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToStructure
 		import gov.nasa.jpl.imce.oml.model.terminologies.Entity
-		import gov.nasa.jpl.imce.oml.model.terminologies.EntityExistentialRestrictionAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship
+		import gov.nasa.jpl.imce.oml.model.terminologies.EntityExistentialRestrictionAxiom
+		import gov.nasa.jpl.imce.oml.model.terminologies.EntityUniversalRestrictionAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
 		import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyParticularRestrictionAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
 		import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataPropertyParticularRestrictionAxiom
-		import gov.nasa.jpl.imce.oml.model.terminologies.EntityUniversalRestrictionAxiom
+		import gov.nasa.jpl.imce.oml.model.terminologies.ForwardProperty
+		import gov.nasa.jpl.imce.oml.model.terminologies.InverseProperty
 		import gov.nasa.jpl.imce.oml.model.terminologies.IRIScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.NumericScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction
+		import gov.nasa.jpl.imce.oml.model.terminologies.Predicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipInversePropertyPredicate
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipPredicate
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipPropertyPredicate
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSourceInversePropertyPredicate
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSourcePropertyPredicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipTargetInversePropertyPredicate
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipTargetPropertyPredicate
+		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictableRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionScalarDataPropertyValue
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionStructuredDataPropertyContext
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionStructuredDataPropertyTuple
@@ -171,6 +165,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.ScalarDataProperty
 		import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfRestriction
+		import gov.nasa.jpl.imce.oml.model.terminologies.SegmentPredicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.SubDataPropertyOfAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.SubObjectPropertyOfAxiom
@@ -181,8 +176,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.TimeScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
-		import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationshipInversePropertyPredicate
-		import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationshipPropertyPredicate
 		
 		import gov.nasa.jpl.imce.oml.model.common.CommonFactory
 		import gov.nasa.jpl.imce.oml.model.terminologies.TerminologiesFactory
@@ -194,7 +187,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		 * @generated
 		 */
 		class «tableName» {
-		 
+		
 		  «FOR eClass : eClasses»
 		  protected val Map<String, Pair<«eClass.name», Map<String,String>>> «eClass.tableVariableName»
 		  «ENDFOR»
@@ -205,8 +198,10 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  protected val Map<String, Pair<EntityRelationship, Map<String,String>>> entityRelationships
 		  protected val Map<String, Pair<DataRange, Map<String,String>>> dataRanges 
 		  protected val Map<String, Pair<DataRelationshipToScalar, Map<String,String>>> dataRelationshipToScalars
-		  protected val Map<String, Pair<DataRelationshipToStructure, Map<String,String>>> dataRelationshipToStructures 
-		  protected val Map<String, Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>> restrictionStructuredDataPropertyContexts 
+		  protected val Map<String, Pair<DataRelationshipToStructure, Map<String,String>>> dataRelationshipToStructures
+		  protected val Map<String, Pair<Predicate, Map<String,String>>> predicates
+		  protected val Map<String, Pair<RestrictableRelationship, Map<String,String>>> restrictableRelationships
+		  protected val Map<String, Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>> restrictionStructuredDataPropertyContexts
 		  protected val Map<String, Pair<TerminologyBox, Map<String,String>>> terminologyBoxes
 		  protected val Map<String, Pair<ConceptTreeDisjunction, Map<String,String>>> conceptTreeDisjunctions
 		  protected val Map<String, Pair<ConceptualEntitySingletonInstance, Map<String,String>>> conceptualEntitySingletonInstances
@@ -234,6 +229,8 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    dataRanges = new HashMap<String, Pair<DataRange, Map<String,String>>>()
 		    dataRelationshipToScalars = new HashMap<String, Pair<DataRelationshipToScalar, Map<String,String>>>()
 		    dataRelationshipToStructures = new HashMap<String, Pair<DataRelationshipToStructure, Map<String,String>>>()
+		    predicates = new HashMap<String, Pair<Predicate, Map<String,String>>>()
+		    restrictableRelationships = new HashMap<String, Pair<RestrictableRelationship, Map<String,String>>>()
 		    restrictionStructuredDataPropertyContexts = new HashMap<String, Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>>()
 		    terminologyBoxes = new HashMap<String, Pair<TerminologyBox, Map<String,String>>>()
 		    conceptTreeDisjunctions = new HashMap<String, Pair<ConceptTreeDisjunction, Map<String,String>>>()
@@ -256,7 +253,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  }
 		  
 		  «FOR eClass : eClasses»
-		  static def byte[] «eClass.tableVariableName»ByteArray(Extent e) {
+		  protected static def byte[] «eClass.tableVariableName»ByteArray(Extent e) {
 		  	val ByteArrayOutputStream bos = new ByteArrayOutputStream()
 		  	val PrintWriter pw = new PrintWriter(bos)
 		  	OMLTables.«eClass.tableVariableName»(e).forEach[it |
@@ -296,7 +293,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  
 		  «ENDFOR»
 		  		    	    
-		  static def void load(OMLZipResourceSet rs, OMLZipResource r, File omlZipFile) {
+		  static def void load(ResourceSet rs, OMLZipResource r, File omlZipFile) {
 		
 		    val tables = new «tableName»()
 		    
@@ -339,7 +336,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    vMap.forEach[uuid,kv|uMap.put(uuid, new Pair<U, Map<String, String>>(kv.key, Collections.emptyMap))]
 		  }
 		  
-		  protected def void resolve(OMLZipResourceSet rs, OMLZipResource r) {
+		  protected def void resolve(ResourceSet rs, OMLZipResource r) {
 			// Lookup table for LogicalElement cross references
 		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "LogicalElement"]] SEPARATOR "\n"»includeMap(logicalElements, «eClass.tableVariableName»)«ENDFOR»
 		  	
@@ -385,7 +382,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  }
 
 		  «FOR eClass : eClasses.filter[schemaAPIOrOrderingKeyReferences.size > 0]»
-		  protected def void resolve«eClass.tableVariableName.upperCaseInitialOrWord»(OMLZipResourceSet rs) {
+		  protected def void resolve«eClass.tableVariableName.upperCaseInitialOrWord»(ResourceSet rs) {
 		  	«eClass.tableVariableName».forEach[uuid, oml_kv |
 		  	  val «eClass.name» oml = oml_kv.key
 		  	  val Map<String, String> kv = oml_kv.value
@@ -420,7 +417,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  
 		  «ENDFOR»		  
 
-		  protected def OMLZipResource loadOMLZipResource(OMLZipResourceSet rs, URI uri) {
+		  protected def OMLZipResource loadOMLZipResource(ResourceSet rs, URI uri) {
 		  	val r = rs.getResource(uri, true)
 		  	switch r {
 		  		OMLZipResource: {

@@ -841,6 +841,10 @@ class OMLUtilities extends OMLXcorePackages {
     	f.getEAnnotation("http://imce.jpl.nasa.gov/oml/Scala")?.details?.get("code")
     }
 		
+    static def String scalaTablesAnnotation(ETypedElement f) {
+    	f.getEAnnotation("http://imce.jpl.nasa.gov/oml/Scala")?.details?.get("tables")
+    }
+    
     static def Boolean isSchema(ENamedElement e) {
     	null === e.getEAnnotation("http://imce.jpl.nasa.gov/oml/NotSchema") && !e.isResolverAPI
     }
@@ -969,6 +973,9 @@ class OMLUtilities extends OMLXcorePackages {
 		// EntityRelationship (DirectedBinaryRelationshipKind)
 		
 		"ReifiedRelationship", 
+		"ForwardProperty",
+		"InverseProperty",
+		
 		"UnreifiedRelationship",
 		
 		// Rule (Term)
@@ -981,27 +988,7 @@ class OMLUtilities extends OMLXcorePackages {
 		
 		// SegmentPredicate (ElementCrossReferenceTuple)
 		
-		// UnarySegmentPredicate (SegmentPredicate)
-		
-		"AspectPredicate",
-		"ConceptPredicate",
-		"ReifiedRelationshipPredicate",
-		
-		// BinarySegmentPredicate (SegmentPredicate)
-		
-		// BinarySegmentForwardPropertyPredicate (BinarySegmentPredicate)
-		
-		"ReifiedRelationshipPropertyPredicate",
-		"ReifiedRelationshipSourcePropertyPredicate",
-		"ReifiedRelationshipTargetPropertyPredicate",
-		"UnreifiedRelationshipPropertyPredicate",
-		
-		// BinarySegmentReversePropertyPredicate (BinarySegmentPredicate)
-		
-		"ReifiedRelationshipInversePropertyPredicate",
-		"ReifiedRelationshipSourceInversePropertyPredicate",
-		"ReifiedRelationshipTargetInversePropertyPredicate",
-		"UnreifiedRelationshipInversePropertyPredicate",
+		"SegmentPredicate",
 		
 		// TermAxiom (TerminologyBoxStatement)
 		
@@ -1119,6 +1106,7 @@ class OMLUtilities extends OMLXcorePackages {
 		"dataStructureTypeUUID",
 		"structuredDataPropertyValueUUID",
 		"singletonInstanceUUID",
+		"structuredDataPropertyContextUUID",
 		"structuredDataPropertyUUID",
 		"scalarDataPropertyUUID",
 		"structuredPropertyTupleUUID",
@@ -1126,6 +1114,8 @@ class OMLUtilities extends OMLXcorePackages {
 		"singletonReifiedRelationshipClassifierUUID",
 		"reifiedRelationshipInstanceUUID",
 		"unreifiedRelationshipUUID",
+		"forwardPropertyUUID",
+		"inversePropertyUUID",
 		"restrictedRelationUUID",
 		"restrictedDomainUUID",
 		"restrictedRangeUUID",
@@ -1171,6 +1161,13 @@ class OMLUtilities extends OMLXcorePackages {
 		"maxLength",
 		"nsPrefix",
 		"name",
+		"bodySegmentUUID",
+		"predicateUUID",
+		"reifiedRelationshipSourceUUID",
+		"reifiedRelationshipInverseSourceUUID",
+		"reifiedRelationshipTargetUUID",
+		"reifiedRelationshipInverseTargetUUID",
+		"unreifiedRelationshipInverseUUID",
 		"langRange",
 		"pattern",
 		"unreifiedPropertyName",
