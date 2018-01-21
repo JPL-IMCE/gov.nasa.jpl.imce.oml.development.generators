@@ -33,6 +33,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -1456,6 +1457,12 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     String _xblockexpression = null;
     {
       final EStructuralFeature uuid = OMLUtilities.lookupUUIDFeature(eClass);
+      EOperation _lookupUUIDOperation = OMLUtilities.lookupUUIDOperation(eClass);
+      String _scalaTablesAnnotation = null;
+      if (_lookupUUIDOperation!=null) {
+        _scalaTablesAnnotation=OMLUtilities.scalaTablesAnnotation(_lookupUUIDOperation);
+      }
+      final String uuidOp = _scalaTablesAnnotation;
       final Function1<EReference, Boolean> _function = (EReference it) -> {
         return Boolean.valueOf(it.isContainer());
       };
@@ -1489,6 +1496,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final Iterable<ETypedElement> keyAttributes = IterableExtensions.<ETypedElement>filter(OMLUtilities.schemaAPIOrOrderingKeyAttributes(eClass), _function_2);
       final boolean uuidWithGenerator = ((null != uuidNS) && (null != uuidFactors));
       final boolean uuidWithoutContainer = (((null != uuid) && (null == container)) && (null != uuidNS));
+      final boolean uuidWithOperation = (null != uuidOp);
       final boolean uuidWithContainer = ((null != uuid) && (null != container));
       StringConcatenation _builder = new StringConcatenation();
       String _copyright = OMLUtilities.copyright();
@@ -1713,7 +1721,13 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               _builder.append("def with");
               String _firstUpper = StringExtensions.toFirstUpper(OMLUtilities.columnName(attr_4));
               _builder.append(_firstUpper, "  ");
-              _builder.append("(l: ");
+              _builder.append("(");
+              {
+                if (uuidWithOperation) {
+                  _builder.append("oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator, ");
+                }
+              }
+              _builder.append("l: ");
               String _scalaTableTypeRef = OMLUtilities.scalaTableTypeRef(eClass, attr_4);
               _builder.append(_scalaTableTypeRef, "  ");
               _builder.append(")\t ");
@@ -1728,6 +1742,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               String _columnName_7 = OMLUtilities.columnName(attr_4);
               _builder.append(_columnName_7, "  ");
               _builder.append("=scala.Some(l))");
+              {
+                if (uuidWithOperation) {
+                  _builder.append(".copy(uuid = calculateUUID(oug))");
+                }
+              }
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.newLine();
@@ -1914,14 +1933,12 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
                       String _columnUUID = OMLUtilities.columnUUID(f_2);
                       _builder.append(_columnUUID, "        ");
                     } else {
-                      String _name_13 = f_2.getEType().getName();
-                      boolean _equals_1 = Objects.equal(_name_13, "LiteralString");
-                      if (_equals_1) {
+                      if ((Objects.equal(f_2.getEType().getName(), "LiteralString") || Objects.equal(f_2.getEType().getName(), "LocalName"))) {
+                        String _name_13 = f_2.getName();
+                        _builder.append(_name_13, "        ");
+                      } else {
                         String _name_14 = f_2.getName();
                         _builder.append(_name_14, "        ");
-                      } else {
-                        String _name_15 = f_2.getName();
-                        _builder.append(_name_15, "        ");
                         _builder.append(".value");
                       }
                     }
@@ -1952,6 +1969,18 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
               _builder.newLineIfNotEmpty();
             }
           }
+        }
+      }
+      {
+        if (uuidWithOperation) {
+          _builder.newLine();
+          _builder.append("def calculateUUID(oug: gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator): taggedTypes.");
+          String _name_15 = eClass.getName();
+          _builder.append(_name_15);
+          _builder.append("UUID = ");
+          _builder.append(uuidOp);
+          _builder.newLineIfNotEmpty();
+          _builder.newLine();
         }
       }
       _builder.newLine();
@@ -2016,8 +2045,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
             if ((_isXRefColumn).booleanValue()) {
               {
                 int _lowerBound_2 = attr_12.getLowerBound();
-                boolean _equals_2 = (_lowerBound_2 == 0);
-                if (_equals_2) {
+                boolean _equals_1 = (_lowerBound_2 == 0);
+                if (_equals_1) {
                   _builder.append("((this.");
                   String _columnName_15 = OMLUtilities.columnName(attr_12);
                   _builder.append(_columnName_15, "  \t  ");

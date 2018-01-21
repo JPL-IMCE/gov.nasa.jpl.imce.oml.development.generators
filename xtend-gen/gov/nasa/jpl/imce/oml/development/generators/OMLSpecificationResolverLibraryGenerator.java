@@ -808,7 +808,35 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
       final Function1<EReference, Boolean> _function = (EReference it) -> {
         return Boolean.valueOf(it.isContainer());
       };
-      final EReference container = IterableExtensions.<EReference>findFirst(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function);
+      final List<EReference> containers = IterableExtensions.<EReference>toList(IterableExtensions.<EReference>filter(Iterables.<EReference>filter(OMLUtilities.getSortedAttributeFactorySignature(eClass), EReference.class), _function));
+      String _xifexpression = null;
+      int _size = containers.size();
+      boolean _equals = (1 == _size);
+      if (_equals) {
+        _xifexpression = this.factoryMethodWithUUIDGenerator1(eClass, uuidNS, uuidScala, containers.get(0));
+      } else {
+        String _xifexpression_1 = null;
+        int _size_1 = containers.size();
+        boolean _equals_1 = (2 == _size_1);
+        if (_equals_1) {
+          _xifexpression_1 = this.factoryMethodWithUUIDGenerator2(eClass, uuidNS, uuidScala, containers.get(0), containers.get(1));
+        } else {
+          StringConcatenation _builder = new StringConcatenation();
+          _builder.append("factoryMethodWithUUIDGenerator: eClass=");
+          String _name = eClass.getName();
+          _builder.append(_name);
+          throw new IllegalArgumentException(_builder.toString());
+        }
+        _xifexpression = _xifexpression_1;
+      }
+      _xblockexpression = _xifexpression;
+    }
+    return _xblockexpression;
+  }
+  
+  public String factoryMethodWithUUIDGenerator1(final EClass eClass, final EStructuralFeature uuidNS, final String uuidScala, final EReference container) {
+    String _xblockexpression = null;
+    {
       EReference _eOpposite = null;
       if (container!=null) {
         _eOpposite=container.getEOpposite();
@@ -862,6 +890,8 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("  ");
       _builder.append("// factoryMethodWithUUIDGenerator (scala...)");
+      _builder.newLine();
+      _builder.append("  ");
       _builder.newLine();
       _builder.append("  ");
       _builder.append("// container: ");
@@ -1039,6 +1069,422 @@ public class OMLSpecificationResolverLibraryGenerator extends OMLUtilities {
       }
       _builder.append("  \t");
       _builder.append(newVal, "  \t");
+      _builder.append(")");
+      _builder.newLineIfNotEmpty();
+      _builder.append("}");
+      _builder.newLine();
+      _xblockexpression = _builder.toString();
+    }
+    return _xblockexpression;
+  }
+  
+  public String factoryMethodWithUUIDGenerator2(final EClass eClass, final EStructuralFeature uuidNS, final String uuidScala, final EReference container1, final EReference container2) {
+    String _xblockexpression = null;
+    {
+      EReference _eOpposite = null;
+      if (container1!=null) {
+        _eOpposite=container1.getEOpposite();
+      }
+      final EReference contained1 = _eOpposite;
+      EReference _eOpposite_1 = null;
+      if (container2!=null) {
+        _eOpposite_1=container2.getEOpposite();
+      }
+      final EReference contained2 = _eOpposite_1;
+      final String newVal = StringExtensions.toFirstLower(eClass.getName());
+      StringConcatenation _builder = new StringConcatenation();
+      _builder.append("override def create");
+      String _name = eClass.getName();
+      _builder.append(_name);
+      _builder.newLineIfNotEmpty();
+      {
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        boolean _hasElements = false;
+        for(final EStructuralFeature attr : _sortedAttributeFactorySignature) {
+          if (!_hasElements) {
+            _hasElements = true;
+            String _xifexpression = null;
+            Boolean _isExtentContainer = OMLUtilities.isExtentContainer(eClass);
+            if ((_isExtentContainer).booleanValue()) {
+              String _name_1 = eClass.getName();
+              String _plus = ("( uuid: resolver.api.taggedTypes." + _name_1);
+              _xifexpression = (_plus + "UUID,\n ");
+            } else {
+              String _name_2 = eClass.getName();
+              String _plus_1 = ("( extent: resolver.api.Extent,\n  uuid: resolver.api.taggedTypes." + _name_2);
+              _xifexpression = (_plus_1 + "UUID,\n ");
+            }
+            _builder.append(_xifexpression);
+          } else {
+            _builder.appendImmediate(",\n ", "");
+          }
+          _builder.append(" ");
+          String _name_3 = attr.getName();
+          _builder.append(_name_3);
+          _builder.append(": ");
+          String _queryResolverType = OMLUtilities.queryResolverType(attr, "resolver.api.");
+          _builder.append(_queryResolverType);
+        }
+        if (_hasElements) {
+          _builder.append(" )");
+        }
+      }
+      _builder.newLineIfNotEmpty();
+      _builder.append(": (resolver.api.Extent, resolver.api.");
+      String _name_4 = eClass.getName();
+      _builder.append(_name_4);
+      _builder.append(")");
+      _builder.newLineIfNotEmpty();
+      _builder.append("= {");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("// factoryMethodWithUUIDGenerator (scala...)");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("// container1: ");
+      String _name_5 = container1.getName();
+      _builder.append(_name_5, "  ");
+      _builder.append(" ");
+      String _name_6 = container1.getEType().getName();
+      _builder.append(_name_6, "  ");
+      _builder.newLineIfNotEmpty();
+      _builder.append("  ");
+      _builder.append("// contained1: ");
+      String _name_7 = contained1.getName();
+      _builder.append(_name_7, "  ");
+      _builder.append(" ");
+      String _name_8 = contained1.getEType().getName();
+      _builder.append(_name_8, "  ");
+      _builder.newLineIfNotEmpty();
+      _builder.append("  ");
+      _builder.append("// container2: ");
+      String _name_9 = container2.getName();
+      _builder.append(_name_9, "  ");
+      _builder.append(" ");
+      String _name_10 = container2.getEType().getName();
+      _builder.append(_name_10, "  ");
+      _builder.newLineIfNotEmpty();
+      _builder.append("  ");
+      _builder.append("// contained2: ");
+      String _name_11 = contained2.getName();
+      _builder.append(_name_11, "  ");
+      _builder.append(" ");
+      String _name_12 = contained2.getEType().getName();
+      _builder.append(_name_12, "  ");
+      _builder.newLineIfNotEmpty();
+      _builder.append("  ");
+      _builder.append("val ");
+      _builder.append(newVal, "  ");
+      _builder.append(" = ");
+      String _name_13 = eClass.getName();
+      _builder.append(_name_13, "  ");
+      {
+        Iterable<EStructuralFeature> _sortedAttributeFactorySignature_1 = OMLUtilities.getSortedAttributeFactorySignature(eClass);
+        boolean _hasElements_1 = false;
+        for(final EStructuralFeature attr_1 : _sortedAttributeFactorySignature_1) {
+          if (!_hasElements_1) {
+            _hasElements_1 = true;
+            _builder.append("( uuid, ", "  ");
+          } else {
+            _builder.appendImmediate(", ", "  ");
+          }
+          String _name_14 = attr_1.getName();
+          _builder.append(_name_14, "  ");
+        }
+        if (_hasElements_1) {
+          _builder.append(" )", "  ");
+        }
+      }
+      _builder.newLineIfNotEmpty();
+      {
+        int _lowerBound = container1.getLowerBound();
+        boolean _equals = (_lowerBound == 0);
+        if (_equals) {
+          _builder.append("  ");
+          _builder.append("val extent1 = ");
+          String _name_15 = container1.getName();
+          _builder.append(_name_15, "  ");
+          _builder.append(".fold {");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append("extent.copy(");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _firstLower = StringExtensions.toFirstLower(contained1.getEType().getName());
+          _builder.append(_firstLower, "  \t  ");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_1 = StringExtensions.toFirstLower(contained1.getEType().getName());
+          _builder.append(_firstLower_1, "  \t  ");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "  \t  ");
+          _builder.append(")");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append(")");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("}{ _");
+          String _name_16 = container1.getName();
+          _builder.append(_name_16, "  ");
+          _builder.append("_ =>");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append("extent.copy(");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _name_17 = contained1.getName();
+          _builder.append(_name_17, "  \t  ");
+          _builder.append(" = extent.with");
+          String _name_18 = contained1.getEType().getName();
+          _builder.append(_name_18, "  \t  ");
+          _builder.append("(_");
+          String _name_19 = container1.getName();
+          _builder.append(_name_19, "  \t  ");
+          _builder.append("_, ");
+          _builder.append(newVal, "  \t  ");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _firstLower_2 = StringExtensions.toFirstLower(container1.getEType().getName());
+          _builder.append(_firstLower_2, "  \t  ");
+          _builder.append("Of");
+          String _name_20 = contained1.getEType().getName();
+          _builder.append(_name_20, "  \t  ");
+          _builder.append(" = extent.");
+          String _firstLower_3 = StringExtensions.toFirstLower(container1.getEType().getName());
+          _builder.append(_firstLower_3, "  \t  ");
+          _builder.append("Of");
+          String _name_21 = contained1.getEType().getName();
+          _builder.append(_name_21, "  \t  ");
+          _builder.append(" + (");
+          _builder.append(newVal, "  \t  ");
+          _builder.append(" -> _");
+          String _name_22 = container1.getName();
+          _builder.append(_name_22, "  \t  ");
+          _builder.append("_),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _firstLower_4 = StringExtensions.toFirstLower(contained1.getEType().getName());
+          _builder.append(_firstLower_4, "  \t  ");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_5 = StringExtensions.toFirstLower(contained1.getEType().getName());
+          _builder.append(_firstLower_5, "  \t  ");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "  \t  ");
+          _builder.append(")");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append(")");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("}");
+          _builder.newLine();
+        } else {
+          _builder.append("  ");
+          _builder.append("val extent1 = extent.copy(");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("\t");
+          String _name_23 = contained1.getName();
+          _builder.append(_name_23, "  \t");
+          _builder.append(" = extent.with");
+          String _name_24 = contained1.getEType().getName();
+          _builder.append(_name_24, "  \t");
+          _builder.append("(");
+          String _name_25 = container1.getName();
+          _builder.append(_name_25, "  \t");
+          _builder.append(", ");
+          _builder.append(newVal, "  \t");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          String _firstLower_6 = StringExtensions.toFirstLower(container1.getEType().getName());
+          _builder.append(_firstLower_6, "  \t");
+          _builder.append("Of");
+          String _name_26 = contained1.getEType().getName();
+          _builder.append(_name_26, "  \t");
+          _builder.append(" = extent.");
+          String _firstLower_7 = StringExtensions.toFirstLower(container1.getEType().getName());
+          _builder.append(_firstLower_7, "  \t");
+          _builder.append("Of");
+          String _name_27 = contained1.getEType().getName();
+          _builder.append(_name_27, "  \t");
+          _builder.append(" + (");
+          _builder.append(newVal, "  \t");
+          _builder.append(" -> ");
+          String _name_28 = container1.getName();
+          _builder.append(_name_28, "  \t");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          String _firstLower_8 = StringExtensions.toFirstLower(contained1.getEType().getName());
+          _builder.append(_firstLower_8, "  \t");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_9 = StringExtensions.toFirstLower(contained1.getEType().getName());
+          _builder.append(_firstLower_9, "  \t");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "  \t");
+          _builder.append(")),");
+          _builder.newLineIfNotEmpty();
+        }
+      }
+      {
+        int _lowerBound_1 = container2.getLowerBound();
+        boolean _equals_1 = (_lowerBound_1 == 0);
+        if (_equals_1) {
+          _builder.append("  ");
+          _builder.append("val extent2 = ");
+          String _name_29 = container2.getName();
+          _builder.append(_name_29, "  ");
+          _builder.append(".fold {");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append("extent1.copy(");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _firstLower_10 = StringExtensions.toFirstLower(contained2.getEType().getName());
+          _builder.append(_firstLower_10, "  \t  ");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_11 = StringExtensions.toFirstLower(contained2.getEType().getName());
+          _builder.append(_firstLower_11, "  \t  ");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "  \t  ");
+          _builder.append(")");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append(")");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("}{ _");
+          String _name_30 = container2.getName();
+          _builder.append(_name_30, "  ");
+          _builder.append("_ =>");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append("extent1.copy(");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _name_31 = contained2.getName();
+          _builder.append(_name_31, "  \t  ");
+          _builder.append(" = extent.with");
+          String _name_32 = contained2.getEType().getName();
+          _builder.append(_name_32, "  \t  ");
+          _builder.append("(_");
+          String _name_33 = container2.getName();
+          _builder.append(_name_33, "  \t  ");
+          _builder.append("_, ");
+          _builder.append(newVal, "  \t  ");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _firstLower_12 = StringExtensions.toFirstLower(container2.getEType().getName());
+          _builder.append(_firstLower_12, "  \t  ");
+          _builder.append("Of");
+          String _name_34 = contained2.getEType().getName();
+          _builder.append(_name_34, "  \t  ");
+          _builder.append(" = extent.");
+          String _firstLower_13 = StringExtensions.toFirstLower(container2.getEType().getName());
+          _builder.append(_firstLower_13, "  \t  ");
+          _builder.append("Of");
+          String _name_35 = contained2.getEType().getName();
+          _builder.append(_name_35, "  \t  ");
+          _builder.append(" + (");
+          _builder.append(newVal, "  \t  ");
+          _builder.append(" -> _");
+          String _name_36 = container2.getName();
+          _builder.append(_name_36, "  \t  ");
+          _builder.append("_),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t  ");
+          String _firstLower_14 = StringExtensions.toFirstLower(contained2.getEType().getName());
+          _builder.append(_firstLower_14, "  \t  ");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_15 = StringExtensions.toFirstLower(contained2.getEType().getName());
+          _builder.append(_firstLower_15, "  \t  ");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "  \t  ");
+          _builder.append(")");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          _builder.append(")");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("}");
+          _builder.newLine();
+        } else {
+          _builder.append("  ");
+          _builder.append("val extent2 = extent1.copy(");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("\t");
+          String _name_37 = contained2.getName();
+          _builder.append(_name_37, "  \t");
+          _builder.append(" = extent.with");
+          String _name_38 = contained2.getEType().getName();
+          _builder.append(_name_38, "  \t");
+          _builder.append("(");
+          String _name_39 = container1.getName();
+          _builder.append(_name_39, "  \t");
+          _builder.append(", ");
+          _builder.append(newVal, "  \t");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          String _firstLower_16 = StringExtensions.toFirstLower(container2.getEType().getName());
+          _builder.append(_firstLower_16, "  \t");
+          _builder.append("Of");
+          String _name_40 = contained2.getEType().getName();
+          _builder.append(_name_40, "  \t");
+          _builder.append(" = extent.");
+          String _firstLower_17 = StringExtensions.toFirstLower(container2.getEType().getName());
+          _builder.append(_firstLower_17, "  \t");
+          _builder.append("Of");
+          String _name_41 = contained2.getEType().getName();
+          _builder.append(_name_41, "  \t");
+          _builder.append(" + (");
+          _builder.append(newVal, "  \t");
+          _builder.append(" -> ");
+          String _name_42 = container2.getName();
+          _builder.append(_name_42, "  \t");
+          _builder.append("),");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("\t");
+          String _firstLower_18 = StringExtensions.toFirstLower(contained2.getEType().getName());
+          _builder.append(_firstLower_18, "  \t");
+          _builder.append("ByUUID = extent.");
+          String _firstLower_19 = StringExtensions.toFirstLower(contained2.getEType().getName());
+          _builder.append(_firstLower_19, "  \t");
+          _builder.append("ByUUID + (uuid -> ");
+          _builder.append(newVal, "  \t");
+          _builder.append(")),");
+          _builder.newLineIfNotEmpty();
+        }
+      }
+      _builder.append("  ");
+      _builder.append("scala.Tuple2(extent2,");
+      _builder.append(newVal, "  ");
       _builder.append(")");
       _builder.newLineIfNotEmpty();
       _builder.append("}");

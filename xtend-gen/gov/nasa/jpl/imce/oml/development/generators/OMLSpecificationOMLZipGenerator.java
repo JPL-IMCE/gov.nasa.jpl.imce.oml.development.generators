@@ -146,6 +146,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import org.eclipse.emf.common.util.URI");
       _builder.newLine();
+      _builder.append("import org.eclipse.emf.ecore.resource.ResourceSet");
+      _builder.newLine();
       _builder.append("import org.eclipse.xtext.xbase.lib.Pair");
       _builder.newLine();
       _builder.newLine();
@@ -209,8 +211,6 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.Aspect");
       _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.AspectPredicate");
-      _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.BinaryScalarRestriction");
@@ -218,8 +218,6 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ChainRule");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.Concept");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ConceptPredicate");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom");
       _builder.newLine();
@@ -231,9 +229,11 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.Entity");
       _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship");
+      _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.EntityExistentialRestrictionAxiom");
       _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship");
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.EntityUniversalRestrictionAxiom");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty");
       _builder.newLine();
@@ -247,7 +247,9 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataPropertyParticularRestrictionAxiom");
       _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.EntityUniversalRestrictionAxiom");
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ForwardProperty");
+      _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.InverseProperty");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.IRIScalarRestriction");
       _builder.newLine();
@@ -255,23 +257,13 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction");
       _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.Predicate");
+      _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipInversePropertyPredicate");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipPredicate");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipPropertyPredicate");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSourceInversePropertyPredicate");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSourcePropertyPredicate");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom");
       _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipTargetInversePropertyPredicate");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipTargetPropertyPredicate");
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.RestrictableRelationship");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionScalarDataPropertyValue");
       _builder.newLine();
@@ -288,6 +280,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfRestriction");
+      _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.SegmentPredicate");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction");
       _builder.newLine();
@@ -308,10 +302,6 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.TimeScalarRestriction");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationshipInversePropertyPredicate");
-      _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationshipPropertyPredicate");
       _builder.newLine();
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.common.CommonFactory");
@@ -337,7 +327,6 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append(tableName);
       _builder.append(" {");
       _builder.newLineIfNotEmpty();
-      _builder.append(" ");
       _builder.newLine();
       {
         for(final EClass eClass : eClasses) {
@@ -371,10 +360,16 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("protected val Map<String, Pair<DataRelationshipToScalar, Map<String,String>>> dataRelationshipToScalars");
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("protected val Map<String, Pair<DataRelationshipToStructure, Map<String,String>>> dataRelationshipToStructures ");
+      _builder.append("protected val Map<String, Pair<DataRelationshipToStructure, Map<String,String>>> dataRelationshipToStructures");
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("protected val Map<String, Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>> restrictionStructuredDataPropertyContexts ");
+      _builder.append("protected val Map<String, Pair<Predicate, Map<String,String>>> predicates");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("protected val Map<String, Pair<RestrictableRelationship, Map<String,String>>> restrictableRelationships");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("protected val Map<String, Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>> restrictionStructuredDataPropertyContexts");
       _builder.newLine();
       _builder.append("  ");
       _builder.append("protected val Map<String, Pair<TerminologyBox, Map<String,String>>> terminologyBoxes");
@@ -468,6 +463,12 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("dataRelationshipToStructures = new HashMap<String, Pair<DataRelationshipToStructure, Map<String,String>>>()");
       _builder.newLine();
       _builder.append("    ");
+      _builder.append("predicates = new HashMap<String, Pair<Predicate, Map<String,String>>>()");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("restrictableRelationships = new HashMap<String, Pair<RestrictableRelationship, Map<String,String>>>()");
+      _builder.newLine();
+      _builder.append("    ");
       _builder.append("restrictionStructuredDataPropertyContexts = new HashMap<String, Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>>()");
       _builder.newLine();
       _builder.append("    ");
@@ -539,7 +540,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         for(final EClass eClass_3 : eClasses) {
           _builder.append("  ");
-          _builder.append("static def byte[] ");
+          _builder.append("protected static def byte[] ");
           String _tableVariableName_3 = OMLUtilities.tableVariableName(eClass_3);
           _builder.append(_tableVariableName_3, "  ");
           _builder.append("ByteArray(Extent e) {");
@@ -720,7 +721,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("  \t\t    \t    ");
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("static def void load(OMLZipResourceSet rs, OMLZipResource r, File omlZipFile) {");
+      _builder.append("static def void load(ResourceSet rs, OMLZipResource r, File omlZipFile) {");
       _builder.newLine();
       _builder.newLine();
       _builder.append("    ");
@@ -892,7 +893,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("  ");
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("protected def void resolve(OMLZipResourceSet rs, OMLZipResource r) {");
+      _builder.append("protected def void resolve(ResourceSet rs, OMLZipResource r) {");
       _builder.newLine();
       _builder.append("\t");
       _builder.append("// Lookup table for LogicalElement cross references");
@@ -1260,7 +1261,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           _builder.append("protected def void resolve");
           String _upperCaseInitialOrWord_3 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_18));
           _builder.append(_upperCaseInitialOrWord_3, "  ");
-          _builder.append("(OMLZipResourceSet rs) {");
+          _builder.append("(ResourceSet rs) {");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append("\t");
@@ -1499,7 +1500,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       }
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("protected def OMLZipResource loadOMLZipResource(OMLZipResourceSet rs, URI uri) {");
+      _builder.append("protected def OMLZipResource loadOMLZipResource(ResourceSet rs, URI uri) {");
       _builder.newLine();
       _builder.append("  \t");
       _builder.append("val r = rs.getResource(uri, true)");
