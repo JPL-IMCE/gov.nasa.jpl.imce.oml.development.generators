@@ -108,6 +108,15 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		} finally {
 			readersFile.close
 		}
+		val wfile = new File(targetFolder + File::separator  + "OMLParquetWriters.scala")
+		if (wfile.exists)
+			wfile.delete
+		val writersFile = new FileOutputStream(wfile)
+		try {
+			writersFile.write(generateParquetWritersFile(ePackages, packageQName).bytes)
+		} finally {
+			writersFile.close
+		}
 		for(eClass : ePackages.map[EClassifiers].flatten.filter(EClass))  {
 			if (!eClass.name.startsWith("Literal") && eClass.name != "Extent") {
 				val projectFile = new FileOutputStream(new File(targetFolder + File::separator + "api" + File::separator + eClass.name + ".scala"))			
@@ -119,6 +128,7 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 			}	
 		}
 	}
+	
 	
 	def String generateProjectionFile(EClass eClass, String packageQName) {
 	'''
@@ -136,6 +146,37 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 	'''
 	}
 	
+	
+	def String generateParquetWritersFile(List<EPackage> ePackages, String packageQName) {
+		val eClasses = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isFunctionalAPI && !isInterface && !isValueTable].sortBy[name]
+	'''
+		«copyright»
+
+		package «packageQName»
+		
+		import gov.nasa.jpl.imce.oml.tables
+		import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+		import org.apache.spark.sql.SQLContext
+		import scala.collection.immutable.Seq
+		import scala.Unit
+		import scala.Predef.String
+
+		object OMLParquetWriters {
+			
+			«FOR eClass: eClasses»
+			
+			def write«eClass.tableVariableName.upperCaseInitialOrWord»
+			(table: Seq[tables.«eClass.name»], path: String)
+			(implicit sqlContext: SQLContext, encoder: ExpressionEncoder[tables.«eClass.name»])
+			: Unit
+			= sqlContext
+			  .createDataset(table)
+			  .write
+			  .parquet(path)
+			«ENDFOR»
+		}
+	'''
+	}
 	
 	def String generateCatalystCastsFile(List<EPackage> ePackages, String packageQName) {
 	'''
@@ -408,10 +449,11 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		
 		import ammonite.ops.Path
 		
-		import frameless.{Injection, TypedDataset}
+		import frameless.{Injection, TypedDataset, TypedExpressionEncoder}
 		import gov.nasa.jpl.imce.oml.covariantTag
 		import gov.nasa.jpl.imce.oml.covariantTag.@@
 		import gov.nasa.jpl.imce.oml.tables
+		import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 		import org.apache.spark.sql.{SQLContext, SaveMode, SparkSession}
 		
 		import scala.collection.immutable.Seq
@@ -493,29 +535,43 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		  	    tables.OMLSpecificationTables«FOR eClass : cClasses BEFORE "(\n  " SEPARATOR ",\n  " AFTER "\n))"»«eClass.tableVariableName» = «eClass.tableVariableName»«ENDFOR»
 		  	}
 
+		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EEnum).sortBy[name]»
+		  implicit val «eClass.name.toFirstLower»I
+		  : Injection[tables.«eClass.name», Int]
+		  = Injection(
+		  {
+		  	«FOR elit: eClass.ELiterals»
+		  	case tables.«elit.literal» => «eClass.ELiterals.indexOf(elit)»
+		  	«ENDFOR»
+		  },
+		  {
+		  	«FOR elit: eClass.ELiterals»
+		  	case «eClass.ELiterals.indexOf(elit)» => tables.«elit.literal»
+		    «ENDFOR»
+		  }
+		  )
+		  
+		  «ENDFOR»«FOR eClass: eClasses»
+		  implicit val «eClass.tableVariableName»Encoder
+		  : ExpressionEncoder[tables.«eClass.name»]
+		  = TypedExpressionEncoder[tables.«eClass.name»]
+		  
+		«ENDFOR»
+		
 		  def parquetWriteOMLSpecificationTables
 		  (t: tables.OMLSpecificationTables,
 		   dir: Path)
 		  (implicit spark: SparkSession, sqlContext: SQLContext)
-		  : Try[Unit]
-		  = nonFatalCatch[Try[Unit]]
-		    .withApply {
-		      (cause: java.lang.Throwable) =>
-		        Failure(cause)
-		    }
-		    .apply {
-		
+		  : Unit
+		  = {
 		  	  dir.toIO.mkdirs()
 
 		      «FOR eClass : eClasses»
-		      TypedDataset
-		        .create(t.«eClass.tableVariableName»)
-		        .dataset
-		        .write
-		        .parquet((dir / "«eClass.name».parquet").toIO.getAbsolutePath)
-		      
+		      OMLParquetWriters.write«eClass.tableVariableName.upperCaseInitialOrWord»(
+		        t.«eClass.tableVariableName»,
+		        (dir / "«eClass.name».parquet").toIO.getAbsolutePath)
+
 		      «ENDFOR»
-		  	  Success(())
 		  	}
 
 		  def sqlReadOMLSpecificationTables
@@ -635,24 +691,6 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		      «ENDIF»«ENDFOR»		      
 		  	  Success(())
 		  	}
-
-		  «FOR eClass: ePackages.map[EClassifiers].flatten.filter(EEnum).sortBy[name]»
-		  implicit val «eClass.name.toFirstLower»I
-		  : Injection[tables.«eClass.name», Int]
-		  = Injection(
-		  {
-		  	«FOR elit: eClass.ELiterals»
-		  	case tables.«elit.literal» => «eClass.ELiterals.indexOf(elit)»
-		  	«ENDFOR»
-		  },
-		  {
-		  	«FOR elit: eClass.ELiterals»
-		  	case «eClass.ELiterals.indexOf(elit)» => tables.«elit.literal»
-		    «ENDFOR»
-		  }
-		  )
-		  
-		  «ENDFOR»
 		}
 				
 		case class «tableName»
