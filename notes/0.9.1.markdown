@@ -3,3 +3,5 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.1 is a significant update
 ## Issues resolved
 
 - [#22 Update code generators for EntityRestrictionAxioms with direction](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/22)
+
+- [#23 OML Frameless code generation update.](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/23)
