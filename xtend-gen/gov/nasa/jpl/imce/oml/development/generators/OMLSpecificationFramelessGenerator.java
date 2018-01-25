@@ -135,6 +135,17 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       } finally {
         readersFile.close();
       }
+      final File wfile = new File(((targetFolder + File.separator) + "OMLParquetWriters.scala"));
+      boolean _exists_4 = wfile.exists();
+      if (_exists_4) {
+        wfile.delete();
+      }
+      final FileOutputStream writersFile = new FileOutputStream(wfile);
+      try {
+        writersFile.write(this.generateParquetWritersFile(ePackages, packageQName).getBytes());
+      } finally {
+        writersFile.close();
+      }
       final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
         return it.getEClassifiers();
       };
@@ -199,6 +210,93 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
     _builder.append(")");
     _builder.newLine();
     return _builder.toString();
+  }
+  
+  public String generateParquetWritersFile(final List<EPackage> ePackages, final String packageQName) {
+    String _xblockexpression = null;
+    {
+      final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
+        return it.getEClassifiers();
+      };
+      final Function1<EClass, Boolean> _function_1 = (EClass it) -> {
+        return Boolean.valueOf((((OMLUtilities.isFunctionalAPI(it)).booleanValue() && (!it.isInterface())) && (!(OMLUtilities.isValueTable(it)).booleanValue())));
+      };
+      final Function1<EClass, String> _function_2 = (EClass it) -> {
+        return it.getName();
+      };
+      final List<EClass> eClasses = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>filter(Iterables.<EClass>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function)), EClass.class), _function_1), _function_2);
+      StringConcatenation _builder = new StringConcatenation();
+      String _copyright = OMLUtilities.copyright();
+      _builder.append(_copyright);
+      _builder.newLineIfNotEmpty();
+      _builder.newLine();
+      _builder.append("package ");
+      _builder.append(packageQName);
+      _builder.newLineIfNotEmpty();
+      _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.tables");
+      _builder.newLine();
+      _builder.append("import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder");
+      _builder.newLine();
+      _builder.append("import org.apache.spark.sql.SQLContext");
+      _builder.newLine();
+      _builder.append("import scala.collection.immutable.Seq");
+      _builder.newLine();
+      _builder.append("import scala.Unit");
+      _builder.newLine();
+      _builder.append("import scala.Predef.String");
+      _builder.newLine();
+      _builder.newLine();
+      _builder.append("object OMLParquetWriters {");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.newLine();
+      {
+        for(final EClass eClass : eClasses) {
+          _builder.append("\t");
+          _builder.newLine();
+          _builder.append("\t");
+          _builder.append("def write");
+          String _upperCaseInitialOrWord = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass));
+          _builder.append(_upperCaseInitialOrWord, "\t");
+          _builder.newLineIfNotEmpty();
+          _builder.append("\t");
+          _builder.append("(table: Seq[tables.");
+          String _name = eClass.getName();
+          _builder.append(_name, "\t");
+          _builder.append("], path: String)");
+          _builder.newLineIfNotEmpty();
+          _builder.append("\t");
+          _builder.append("(implicit sqlContext: SQLContext, encoder: ExpressionEncoder[tables.");
+          String _name_1 = eClass.getName();
+          _builder.append(_name_1, "\t");
+          _builder.append("])");
+          _builder.newLineIfNotEmpty();
+          _builder.append("\t");
+          _builder.append(": Unit");
+          _builder.newLine();
+          _builder.append("\t");
+          _builder.append("= sqlContext");
+          _builder.newLine();
+          _builder.append("\t");
+          _builder.append("  ");
+          _builder.append(".createDataset(table)");
+          _builder.newLine();
+          _builder.append("\t");
+          _builder.append("  ");
+          _builder.append(".write");
+          _builder.newLine();
+          _builder.append("\t");
+          _builder.append("  ");
+          _builder.append(".parquet(path)");
+          _builder.newLine();
+        }
+      }
+      _builder.append("}");
+      _builder.newLine();
+      _xblockexpression = _builder.toString();
+    }
+    return _xblockexpression;
   }
   
   public String generateCatalystCastsFile(final List<EPackage> ePackages, final String packageQName) {
@@ -1511,13 +1609,15 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("import ammonite.ops.Path");
       _builder.newLine();
       _builder.newLine();
-      _builder.append("import frameless.{Injection, TypedDataset}");
+      _builder.append("import frameless.{Injection, TypedDataset, TypedExpressionEncoder}");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.covariantTag");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.covariantTag.@@");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.tables");
+      _builder.newLine();
+      _builder.append("import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder");
       _builder.newLine();
       _builder.append("import org.apache.spark.sql.{SQLContext, SaveMode, SparkSession}");
       _builder.newLine();
@@ -1907,6 +2007,102 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("}");
       _builder.newLine();
       _builder.newLine();
+      {
+        final Function1<EPackage, EList<EClassifier>> _function_8 = (EPackage it) -> {
+          return it.getEClassifiers();
+        };
+        final Function1<EEnum, String> _function_9 = (EEnum it) -> {
+          return it.getName();
+        };
+        List<EEnum> _sortBy = IterableExtensions.<EEnum, String>sortBy(Iterables.<EEnum>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function_8)), EEnum.class), _function_9);
+        for(final EEnum eClass_5 : _sortBy) {
+          _builder.append("  ");
+          _builder.append("implicit val ");
+          String _firstLower = StringExtensions.toFirstLower(eClass_5.getName());
+          _builder.append(_firstLower, "  ");
+          _builder.append("I");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append(": Injection[tables.");
+          String _name_9 = eClass_5.getName();
+          _builder.append(_name_9, "  ");
+          _builder.append(", Int]");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("= Injection(");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("{");
+          _builder.newLine();
+          {
+            EList<EEnumLiteral> _eLiterals = eClass_5.getELiterals();
+            for(final EEnumLiteral elit : _eLiterals) {
+              _builder.append("  ");
+              _builder.append("\t");
+              _builder.append("case tables.");
+              String _literal = elit.getLiteral();
+              _builder.append(_literal, "  \t");
+              _builder.append(" => ");
+              int _indexOf = eClass_5.getELiterals().indexOf(elit);
+              _builder.append(_indexOf, "  \t");
+              _builder.newLineIfNotEmpty();
+            }
+          }
+          _builder.append("  ");
+          _builder.append("},");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append("{");
+          _builder.newLine();
+          {
+            EList<EEnumLiteral> _eLiterals_1 = eClass_5.getELiterals();
+            for(final EEnumLiteral elit_1 : _eLiterals_1) {
+              _builder.append("  ");
+              _builder.append("\t");
+              _builder.append("case ");
+              int _indexOf_1 = eClass_5.getELiterals().indexOf(elit_1);
+              _builder.append(_indexOf_1, "  \t");
+              _builder.append(" => tables.");
+              String _literal_1 = elit_1.getLiteral();
+              _builder.append(_literal_1, "  \t");
+              _builder.newLineIfNotEmpty();
+            }
+          }
+          _builder.append("  ");
+          _builder.append("}");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.append(")");
+          _builder.newLine();
+          _builder.append("  ");
+          _builder.newLine();
+        }
+      }
+      {
+        for(final EClass eClass_6 : eClasses) {
+          _builder.append("  ");
+          _builder.append("implicit val ");
+          String _tableVariableName_8 = OMLUtilities.tableVariableName(eClass_6);
+          _builder.append(_tableVariableName_8, "  ");
+          _builder.append("Encoder");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append(": ExpressionEncoder[tables.");
+          String _name_10 = eClass_6.getName();
+          _builder.append(_name_10, "  ");
+          _builder.append("]");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.append("= TypedExpressionEncoder[tables.");
+          String _name_11 = eClass_6.getName();
+          _builder.append(_name_11, "  ");
+          _builder.append("]");
+          _builder.newLineIfNotEmpty();
+          _builder.append("  ");
+          _builder.newLine();
+        }
+      }
+      _builder.newLine();
       _builder.append("  ");
       _builder.append("def parquetWriteOMLSpecificationTables");
       _builder.newLine();
@@ -1920,65 +2116,40 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("(implicit spark: SparkSession, sqlContext: SQLContext)");
       _builder.newLine();
       _builder.append("  ");
-      _builder.append(": Try[Unit]");
+      _builder.append(": Unit");
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("= nonFatalCatch[Try[Unit]]");
-      _builder.newLine();
-      _builder.append("    ");
-      _builder.append(".withApply {");
-      _builder.newLine();
-      _builder.append("      ");
-      _builder.append("(cause: java.lang.Throwable) =>");
-      _builder.newLine();
-      _builder.append("        ");
-      _builder.append("Failure(cause)");
-      _builder.newLine();
-      _builder.append("    ");
-      _builder.append("}");
-      _builder.newLine();
-      _builder.append("    ");
-      _builder.append(".apply {");
-      _builder.newLine();
+      _builder.append("= {");
       _builder.newLine();
       _builder.append("  \t  ");
       _builder.append("dir.toIO.mkdirs()");
       _builder.newLine();
       _builder.newLine();
       {
-        for(final EClass eClass_5 : eClasses) {
+        for(final EClass eClass_7 : eClasses) {
           _builder.append("      ");
-          _builder.append("TypedDataset");
-          _builder.newLine();
-          _builder.append("      ");
-          _builder.append("  ");
-          _builder.append(".create(t.");
-          String _tableVariableName_8 = OMLUtilities.tableVariableName(eClass_5);
-          _builder.append(_tableVariableName_8, "        ");
-          _builder.append(")");
+          _builder.append("OMLParquetWriters.write");
+          String _upperCaseInitialOrWord = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_7));
+          _builder.append(_upperCaseInitialOrWord, "      ");
+          _builder.append("(");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
           _builder.append("  ");
-          _builder.append(".dataset");
-          _builder.newLine();
+          _builder.append("t.");
+          String _tableVariableName_9 = OMLUtilities.tableVariableName(eClass_7);
+          _builder.append(_tableVariableName_9, "        ");
+          _builder.append(",");
+          _builder.newLineIfNotEmpty();
           _builder.append("      ");
           _builder.append("  ");
-          _builder.append(".write");
-          _builder.newLine();
-          _builder.append("      ");
-          _builder.append("  ");
-          _builder.append(".parquet((dir / \"");
-          String _name_9 = eClass_5.getName();
-          _builder.append(_name_9, "        ");
+          _builder.append("(dir / \"");
+          String _name_12 = eClass_7.getName();
+          _builder.append(_name_12, "        ");
           _builder.append(".parquet\").toIO.getAbsolutePath)");
           _builder.newLineIfNotEmpty();
-          _builder.append("      ");
           _builder.newLine();
         }
       }
-      _builder.append("  \t  ");
-      _builder.append("Success(())");
-      _builder.newLine();
       _builder.append("  \t");
       _builder.append("}");
       _builder.newLine();
@@ -2029,20 +2200,20 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("      ");
       {
         boolean _hasElements_7 = false;
-        for(final EClass eClass_6 : eClasses) {
+        for(final EClass eClass_8 : eClasses) {
           if (!_hasElements_7) {
             _hasElements_7 = true;
           } else {
             _builder.appendImmediate("\n\n", "      ");
           }
           _builder.append("val ");
-          String _tableVariableName_9 = OMLUtilities.tableVariableName(eClass_6);
-          _builder.append(_tableVariableName_9, "      ");
+          String _tableVariableName_10 = OMLUtilities.tableVariableName(eClass_8);
+          _builder.append(_tableVariableName_10, "      ");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
           _builder.append(": Seq[tables.");
-          String _name_10 = eClass_6.getName();
-          _builder.append(_name_10, "      ");
+          String _name_13 = eClass_8.getName();
+          _builder.append(_name_13, "      ");
           _builder.append("]");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
@@ -2055,15 +2226,15 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           _builder.append("      ");
           _builder.append("  ");
           _builder.append(".jdbc(url, \"OML.");
-          String _abbreviatedTableName = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_6);
+          String _abbreviatedTableName = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_8);
           _builder.append(_abbreviatedTableName, "        ");
           _builder.append("\", props)");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
           _builder.append("  ");
           _builder.append(".map(OMLReaders.");
-          String _name_11 = eClass_6.getName();
-          _builder.append(_name_11, "        ");
+          String _name_14 = eClass_8.getName();
+          _builder.append(_name_14, "        ");
           _builder.append("SQL2Tuple)");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
@@ -2073,8 +2244,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           _builder.append("      ");
           _builder.append("  ");
           _builder.append(".map(OMLReaders.");
-          String _name_12 = eClass_6.getName();
-          _builder.append(_name_12, "        ");
+          String _name_15 = eClass_8.getName();
+          _builder.append(_name_15, "        ");
           _builder.append("Tuple2Type)");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
@@ -2091,18 +2262,18 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("tables.OMLSpecificationTables");
       {
         boolean _hasElements_8 = false;
-        for(final EClass eClass_7 : cClasses) {
+        for(final EClass eClass_9 : cClasses) {
           if (!_hasElements_8) {
             _hasElements_8 = true;
             _builder.append("(\n  ", "  \t    ");
           } else {
             _builder.appendImmediate(",\n  ", "  \t    ");
           }
-          String _tableVariableName_10 = OMLUtilities.tableVariableName(eClass_7);
-          _builder.append(_tableVariableName_10, "  \t    ");
-          _builder.append(" = ");
-          String _tableVariableName_11 = OMLUtilities.tableVariableName(eClass_7);
+          String _tableVariableName_11 = OMLUtilities.tableVariableName(eClass_9);
           _builder.append(_tableVariableName_11, "  \t    ");
+          _builder.append(" = ");
+          String _tableVariableName_12 = OMLUtilities.tableVariableName(eClass_9);
+          _builder.append(_tableVariableName_12, "  \t    ");
         }
         if (_hasElements_8) {
           _builder.append("\n))", "  \t    ");
@@ -2155,15 +2326,15 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("      ");
       _builder.newLine();
       {
-        for(final EClass eClass_8 : cClasses1) {
+        for(final EClass eClass_10 : cClasses1) {
           _builder.append("      ");
           _builder.append("TypedDataset");
           _builder.newLine();
           _builder.append("      ");
           _builder.append("  ");
           _builder.append(".create(t.");
-          String _tableVariableName_12 = OMLUtilities.tableVariableName(eClass_8);
-          _builder.append(_tableVariableName_12, "        ");
+          String _tableVariableName_13 = OMLUtilities.tableVariableName(eClass_10);
+          _builder.append(_tableVariableName_13, "        ");
           _builder.append(")");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
@@ -2173,8 +2344,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           _builder.append("      ");
           _builder.append("  ");
           _builder.append(".map(OMLReaders.");
-          String _name_13 = eClass_8.getName();
-          _builder.append(_name_13, "        ");
+          String _name_16 = eClass_10.getName();
+          _builder.append(_name_16, "        ");
           _builder.append("Type2Tuple)");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
@@ -2188,7 +2359,7 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           _builder.append("      ");
           _builder.append("  ");
           _builder.append(".jdbc(url, \"OML.");
-          String _abbreviatedTableName_1 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_8);
+          String _abbreviatedTableName_1 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_10);
           _builder.append(_abbreviatedTableName_1, "        ");
           _builder.append("\", props)");
           _builder.newLineIfNotEmpty();
@@ -2212,7 +2383,7 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("t.scalars.map(_.uuid),");
       {
         boolean _hasElements_9 = false;
-        for(final EClass eClass_9 : restrictions) {
+        for(final EClass eClass_11 : restrictions) {
           if (!_hasElements_9) {
             _hasElements_9 = true;
           } else {
@@ -2221,14 +2392,14 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           _builder.newLineIfNotEmpty();
           _builder.append("\t        ");
           _builder.append("t.");
-          String _tableVariableName_13 = OMLUtilities.tableVariableName(eClass_9);
-          _builder.append(_tableVariableName_13, "\t        ");
+          String _tableVariableName_14 = OMLUtilities.tableVariableName(eClass_11);
+          _builder.append(_tableVariableName_14, "\t        ");
           _builder.append(", \"OML.");
-          String _abbreviatedTableName_2 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_9);
+          String _abbreviatedTableName_2 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_11);
           _builder.append(_abbreviatedTableName_2, "\t        ");
           _builder.append("\", OMLReaders.");
-          String _name_14 = eClass_9.getName();
-          _builder.append(_name_14, "\t        ");
+          String _name_17 = eClass_11.getName();
+          _builder.append(_name_17, "\t        ");
           _builder.append("Type2Tuple");
         }
         if (_hasElements_9) {
@@ -2238,10 +2409,10 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.newLineIfNotEmpty();
       _builder.newLine();
       {
-        for(final EClass eClass_10 : cClasses3) {
+        for(final EClass eClass_12 : cClasses3) {
           {
-            String _name_15 = eClass_10.getName();
-            boolean _equals = Objects.equal(_name_15, "RuleBodySegment");
+            String _name_18 = eClass_12.getName();
+            boolean _equals = Objects.equal(_name_18, "RuleBodySegment");
             if (_equals) {
               _builder.append("      ");
               _builder.append("OMLWriters");
@@ -2265,35 +2436,35 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
               _builder.append("      ");
               _builder.append("    ");
               _builder.append("\"OML.");
-              String _abbreviatedTableName_3 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_10);
+              String _abbreviatedTableName_3 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_12);
               _builder.append(_abbreviatedTableName_3, "          ");
               _builder.append("\",");
               _builder.newLineIfNotEmpty();
               _builder.append("      ");
               _builder.append("    ");
               _builder.append("OMLReaders.");
-              String _name_16 = eClass_10.getName();
-              _builder.append(_name_16, "          ");
+              String _name_19 = eClass_12.getName();
+              _builder.append(_name_19, "          ");
               _builder.append("Type2Tuple,");
               _builder.newLineIfNotEmpty();
               _builder.append("      ");
               _builder.append("    ");
               _builder.append("Seq.empty[tables.taggedTypes.");
-              String _name_17 = eClass_10.getName();
-              _builder.append(_name_17, "          ");
+              String _name_20 = eClass_12.getName();
+              _builder.append(_name_20, "          ");
               _builder.append("UUID],");
               _builder.newLineIfNotEmpty();
               _builder.append("      ");
               _builder.append("    ");
               _builder.append("OMLWriters.");
-              String _firstLower = StringExtensions.toFirstLower(eClass_10.getName());
-              _builder.append(_firstLower, "          ");
+              String _firstLower_1 = StringExtensions.toFirstLower(eClass_12.getName());
+              _builder.append(_firstLower_1, "          ");
               _builder.append("Partitioner)");
               _builder.newLineIfNotEmpty();
               _builder.newLine();
             } else {
-              String _name_18 = eClass_10.getName();
-              boolean _equals_1 = Objects.equal(_name_18, "RestrictionStructuredDataPropertyTuple");
+              String _name_21 = eClass_12.getName();
+              boolean _equals_1 = Objects.equal(_name_21, "RestrictionStructuredDataPropertyTuple");
               if (_equals_1) {
                 _builder.append("      ");
                 _builder.append("OMLWriters");
@@ -2317,15 +2488,15 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                 _builder.append("      ");
                 _builder.append("    ");
                 _builder.append("\"OML.");
-                String _abbreviatedTableName_4 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_10);
+                String _abbreviatedTableName_4 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_12);
                 _builder.append(_abbreviatedTableName_4, "          ");
                 _builder.append("\",");
                 _builder.newLineIfNotEmpty();
                 _builder.append("      ");
                 _builder.append("    ");
                 _builder.append("OMLReaders.");
-                String _name_19 = eClass_10.getName();
-                _builder.append(_name_19, "          ");
+                String _name_22 = eClass_12.getName();
+                _builder.append(_name_22, "          ");
                 _builder.append("Type2Tuple,");
                 _builder.newLineIfNotEmpty();
                 _builder.append("      ");
@@ -2335,14 +2506,14 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                 _builder.append("      ");
                 _builder.append("    ");
                 _builder.append("OMLWriters.");
-                String _firstLower_1 = StringExtensions.toFirstLower(eClass_10.getName());
-                _builder.append(_firstLower_1, "          ");
+                String _firstLower_2 = StringExtensions.toFirstLower(eClass_12.getName());
+                _builder.append(_firstLower_2, "          ");
                 _builder.append("Partitioner)");
                 _builder.newLineIfNotEmpty();
                 _builder.newLine();
               } else {
-                String _name_20 = eClass_10.getName();
-                boolean _equals_2 = Objects.equal(_name_20, "AnonymousConceptUnionAxiom");
+                String _name_23 = eClass_12.getName();
+                boolean _equals_2 = Objects.equal(_name_23, "AnonymousConceptUnionAxiom");
                 if (_equals_2) {
                   _builder.append("      ");
                   _builder.append("OMLWriters");
@@ -2366,15 +2537,15 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                   _builder.append("      ");
                   _builder.append("    ");
                   _builder.append("\"OML.");
-                  String _abbreviatedTableName_5 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_10);
+                  String _abbreviatedTableName_5 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_12);
                   _builder.append(_abbreviatedTableName_5, "          ");
                   _builder.append("\",");
                   _builder.newLineIfNotEmpty();
                   _builder.append("      ");
                   _builder.append("    ");
                   _builder.append("OMLReaders.");
-                  String _name_21 = eClass_10.getName();
-                  _builder.append(_name_21, "          ");
+                  String _name_24 = eClass_12.getName();
+                  _builder.append(_name_24, "          ");
                   _builder.append("Type2Tuple,");
                   _builder.newLineIfNotEmpty();
                   _builder.append("      ");
@@ -2384,14 +2555,14 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                   _builder.append("      ");
                   _builder.append("    ");
                   _builder.append("OMLWriters.");
-                  String _firstLower_2 = StringExtensions.toFirstLower(eClass_10.getName());
-                  _builder.append(_firstLower_2, "          ");
+                  String _firstLower_3 = StringExtensions.toFirstLower(eClass_12.getName());
+                  _builder.append(_firstLower_3, "          ");
                   _builder.append("Partitioner)");
                   _builder.newLineIfNotEmpty();
                   _builder.newLine();
                 } else {
-                  String _name_22 = eClass_10.getName();
-                  boolean _equals_3 = Objects.equal(_name_22, "StructuredDataPropertyTuple");
+                  String _name_25 = eClass_12.getName();
+                  boolean _equals_3 = Objects.equal(_name_25, "StructuredDataPropertyTuple");
                   if (_equals_3) {
                     _builder.append("      ");
                     _builder.append("OMLWriters");
@@ -2415,15 +2586,15 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                     _builder.append("      ");
                     _builder.append("    ");
                     _builder.append("\"OML.");
-                    String _abbreviatedTableName_6 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_10);
+                    String _abbreviatedTableName_6 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_12);
                     _builder.append(_abbreviatedTableName_6, "          ");
                     _builder.append("\",");
                     _builder.newLineIfNotEmpty();
                     _builder.append("      ");
                     _builder.append("    ");
                     _builder.append("OMLReaders.");
-                    String _name_23 = eClass_10.getName();
-                    _builder.append(_name_23, "          ");
+                    String _name_26 = eClass_12.getName();
+                    _builder.append(_name_26, "          ");
                     _builder.append("Type2Tuple,");
                     _builder.newLineIfNotEmpty();
                     _builder.append("      ");
@@ -2433,8 +2604,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                     _builder.append("      ");
                     _builder.append("    ");
                     _builder.append("OMLWriters.");
-                    String _firstLower_3 = StringExtensions.toFirstLower(eClass_10.getName());
-                    _builder.append(_firstLower_3, "          ");
+                    String _firstLower_4 = StringExtensions.toFirstLower(eClass_12.getName());
+                    _builder.append(_firstLower_4, "          ");
                     _builder.append("Partitioner)");
                     _builder.newLineIfNotEmpty();
                     _builder.newLine();
@@ -2445,8 +2616,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                     _builder.append("      ");
                     _builder.append("  ");
                     _builder.append(".create(t.");
-                    String _tableVariableName_14 = OMLUtilities.tableVariableName(eClass_10);
-                    _builder.append(_tableVariableName_14, "        ");
+                    String _tableVariableName_15 = OMLUtilities.tableVariableName(eClass_12);
+                    _builder.append(_tableVariableName_15, "        ");
                     _builder.append(")");
                     _builder.newLineIfNotEmpty();
                     _builder.append("      ");
@@ -2456,8 +2627,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                     _builder.append("      ");
                     _builder.append("  ");
                     _builder.append(".map(OMLReaders.");
-                    String _name_24 = eClass_10.getName();
-                    _builder.append(_name_24, "        ");
+                    String _name_27 = eClass_12.getName();
+                    _builder.append(_name_27, "        ");
                     _builder.append("Type2Tuple)");
                     _builder.newLineIfNotEmpty();
                     _builder.append("      ");
@@ -2471,7 +2642,7 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                     _builder.append("      ");
                     _builder.append("  ");
                     _builder.append(".jdbc(url, \"OML.");
-                    String _abbreviatedTableName_7 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_10);
+                    String _abbreviatedTableName_7 = OMLSpecificationOMLSQLGenerator.abbreviatedTableName(eClass_12);
                     _builder.append(_abbreviatedTableName_7, "        ");
                     _builder.append("\", props)");
                     _builder.newLineIfNotEmpty();
@@ -2489,78 +2660,6 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("  \t");
       _builder.append("}");
       _builder.newLine();
-      _builder.newLine();
-      {
-        final Function1<EPackage, EList<EClassifier>> _function_8 = (EPackage it) -> {
-          return it.getEClassifiers();
-        };
-        final Function1<EEnum, String> _function_9 = (EEnum it) -> {
-          return it.getName();
-        };
-        List<EEnum> _sortBy = IterableExtensions.<EEnum, String>sortBy(Iterables.<EEnum>filter(Iterables.<EClassifier>concat(ListExtensions.<EPackage, EList<EClassifier>>map(ePackages, _function_8)), EEnum.class), _function_9);
-        for(final EEnum eClass_11 : _sortBy) {
-          _builder.append("  ");
-          _builder.append("implicit val ");
-          String _firstLower_4 = StringExtensions.toFirstLower(eClass_11.getName());
-          _builder.append(_firstLower_4, "  ");
-          _builder.append("I");
-          _builder.newLineIfNotEmpty();
-          _builder.append("  ");
-          _builder.append(": Injection[tables.");
-          String _name_25 = eClass_11.getName();
-          _builder.append(_name_25, "  ");
-          _builder.append(", Int]");
-          _builder.newLineIfNotEmpty();
-          _builder.append("  ");
-          _builder.append("= Injection(");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append("{");
-          _builder.newLine();
-          {
-            EList<EEnumLiteral> _eLiterals = eClass_11.getELiterals();
-            for(final EEnumLiteral elit : _eLiterals) {
-              _builder.append("  ");
-              _builder.append("\t");
-              _builder.append("case tables.");
-              String _literal = elit.getLiteral();
-              _builder.append(_literal, "  \t");
-              _builder.append(" => ");
-              int _indexOf = eClass_11.getELiterals().indexOf(elit);
-              _builder.append(_indexOf, "  \t");
-              _builder.newLineIfNotEmpty();
-            }
-          }
-          _builder.append("  ");
-          _builder.append("},");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append("{");
-          _builder.newLine();
-          {
-            EList<EEnumLiteral> _eLiterals_1 = eClass_11.getELiterals();
-            for(final EEnumLiteral elit_1 : _eLiterals_1) {
-              _builder.append("  ");
-              _builder.append("\t");
-              _builder.append("case ");
-              int _indexOf_1 = eClass_11.getELiterals().indexOf(elit_1);
-              _builder.append(_indexOf_1, "  \t");
-              _builder.append(" => tables.");
-              String _literal_1 = elit_1.getLiteral();
-              _builder.append(_literal_1, "  \t");
-              _builder.newLineIfNotEmpty();
-            }
-          }
-          _builder.append("  ");
-          _builder.append("}");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.append(")");
-          _builder.newLine();
-          _builder.append("  ");
-          _builder.newLine();
-        }
-      }
       _builder.append("}");
       _builder.newLine();
       _builder.append("\t\t");
@@ -2570,20 +2669,20 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.newLineIfNotEmpty();
       {
         boolean _hasElements_10 = false;
-        for(final EClass eClass_12 : eClasses) {
+        for(final EClass eClass_13 : eClasses) {
           if (!_hasElements_10) {
             _hasElements_10 = true;
             _builder.append("(\n  ");
           } else {
             _builder.appendImmediate(",\n\n  ", "");
           }
-          String _tableVariableName_15 = OMLUtilities.tableVariableName(eClass_12);
-          _builder.append(_tableVariableName_15);
+          String _tableVariableName_16 = OMLUtilities.tableVariableName(eClass_13);
+          _builder.append(_tableVariableName_16);
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append(": TypedDataset[api.");
-          String _name_26 = eClass_12.getName();
-          _builder.append(_name_26, "  ");
+          String _name_28 = eClass_13.getName();
+          _builder.append(_name_28, "  ");
           _builder.append("]");
         }
         if (_hasElements_10) {
