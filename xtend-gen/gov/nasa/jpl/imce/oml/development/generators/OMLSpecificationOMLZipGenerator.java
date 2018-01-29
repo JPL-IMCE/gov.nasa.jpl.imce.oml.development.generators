@@ -146,6 +146,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import org.eclipse.emf.common.util.URI");
       _builder.newLine();
+      _builder.append("import org.eclipse.emf.ecore.resource.Resource");
+      _builder.newLine();
       _builder.append("import org.eclipse.emf.ecore.resource.ResourceSet");
       _builder.newLine();
       _builder.append("import org.eclipse.xtext.xbase.lib.Pair");
@@ -1500,41 +1502,35 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       }
       _builder.newLine();
       _builder.append("  ");
-      _builder.append("protected def OMLZipResource loadOMLZipResource(ResourceSet rs, URI uri) {");
+      _builder.append("protected def Resource loadOMLZipResource(ResourceSet rs, URI uri) {");
       _builder.newLine();
       _builder.append("  \t");
       _builder.append("val r = rs.getResource(uri, true)");
       _builder.newLine();
-      _builder.append("  \t");
-      _builder.append("switch r {");
-      _builder.newLine();
-      _builder.append("  \t\t");
-      _builder.append("OMLZipResource: {");
-      _builder.newLine();
-      _builder.append("  \t\t  ");
+      _builder.append("\t");
       _builder.append("r.contents.get(0).eAllContents.forEach[e|");
       _builder.newLine();
-      _builder.append("  \t\t    ");
+      _builder.append("  \t  ");
       _builder.append("switch e {");
       _builder.newLine();
       {
         for(final EClass eClass_19 : eClasses) {
-          _builder.append("  \t          ");
+          _builder.append("  \t    ");
           String _name_36 = eClass_19.getName();
-          _builder.append(_name_36, "  \t          ");
+          _builder.append(_name_36, "  \t    ");
           _builder.append(": {");
           _builder.newLineIfNotEmpty();
-          _builder.append("  \t          ");
-          _builder.append("\t");
+          _builder.append("  \t    ");
+          _builder.append("  ");
           _builder.append("val pair = new Pair<");
           String _name_37 = eClass_19.getName();
-          _builder.append(_name_37, "  \t          \t");
+          _builder.append(_name_37, "  \t      ");
           _builder.append(", Map<String,String>>(e, Collections.emptyMap)");
           _builder.newLineIfNotEmpty();
-          _builder.append("  \t          ");
+          _builder.append("  \t    ");
           _builder.append("  ");
           String _tableVariableName_24 = OMLUtilities.tableVariableName(eClass_19);
-          _builder.append(_tableVariableName_24, "  \t            ");
+          _builder.append(_tableVariableName_24, "  \t      ");
           _builder.append(".put(e.uuid(), pair)");
           _builder.newLineIfNotEmpty();
           {
@@ -1544,7 +1540,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
             };
             boolean _exists = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_15);
             if (_exists) {
-              _builder.append("  \t          ");
+              _builder.append("  \t    ");
               _builder.append("  ");
               _builder.append("logicalElements.put(e.uuid(), new Pair<LogicalElement, Map<String,String>>(e, Collections.emptyMap))");
               _builder.newLine();
@@ -1555,7 +1551,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
               };
               boolean _exists_1 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_16);
               if (_exists_1) {
-                _builder.append("  \t          ");
+                _builder.append("  \t    ");
                 _builder.append("  ");
                 _builder.append("entities.put(e.uuid(), new Pair<Entity, Map<String,String>>(e, Collections.emptyMap))");
                 _builder.newLine();
@@ -1566,7 +1562,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                 };
                 boolean _exists_2 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_17);
                 if (_exists_2) {
-                  _builder.append("  \t          ");
+                  _builder.append("  \t    ");
                   _builder.append("  ");
                   _builder.append("entityRelationships.put(e.uuid(), new Pair<EntityRelationship, Map<String,String>>(e, Collections.emptyMap))");
                   _builder.newLine();
@@ -1577,7 +1573,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                   };
                   boolean _exists_3 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_18);
                   if (_exists_3) {
-                    _builder.append("  \t          ");
+                    _builder.append("  \t    ");
                     _builder.append("  ");
                     _builder.append("dataRanges.put(e.uuid(), new Pair<DataRange, Map<String,String>>(e, Collections.emptyMap))");
                     _builder.newLine();
@@ -1588,7 +1584,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                     };
                     boolean _exists_4 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_19);
                     if (_exists_4) {
-                      _builder.append("  \t          ");
+                      _builder.append("  \t    ");
                       _builder.append("  ");
                       _builder.append("dataRelationshipToScalars.put(e.uuid(), new Pair<DataRelationshipToScalar, Map<String,String>>(e, Collections.emptyMap))");
                       _builder.newLine();
@@ -1599,7 +1595,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                       };
                       boolean _exists_5 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_20);
                       if (_exists_5) {
-                        _builder.append("  \t          ");
+                        _builder.append("  \t    ");
                         _builder.append("  ");
                         _builder.append("dataRelationshipToStructures.put(e.uuid(), new PairDataRelationshipToStructure, Map<String,String>>(e, Collections.emptyMap))");
                         _builder.newLine();
@@ -1610,7 +1606,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         };
                         boolean _exists_6 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_21);
                         if (_exists_6) {
-                          _builder.append("  \t          ");
+                          _builder.append("  \t    ");
                           _builder.append("  ");
                           _builder.append("restrictionStructuredDataPropertyContexts.put(e.uuid(), new Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))");
                           _builder.newLine();
@@ -1621,7 +1617,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                           };
                           boolean _exists_7 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_22);
                           if (_exists_7) {
-                            _builder.append("  \t          ");
+                            _builder.append("  \t    ");
                             _builder.append("  ");
                             _builder.append("terminologyBoxes.put(e.uuid(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))");
                             _builder.newLine();
@@ -1632,7 +1628,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                             };
                             boolean _exists_8 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_23);
                             if (_exists_8) {
-                              _builder.append("  \t          ");
+                              _builder.append("  \t    ");
                               _builder.append("  ");
                               _builder.append("conceptTreeDisjunctions.put(e.uuid(), new Pair<ConceptTreeDisjunction, Map<String,String>>(e, Collections.emptyMap))");
                               _builder.newLine();
@@ -1643,7 +1639,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                               };
                               boolean _exists_9 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_24);
                               if (_exists_9) {
-                                _builder.append("  \t          ");
+                                _builder.append("  \t    ");
                                 _builder.append("  ");
                                 _builder.append("conceptualEntitySingletonInstances.put(e.uuid(), new Pair<ConceptualEntitySingletonInstance, Map<String,String>>(e, Collections.emptyMap))");
                                 _builder.newLine();
@@ -1654,7 +1650,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                                 };
                                 boolean _exists_10 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_25);
                                 if (_exists_10) {
-                                  _builder.append("  \t          ");
+                                  _builder.append("  \t    ");
                                   _builder.append("  ");
                                   _builder.append("singletonInstanceStructuredDataPropertyContexts.put(e.uuid(), new Pair<SingletonInstanceStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))");
                                   _builder.newLine();
@@ -1677,10 +1673,10 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
             };
             boolean _exists_11 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_26);
             if (_exists_11) {
-              _builder.append("  \t          ");
+              _builder.append("  \t    ");
               _builder.append("  ");
               String _tableVariableName_25 = OMLUtilities.tableVariableName(eClass_19);
-              _builder.append(_tableVariableName_25, "  \t            ");
+              _builder.append(_tableVariableName_25, "  \t      ");
               _builder.append(".put(e.iri(), pair)");
               _builder.newLineIfNotEmpty();
             }
@@ -1692,41 +1688,29 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
             };
             boolean _exists_12 = IterableExtensions.<EClass>exists(eClass_19.getEAllSuperTypes(), _function_27);
             if (_exists_12) {
-              _builder.append("  \t          ");
+              _builder.append("  \t    ");
               _builder.append("  ");
               _builder.append("terminologyBoxes.put(e.uuid(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))");
               _builder.newLine();
-              _builder.append("  \t          ");
+              _builder.append("  \t    ");
               _builder.append("  ");
               _builder.append("terminologyBoxes.put(e.iri(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))");
               _builder.newLine();
             }
           }
-          _builder.append("  \t          ");
+          _builder.append("  \t    ");
           _builder.append("}");
           _builder.newLine();
         }
       }
-      _builder.append("  \t\t    \t");
+      _builder.append("  \t   ");
       _builder.append("}");
       _builder.newLine();
-      _builder.append("  \t\t  ");
+      _builder.append("  \t ");
       _builder.append("]");
       _builder.newLine();
-      _builder.append("  \t\t  ");
+      _builder.append("  \t ");
       _builder.append("return r");
-      _builder.newLine();
-      _builder.append("  \t\t");
-      _builder.append("}");
-      _builder.newLine();
-      _builder.append("  \t\t");
-      _builder.append("default:");
-      _builder.newLine();
-      _builder.append("  \t\t  ");
-      _builder.append("throw new IllegalArgumentException(\"OMLTables.loadOMLZipResource(\"+uri+\") should have produce an OMLZipResource!\")");
-      _builder.newLine();
-      _builder.append("    ");
-      _builder.append("}");
       _builder.newLine();
       _builder.append("  ");
       _builder.append("}");
