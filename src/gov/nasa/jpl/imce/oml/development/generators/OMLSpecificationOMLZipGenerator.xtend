@@ -77,6 +77,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 	
 	def String generateTablesFile(List<EPackage> ePackages, String packageQName, String tableName) {
 		val eClasses = ePackages.map[EClassifiers].flatten.filter(EClass).filter[isFunctionalAPI && !isInterface && !isValueTable].sortWith(new OMLTableCompare())
+		val eClassesExceptModules = eClasses.filter[!EAllSuperTypes.exists[name == "Module"]]
 	'''
 		«copyright»
 
@@ -99,6 +100,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import org.eclipse.emf.common.util.URI
 		import org.eclipse.emf.ecore.resource.Resource
 		import org.eclipse.emf.ecore.resource.ResourceSet
+		import org.eclipse.emf.ecore.util.EcoreUtil
 		import org.eclipse.xtext.xbase.lib.Pair
 		
 		import gov.nasa.jpl.imce.oml.model.extensions.OMLTables
@@ -127,6 +129,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceStructuredDataPropertyValue
 		import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyTuple
 		import gov.nasa.jpl.imce.oml.model.descriptions.UnreifiedRelationshipInstanceTuple
+		import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
 		import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
 		import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
 		import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
@@ -313,13 +316,14 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		          throw new IllegalArgumentException("«tableName».load(): unrecognized table name: "+ze.name)
 		      }
 		    ]
-		    tables.resolve(rs, r)
+		    tables.createAndResolve(rs, r)
 		  }
 
 		  «FOR eClass : eClasses»
 		  protected def void read«eClass.tableVariableName.upperCaseInitialOrWord»(ArrayList<String> lines) {
 		  	val kvs = OMLZipResource.lines2tuples(lines)
-		  	kvs.forEach[kv|
+		  	while (!kvs.empty) {
+		  	  val kv = kvs.remove(kvs.size - 1)
 		  	  val oml = create«eClass.name»()
 		  	  val uuid = kv.remove("uuid")
 		  	  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes»«IF attr.isLiteralFeature»
@@ -328,7 +332,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	  «ENDFOR»
 		  	  val pair = new Pair<«eClass.name», Map<String,String>>(oml, kv)
 		  	  «eClass.tableVariableName».put(uuid, pair)
-		  	]
+		  	}
 		  }
 		  
 		  «ENDFOR»
@@ -337,6 +341,17 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    vMap.forEach[uuid,kv|uMap.put(uuid, new Pair<U, Map<String, String>>(kv.key, Collections.emptyMap))]
 		  }
 		  
+		  protected def void createAndResolve(ResourceSet rs, OMLZipResource r) {
+		  	
+		    val ext = createExtent()
+		    ext.getModules.addAll(terminologyGraphs.values.map[key])
+		    ext.getModules.addAll(bundles.values.map[key])
+		    ext.getModules.addAll(descriptionBoxes.values.map[key])
+		    	r.contents.add(ext)
+		    	
+		    	resolve(rs, r)
+		  }
+
 		  protected def void resolve(ResourceSet rs, OMLZipResource r) {
 			// Lookup table for LogicalElement cross references
 		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "LogicalElement"]] SEPARATOR "\n"»includeMap(logicalElements, «eClass.tableVariableName»)«ENDFOR»
@@ -374,12 +389,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    «FOR eClass : eClasses.filter[schemaAPIOrOrderingKeyReferences.size > 0]»
 		    resolve«eClass.tableVariableName.upperCaseInitialOrWord»(rs)
 		    «ENDFOR»
-		    
-		    	val ext = createExtent()
-		    	ext.getModules.addAll(terminologyGraphs.values.map[key])
-		    	ext.getModules.addAll(bundles.values.map[key])
-		    	ext.getModules.addAll(descriptionBoxes.values.map[key])
-		    	r.contents.add(ext)
 		  }
 
 		  «FOR eClass : eClasses.filter[schemaAPIOrOrderingKeyReferences.size > 0]»
@@ -416,13 +425,59 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	]
 		  }
 		  
-		  «ENDFOR»		  
-
+		  «ENDFOR»
 		  protected def Resource loadOMLZipResource(ResourceSet rs, URI uri) {
-		  	val r = rs.getResource(uri, true)
-			r.contents.get(0).eAllContents.forEach[e|
+		  	val omlCatalog = OMLExtensions.getCatalog(rs)
+		  	if (null === omlCatalog)
+		  		throw new IllegalArgumentException("loadOMLZipResource: ResourceSet must have an OMLCatalog!")
+		  		
+		  	val resolvedIRI = omlCatalog.resolveURI(uri.toString + ".oml") ?: omlCatalog.resolveURI(uri.toString + ".omlzip")
+			if (null === resolvedIRI)
+				throw new IllegalArgumentException("loadOMLZipResource: "+uri+" not resolved!")
+		  	
+		  	val r = rs.getResource(URI.createURI(resolvedIRI), true)
+		  	EcoreUtil.resolveAll(r)
+		  	
+		  	r.contents.forEach[e|
+		  		switch e {
+		  			Extent: {
+		  				e.modules.forEach[includeModule]
+		  			}
+		  		}
+		  	]
+		  	
+		  	r
+		  }
+
+		  protected def void includeModule(Module m) {
+		    	switch m {
+		    	  TerminologyGraph: {
+		    	    val pair = new Pair<TerminologyGraph, Map<String,String>>(m, Collections.emptyMap)
+		    	    terminologyGraphs.put(m.uuid(), pair)
+		    	    logicalElements.put(m.uuid(), new Pair<LogicalElement, Map<String,String>>(m, Collections.emptyMap))
+		    	    terminologyGraphs.put(m.iri(), pair)
+		    	    terminologyBoxes.put(m.uuid(), new Pair<TerminologyBox, Map<String,String>>(m, Collections.emptyMap))
+		    	    terminologyBoxes.put(m.iri(), new Pair<TerminologyBox, Map<String,String>>(m, Collections.emptyMap))
+		    	  }
+		    	  Bundle: {
+		    	    val pair = new Pair<Bundle, Map<String,String>>(m, Collections.emptyMap)
+		    	    bundles.put(m.uuid(), pair)
+		    	    logicalElements.put(m.uuid(), new Pair<LogicalElement, Map<String,String>>(m, Collections.emptyMap))
+		    	    bundles.put(m.iri(), pair)
+		    	    terminologyBoxes.put(m.uuid(), new Pair<TerminologyBox, Map<String,String>>(m, Collections.emptyMap))
+		    	    terminologyBoxes.put(m.iri(), new Pair<TerminologyBox, Map<String,String>>(m, Collections.emptyMap))
+		    	  }
+		    	  DescriptionBox: {
+		    	    val pair = new Pair<DescriptionBox, Map<String,String>>(m, Collections.emptyMap)
+		    	    descriptionBoxes.put(m.uuid(), pair)
+		    	    logicalElements.put(m.uuid(), new Pair<LogicalElement, Map<String,String>>(m, Collections.emptyMap))
+		    	    descriptionBoxes.put(m.iri(), pair)
+		    	  }
+		    	}
+		  	
+		  	m.eAllContents.forEach[e|
 		  	  switch e {
-		  	    «FOR eClass : eClasses»
+		  	    «FOR eClass : eClassesExceptModules»
 		  	    «eClass.name»: {
 		  	      val pair = new Pair<«eClass.name», Map<String,String>>(e, Collections.emptyMap)
 		  	      «eClass.tableVariableName».put(e.uuid(), pair)
@@ -449,18 +504,13 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "SingletonInstanceStructuredDataPropertyContext"])»
 		  	      singletonInstanceStructuredDataPropertyContexts.put(e.uuid(), new Pair<SingletonInstanceStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))
 		  	      «ENDIF»
-		  	      «IF (eClass.EAllSuperTypes.exists[name == "Module"])»
-		  	      «eClass.tableVariableName».put(e.iri(), pair)
-		  	      «ENDIF»
-		  	      «IF (eClass.EAllSuperTypes.exists[name == "TerminologyBox"])»
-		  	      terminologyBoxes.put(e.uuid(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
-		  	      terminologyBoxes.put(e.iri(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
+		  	      «IF (eClass.EAllSuperTypes.exists[name == "ModuleEdge"])»
+		  	      includeModule(e.targetModule)
 		  	      «ENDIF»
 		  	    }
 		  		«ENDFOR»
 		  	   }
 		  	 ]
-		  	 return r
 		  }
 		  
 		}
