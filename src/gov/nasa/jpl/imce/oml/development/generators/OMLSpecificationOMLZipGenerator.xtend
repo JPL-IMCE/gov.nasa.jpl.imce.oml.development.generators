@@ -97,6 +97,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 		import org.apache.commons.compress.archivers.zip.ZipFile
 		import org.eclipse.emf.common.util.URI
+		import org.eclipse.emf.ecore.resource.Resource
 		import org.eclipse.emf.ecore.resource.ResourceSet
 		import org.eclipse.xtext.xbase.lib.Pair
 		
@@ -417,55 +418,49 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  
 		  «ENDFOR»		  
 
-		  protected def OMLZipResource loadOMLZipResource(ResourceSet rs, URI uri) {
+		  protected def Resource loadOMLZipResource(ResourceSet rs, URI uri) {
 		  	val r = rs.getResource(uri, true)
-		  	switch r {
-		  		OMLZipResource: {
-		  		  r.contents.get(0).eAllContents.forEach[e|
-		  		    switch e {
-		  	          «FOR eClass : eClasses»
-		  	          «eClass.name»: {
-		  	          	val pair = new Pair<«eClass.name», Map<String,String>>(e, Collections.emptyMap)
-		  	            «eClass.tableVariableName».put(e.uuid(), pair)
-		  	            «IF (eClass.EAllSuperTypes.exists[name == "LogicalElement"])»
-		  	            logicalElements.put(e.uuid(), new Pair<LogicalElement, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "Entity"])»
-		  	            entities.put(e.uuid(), new Pair<Entity, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "EntityRelationship"])»
-		  	            entityRelationships.put(e.uuid(), new Pair<EntityRelationship, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRange"])»
-		  	            dataRanges.put(e.uuid(), new Pair<DataRange, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRelationshipToScalar"])»
-		  	            dataRelationshipToScalars.put(e.uuid(), new Pair<DataRelationshipToScalar, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRelationshipToStructure"])»
-		  	            dataRelationshipToStructures.put(e.uuid(), new PairDataRelationshipToStructure, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "RestrictionStructuredDataPropertyContext"])»
-		  	            restrictionStructuredDataPropertyContexts.put(e.uuid(), new Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "TerminologyBox"])»
-		  	            terminologyBoxes.put(e.uuid(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "ConceptTreeDisjunction"])»
-		  	            conceptTreeDisjunctions.put(e.uuid(), new Pair<ConceptTreeDisjunction, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "ConceptualEntitySingletonInstance"])»
-		  	            conceptualEntitySingletonInstances.put(e.uuid(), new Pair<ConceptualEntitySingletonInstance, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ELSEIF (eClass.EAllSuperTypes.exists[name == "SingletonInstanceStructuredDataPropertyContext"])»
-		  	            singletonInstanceStructuredDataPropertyContexts.put(e.uuid(), new Pair<SingletonInstanceStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ENDIF»
-		  	            «IF (eClass.EAllSuperTypes.exists[name == "Module"])»
-		  	            «eClass.tableVariableName».put(e.iri(), pair)
-		  	            «ENDIF»
-		  	            «IF (eClass.EAllSuperTypes.exists[name == "TerminologyBox"])»
-		  	            terminologyBoxes.put(e.uuid(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
-		  	            terminologyBoxes.put(e.iri(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
-		  	            «ENDIF»
-		  	          }
-		  		    	  «ENDFOR»
-		  		    	}
-		  		  ]
-		  		  return r
-		  		}
-		  		default:
-		  		  throw new IllegalArgumentException("OMLTables.loadOMLZipResource("+uri+") should have produce an OMLZipResource!")
-		    }
+			r.contents.get(0).eAllContents.forEach[e|
+		  	  switch e {
+		  	    «FOR eClass : eClasses»
+		  	    «eClass.name»: {
+		  	      val pair = new Pair<«eClass.name», Map<String,String>>(e, Collections.emptyMap)
+		  	      «eClass.tableVariableName».put(e.uuid(), pair)
+		  	      «IF (eClass.EAllSuperTypes.exists[name == "LogicalElement"])»
+		  	      logicalElements.put(e.uuid(), new Pair<LogicalElement, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "Entity"])»
+		  	      entities.put(e.uuid(), new Pair<Entity, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "EntityRelationship"])»
+		  	      entityRelationships.put(e.uuid(), new Pair<EntityRelationship, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRange"])»
+		  	      dataRanges.put(e.uuid(), new Pair<DataRange, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRelationshipToScalar"])»
+		  	      dataRelationshipToScalars.put(e.uuid(), new Pair<DataRelationshipToScalar, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRelationshipToStructure"])»
+		  	      dataRelationshipToStructures.put(e.uuid(), new PairDataRelationshipToStructure, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "RestrictionStructuredDataPropertyContext"])»
+		  	      restrictionStructuredDataPropertyContexts.put(e.uuid(), new Pair<RestrictionStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "TerminologyBox"])»
+		  	      terminologyBoxes.put(e.uuid(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "ConceptTreeDisjunction"])»
+		  	      conceptTreeDisjunctions.put(e.uuid(), new Pair<ConceptTreeDisjunction, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "ConceptualEntitySingletonInstance"])»
+		  	      conceptualEntitySingletonInstances.put(e.uuid(), new Pair<ConceptualEntitySingletonInstance, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ELSEIF (eClass.EAllSuperTypes.exists[name == "SingletonInstanceStructuredDataPropertyContext"])»
+		  	      singletonInstanceStructuredDataPropertyContexts.put(e.uuid(), new Pair<SingletonInstanceStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ENDIF»
+		  	      «IF (eClass.EAllSuperTypes.exists[name == "Module"])»
+		  	      «eClass.tableVariableName».put(e.iri(), pair)
+		  	      «ENDIF»
+		  	      «IF (eClass.EAllSuperTypes.exists[name == "TerminologyBox"])»
+		  	      terminologyBoxes.put(e.uuid(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
+		  	      terminologyBoxes.put(e.iri(), new Pair<TerminologyBox, Map<String,String>>(e, Collections.emptyMap))
+		  	      «ENDIF»
+		  	    }
+		  		«ENDFOR»
+		  	   }
+		  	 ]
+		  	 return r
 		  }
 		  
 		}
