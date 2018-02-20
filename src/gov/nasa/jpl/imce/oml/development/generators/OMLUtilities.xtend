@@ -38,6 +38,7 @@ import org.eclipse.xtext.xbase.XMemberFeatureCall
 import gov.nasa.jpl.imce.oml.model.extensions.OMLXcorePackages
 import java.util.ArrayList
 import org.eclipse.emf.ecore.EClassifier
+import org.eclipse.emf.ecore.EcorePackage
 
 class OMLUtilities extends OMLXcorePackages {
 
@@ -690,6 +691,13 @@ class OMLUtilities extends OMLXcorePackages {
 			default: 
 				false
 		}
+	}
+	
+	static def Boolean isBoolean(ETypedElement f) {
+		val b1 = EcorePackage.Literals.EBOOLEAN.eResource.getURIFragment(EcorePackage.Literals.EBOOLEAN)
+		val b2 = f.EType.eResource.getURIFragment(f.EType)
+		val ok = b1 === b2
+		ok
 	}
 	
 	static def Boolean isFunctionalAttributeOrReferenceExceptContainer(ETypedElement f) {
