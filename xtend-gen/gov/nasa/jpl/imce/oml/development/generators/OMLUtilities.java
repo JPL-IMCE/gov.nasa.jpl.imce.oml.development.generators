@@ -44,6 +44,7 @@ import org.eclipse.emf.ecore.EParameter;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypedElement;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.xcore.XOperation;
 import org.eclipse.emf.ecore.xcore.mappings.XcoreMapper;
 import org.eclipse.xtend2.lib.StringConcatenation;
@@ -1752,6 +1753,17 @@ public class OMLUtilities extends OMLXcorePackages {
       _switchResult = false;
     }
     return Boolean.valueOf(_switchResult);
+  }
+  
+  public static Boolean isBoolean(final ETypedElement f) {
+    boolean _xblockexpression = false;
+    {
+      final String b1 = EcorePackage.Literals.EBOOLEAN.eResource().getURIFragment(EcorePackage.Literals.EBOOLEAN);
+      final String b2 = f.getEType().eResource().getURIFragment(f.getEType());
+      final boolean ok = (b1 == b2);
+      _xblockexpression = ok;
+    }
+    return Boolean.valueOf(_xblockexpression);
   }
   
   public static Boolean isFunctionalAttributeOrReferenceExceptContainer(final ETypedElement f) {
