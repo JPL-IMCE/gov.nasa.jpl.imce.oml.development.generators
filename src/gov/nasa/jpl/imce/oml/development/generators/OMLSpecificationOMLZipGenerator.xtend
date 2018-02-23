@@ -93,13 +93,18 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import java.util.ArrayList
 		import java.util.Collections
 		import java.util.HashMap
+		import java.util.HashSet
+		import java.util.LinkedList
 		import java.util.Map
+		import java.util.Queue
+		import java.util.Set
 		import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 		import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 		import org.apache.commons.compress.archivers.zip.ZipFile
 		import org.eclipse.emf.common.util.URI
 		import org.eclipse.emf.ecore.resource.Resource
 		import org.eclipse.emf.ecore.resource.ResourceSet
+		import org.eclipse.xtext.resource.XtextResource
 		import org.eclipse.xtext.xbase.lib.Pair
 		
 		import gov.nasa.jpl.imce.oml.model.extensions.OMLTables
@@ -218,7 +223,17 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  extension BundlesFactory omlBundlesFactory
 		  extension DescriptionsFactory omlDescriptionsFactory
 		  
+		  protected val Queue<String> iriLoadQueue
+		  protected val Set<String> visitedIRIs
+		  protected val Queue<Module> moduleQueue
+		  protected val Set<Module> visitedModules
+		  
 		  new() {
+			iriLoadQueue = new LinkedList<String>()
+			visitedIRIs = new HashSet<String>()
+			moduleQueue = new LinkedList<Module>()
+			visitedModules = new HashSet<Module>()
+
 		  	omlCommonFactory = CommonFactory.eINSTANCE
 		  	omlTerminologiesFactory = TerminologiesFactory.eINSTANCE
 		  	omlGraphsFactory = GraphsFactory.eINSTANCE
@@ -330,7 +345,28 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		          throw new IllegalArgumentException("«tableName».load(): unrecognized table name: "+ze.name)
 		      }
 		    ]
-		    zip.close()
+		    zip.close()   
+		    
+		    var Boolean more = false
+		    do {
+		        more = false
+		        	if (!tables.iriLoadQueue.empty) {
+		        		val iri = tables.iriLoadQueue.remove
+		        		if (tables.visitedIRIs.add(iri)) {
+		        			more = true
+		     	 	    	tables.loadOMLZipResource(rs, URI.createURI(iri))	
+		     	 	}
+		        }
+		        	
+		        	if (!tables.moduleQueue.empty) {
+		        		val m = tables.moduleQueue.remove
+		        		if (tables.visitedModules.add(m)) {
+		        			more = true
+		        			tables.includeModule(m)
+		        		}
+		        	}
+		    } while (more)
+
 		    tables.resolve(rs, r)
 		  }
 
@@ -346,7 +382,12 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	  val uuid = kv.remove("uuid")
 		  	  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes»«IF attr.isLiteralFeature»
 		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))«ELSEIF !attr.isClassFeature && attr.name != "uuid"»
-		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))«ENDIF»
+		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))«ELSEIF (attr.isIRIReference)»
+		  	  val String «attr.name»IRI = kv.get("«attr.columnName»")
+		  	  if (null === «attr.name»IRI)
+		  	  	throw new IllegalArgumentException("read«eClass.tableVariableName.upperCaseInitialOrWord»: missing '«attr.columnName»' in: "+kv.toString)
+		  	  iriLoadQueue.add(«attr.name»IRI)
+			  «ENDIF»
 		  	  «ENDFOR»
 		  	  val pair = new Pair<«eClass.name», Map<String,String>>(oml, kv)
 		  	  «eClass.tableVariableName».put(uuid, pair)
@@ -479,7 +520,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	    				«FOR attr : eClass.schemaAPIOrOrderingKeyReferences»
 		  	    				«IF (attr.isIRIReference)»
 		  	    				val String «attr.name»IRI = kv.remove("«attr.columnName»")
-		  	    				loadOMLZipResource(rs, URI.createURI(«attr.name»IRI))
 		  	    				val Pair<«attr.EClassType.name», Map<String, String>> «attr.name»Pair = «attr.EClassType.tableVariableName».get(«attr.name»IRI)
 		  	    				if (null === «attr.name»Pair)
 		  	    					throw new IllegalArgumentException("Null cross-reference lookup for «attr.name» in «eClass.tableVariableName»: "+«attr.name»IRI)
@@ -513,7 +553,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	    «FOR attr : eClass.schemaAPIOrOrderingKeyReferences»
 		  	    «IF (attr.isIRIReference)»
 		  	    val String «attr.name»IRI = kv.remove("«attr.columnName»")
-		  	    loadOMLZipResource(rs, URI.createURI(«attr.name»IRI))
 		  	    val Pair<«attr.EClassType.name», Map<String, String>> «attr.name»Pair = «attr.EClassType.tableVariableName».get(«attr.name»IRI)
 		  	    if (null === «attr.name»Pair)
 		  	      throw new IllegalArgumentException("Null cross-reference lookup for «attr.name» in «eClass.tableVariableName»: "+«attr.name»IRI)
@@ -560,11 +599,19 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 							false
 					}
 				]]
-				if (null !== r0a)
-					r0a
-				else if (null !== r0b)
-					r0b
-				else {
+				val r0 = r0a ?: r0b
+				if (null !== r0) {
+					switch r0 {
+						OMLZipResource: {
+						}
+						XtextResource: {
+							scan = true
+						}
+						default: {
+						}
+					}
+					r0
+				} else {
 					val r1 = omlCatalog.resolveURI(uriString + ".oml")
 			  		val r2 = omlCatalog.resolveURI(uriString + ".omlzip")
 			  		val r3 = omlCatalog.resolveURI(uriString)
@@ -655,9 +702,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	        conceptualEntitySingletonInstances.put(e.uuid(), new Pair<ConceptualEntitySingletonInstance, Map<String,String>>(e, Collections.emptyMap))
 		  	        «ELSEIF (eClass.EAllSuperTypes.exists[name == "SingletonInstanceStructuredDataPropertyContext"])»
 		  	        singletonInstanceStructuredDataPropertyContexts.put(e.uuid(), new Pair<SingletonInstanceStructuredDataPropertyContext, Map<String,String>>(e, Collections.emptyMap))
-		  	        «ENDIF»
-		  	        «IF (eClass.EAllSuperTypes.exists[name == "ModuleEdge"])»
-		  	        //includeModule(e.targetModule)
 		  	        «ENDIF»
 		  	      }
 		  		  «ENDFOR»
