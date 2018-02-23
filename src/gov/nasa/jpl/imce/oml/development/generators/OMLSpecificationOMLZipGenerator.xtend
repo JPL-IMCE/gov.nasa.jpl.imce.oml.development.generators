@@ -380,9 +380,22 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	  	ext.getModules.add(oml)
 		  	  «ENDIF»
 		  	  val uuid = kv.remove("uuid")
-		  	  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes»«IF attr.isLiteralFeature»
-		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))«ELSEIF !attr.isClassFeature && attr.name != "uuid"»
-		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))«ELSEIF (attr.isIRIReference)»
+		  	  «FOR attr : eClass.schemaAPIOrOrderingKeyAttributes»
+		  	  «IF attr.isLiteralFeature»«IF attr.required»
+		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))
+		  	  «ELSE»
+		  	  val «attr.name»_value = kv.remove("«attr.columnName»")
+		  	  if (null !== «attr.name»_value && «attr.name»_value.length > 0)
+		  	  	oml.«attr.name» = OMLTables.to«attr.EType.name»(«attr.name»_value)
+		  	  «ENDIF»
+		  	  «ELSEIF !attr.isClassFeature && attr.name != "uuid"»«IF attr.required»
+		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))
+		  	  «ELSE»
+		  	  val «attr.name»_value = kv.remove("«attr.columnName»")
+		  	  if (null !== «attr.name»_value && «attr.name»_value.length > 0)
+		  	  	oml.«attr.name» = OMLTables.to«attr.EType.name»(«attr.name»_value)
+		  	  «ENDIF»
+		  	  «ELSEIF (attr.isIRIReference)»
 		  	  val String «attr.name»IRI = kv.get("«attr.columnName»")
 		  	  if (null === «attr.name»IRI)
 		  	  	throw new IllegalArgumentException("read«eClass.tableVariableName.upperCaseInitialOrWord»: missing '«attr.columnName»' in: "+kv.toString)
@@ -396,7 +409,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  }
 		  
 		  «ENDFOR»
-		
 		  protected def <U,V extends U> void includeMap(Map<String, Pair<U, Map<String, String>>> uMap, Map<String, Pair<V, Map<String, String>>> vMap) {
 		    vMap.forEach[uuid,kv|uMap.put(uuid, new Pair<U, Map<String, String>>(kv.key, Collections.emptyMap))]
 		  }
