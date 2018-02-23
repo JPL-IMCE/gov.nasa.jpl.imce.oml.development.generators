@@ -145,7 +145,15 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import java.util.HashMap");
       _builder.newLine();
+      _builder.append("import java.util.HashSet");
+      _builder.newLine();
+      _builder.append("import java.util.LinkedList");
+      _builder.newLine();
       _builder.append("import java.util.Map");
+      _builder.newLine();
+      _builder.append("import java.util.Queue");
+      _builder.newLine();
+      _builder.append("import java.util.Set");
       _builder.newLine();
       _builder.append("import org.apache.commons.compress.archivers.zip.ZipArchiveEntry");
       _builder.newLine();
@@ -158,6 +166,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("import org.eclipse.emf.ecore.resource.Resource");
       _builder.newLine();
       _builder.append("import org.eclipse.emf.ecore.resource.ResourceSet");
+      _builder.newLine();
+      _builder.append("import org.eclipse.xtext.resource.XtextResource");
       _builder.newLine();
       _builder.append("import org.eclipse.xtext.xbase.lib.Pair");
       _builder.newLine();
@@ -420,7 +430,34 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("  ");
       _builder.newLine();
       _builder.append("  ");
+      _builder.append("protected val Queue<String> iriLoadQueue");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("protected val Set<String> visitedIRIs");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("protected val Queue<Module> moduleQueue");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("protected val Set<Module> visitedModules");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.newLine();
+      _builder.append("  ");
       _builder.append("new() {");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append("iriLoadQueue = new LinkedList<String>()");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append("visitedIRIs = new HashSet<String>()");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append("moduleQueue = new LinkedList<Module>()");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append("visitedModules = new HashSet<Module>()");
+      _builder.newLine();
       _builder.newLine();
       _builder.append("  \t");
       _builder.append("omlCommonFactory = CommonFactory.eINSTANCE");
@@ -847,7 +884,66 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("]");
       _builder.newLine();
       _builder.append("    ");
-      _builder.append("zip.close()");
+      _builder.append("zip.close()   ");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("var Boolean more = false");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("do {");
+      _builder.newLine();
+      _builder.append("        ");
+      _builder.append("more = false");
+      _builder.newLine();
+      _builder.append("        \t");
+      _builder.append("if (!tables.iriLoadQueue.empty) {");
+      _builder.newLine();
+      _builder.append("        \t\t");
+      _builder.append("val iri = tables.iriLoadQueue.remove");
+      _builder.newLine();
+      _builder.append("        \t\t");
+      _builder.append("if (tables.visitedIRIs.add(iri)) {");
+      _builder.newLine();
+      _builder.append("        \t\t\t");
+      _builder.append("more = true");
+      _builder.newLine();
+      _builder.append("     \t \t    \t");
+      _builder.append("tables.loadOMLZipResource(rs, URI.createURI(iri))\t");
+      _builder.newLine();
+      _builder.append("     \t \t");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("        ");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("        \t");
+      _builder.newLine();
+      _builder.append("        \t");
+      _builder.append("if (!tables.moduleQueue.empty) {");
+      _builder.newLine();
+      _builder.append("        \t\t");
+      _builder.append("val m = tables.moduleQueue.remove");
+      _builder.newLine();
+      _builder.append("        \t\t");
+      _builder.append("if (tables.visitedModules.add(m)) {");
+      _builder.newLine();
+      _builder.append("        \t\t\t");
+      _builder.append("more = true");
+      _builder.newLine();
+      _builder.append("        \t\t\t");
+      _builder.append("tables.includeModule(m)");
+      _builder.newLine();
+      _builder.append("        \t\t");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("        \t");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("} while (more)");
+      _builder.newLine();
       _builder.newLine();
       _builder.append("    ");
       _builder.append("tables.resolve(rs, r)");
@@ -933,17 +1029,56 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                     String _columnName_2 = OMLUtilities.columnName(attr_1);
                     _builder.append(_columnName_2, "  \t  ");
                     _builder.append("\"))");
+                  } else {
+                    Boolean _isIRIReference_1 = OMLUtilities.isIRIReference(attr_1);
+                    if ((_isIRIReference_1).booleanValue()) {
+                      _builder.newLineIfNotEmpty();
+                      _builder.append("  ");
+                      _builder.append("\t  ");
+                      _builder.append("val String ");
+                      String _name_8 = attr_1.getName();
+                      _builder.append(_name_8, "  \t  ");
+                      _builder.append("IRI = kv.get(\"");
+                      String _columnName_3 = OMLUtilities.columnName(attr_1);
+                      _builder.append(_columnName_3, "  \t  ");
+                      _builder.append("\")");
+                      _builder.newLineIfNotEmpty();
+                      _builder.append("  ");
+                      _builder.append("\t  ");
+                      _builder.append("if (null === ");
+                      String _name_9 = attr_1.getName();
+                      _builder.append(_name_9, "  \t  ");
+                      _builder.append("IRI)");
+                      _builder.newLineIfNotEmpty();
+                      _builder.append("  ");
+                      _builder.append("\t  ");
+                      _builder.append("\t");
+                      _builder.append("throw new IllegalArgumentException(\"read");
+                      String _upperCaseInitialOrWord_2 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_5));
+                      _builder.append(_upperCaseInitialOrWord_2, "  \t  \t");
+                      _builder.append(": missing \'");
+                      String _columnName_4 = OMLUtilities.columnName(attr_1);
+                      _builder.append(_columnName_4, "  \t  \t");
+                      _builder.append("\' in: \"+kv.toString)");
+                      _builder.newLineIfNotEmpty();
+                      _builder.append("  ");
+                      _builder.append("\t  ");
+                      _builder.append("iriLoadQueue.add(");
+                      String _name_10 = attr_1.getName();
+                      _builder.append(_name_10, "  \t  ");
+                      _builder.append("IRI)");
+                      _builder.newLineIfNotEmpty();
+                    }
                   }
                 }
               }
-              _builder.newLineIfNotEmpty();
             }
           }
           _builder.append("  ");
           _builder.append("\t  ");
           _builder.append("val pair = new Pair<");
-          String _name_8 = eClass_5.getName();
-          _builder.append(_name_8, "  \t  ");
+          String _name_11 = eClass_5.getName();
+          _builder.append(_name_11, "  \t  ");
           _builder.append(", Map<String,String>>(oml, kv)");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
@@ -955,8 +1090,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           _builder.append("  ");
           _builder.append("\t  ");
           _builder.append("include");
-          String _upperCaseInitialOrWord_2 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_5));
-          _builder.append(_upperCaseInitialOrWord_2, "  \t  ");
+          String _upperCaseInitialOrWord_3 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_5));
+          _builder.append(_upperCaseInitialOrWord_3, "  \t  ");
           _builder.append("(uuid, oml)");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
@@ -985,17 +1120,17 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
         for(final EClass eClass_6 : eClasses) {
           _builder.append("  ");
           _builder.append("protected def void include");
-          String _upperCaseInitialOrWord_3 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_6));
-          _builder.append(_upperCaseInitialOrWord_3, "  ");
+          String _upperCaseInitialOrWord_4 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_6));
+          _builder.append(_upperCaseInitialOrWord_4, "  ");
           _builder.append("(String uuid, ");
-          String _name_9 = eClass_6.getName();
-          _builder.append(_name_9, "  ");
+          String _name_12 = eClass_6.getName();
+          _builder.append(_name_12, "  ");
           _builder.append(" oml) {");
           _builder.newLineIfNotEmpty();
           {
             final Function1<EClass, Boolean> _function_4 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "Module"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "Module"));
             };
             boolean _exists_1 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_4);
             if (_exists_1) {
@@ -1007,8 +1142,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_5 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "LogicalElement"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "LogicalElement"));
             };
             boolean _exists_2 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_5);
             if (_exists_2) {
@@ -1020,8 +1155,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_6 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "Entity"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "Entity"));
             };
             boolean _exists_3 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_6);
             if (_exists_3) {
@@ -1033,8 +1168,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_7 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "EntityRelationship"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "EntityRelationship"));
             };
             boolean _exists_4 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_7);
             if (_exists_4) {
@@ -1046,8 +1181,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_8 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "ConceptualRelationship"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "ConceptualRelationship"));
             };
             boolean _exists_5 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_8);
             if (_exists_5) {
@@ -1059,8 +1194,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_9 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "DataRange"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "DataRange"));
             };
             boolean _exists_6 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_9);
             if (_exists_6) {
@@ -1072,8 +1207,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_10 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "DataRelationshipToScalar"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "DataRelationshipToScalar"));
             };
             boolean _exists_7 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_10);
             if (_exists_7) {
@@ -1085,8 +1220,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_11 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "DataRelationshipToStructure"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "DataRelationshipToStructure"));
             };
             boolean _exists_8 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_11);
             if (_exists_8) {
@@ -1098,8 +1233,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_12 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "Predicate"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "Predicate"));
             };
             boolean _exists_9 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_12);
             if (_exists_9) {
@@ -1111,8 +1246,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_13 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "RestrictableRelationship"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "RestrictableRelationship"));
             };
             boolean _exists_10 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_13);
             if (_exists_10) {
@@ -1124,8 +1259,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_14 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "RestrictionStructuredDataPropertyContext"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "RestrictionStructuredDataPropertyContext"));
             };
             boolean _exists_11 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_14);
             if (_exists_11) {
@@ -1137,8 +1272,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_15 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "TerminologyBox"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "TerminologyBox"));
             };
             boolean _exists_12 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_15);
             if (_exists_12) {
@@ -1154,8 +1289,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_16 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "ConceptTreeDisjunction"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "ConceptTreeDisjunction"));
             };
             boolean _exists_13 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_16);
             if (_exists_13) {
@@ -1167,8 +1302,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_17 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "ConceptualEntitySingletonInstance"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "ConceptualEntitySingletonInstance"));
             };
             boolean _exists_14 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_17);
             if (_exists_14) {
@@ -1180,8 +1315,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           }
           {
             final Function1<EClass, Boolean> _function_18 = (EClass it) -> {
-              String _name_10 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_10, "SingletonInstanceStructuredDataPropertyContext"));
+              String _name_13 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_13, "SingletonInstanceStructuredDataPropertyContext"));
             };
             boolean _exists_15 = IterableExtensions.<EClass>exists(eClass_6.getEAllSuperTypes(), _function_18);
             if (_exists_15) {
@@ -1192,8 +1327,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
             }
           }
           {
-            String _name_10 = eClass_6.getName();
-            boolean _equals = Objects.equal(_name_10, "DescriptionBox");
+            String _name_13 = eClass_6.getName();
+            boolean _equals = Objects.equal(_name_13, "DescriptionBox");
             if (_equals) {
               _builder.append("  ");
               _builder.append("\t");
@@ -1221,8 +1356,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_19 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_20 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "LogicalElement"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "LogicalElement"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_20));
         };
@@ -1250,8 +1385,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_20 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_21 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "Entity"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "Entity"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_21));
         };
@@ -1279,8 +1414,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_21 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_22 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "EntityRelationship"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "EntityRelationship"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_22));
         };
@@ -1308,8 +1443,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_22 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_23 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "ConceptualRelationship"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "ConceptualRelationship"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_23));
         };
@@ -1337,8 +1472,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_23 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_24 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "DataRange"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "DataRange"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_24));
         };
@@ -1366,8 +1501,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_24 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_25 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "DataRelationshipToScalar"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "DataRelationshipToScalar"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_25));
         };
@@ -1395,8 +1530,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_25 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_26 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "DataRelationshipToStructure"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "DataRelationshipToStructure"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_26));
         };
@@ -1424,8 +1559,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_26 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_27 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "Predicate"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "Predicate"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_27));
         };
@@ -1452,8 +1587,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_27 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_28 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "RestrictableRelationship"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "RestrictableRelationship"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_28));
         };
@@ -1480,8 +1615,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_28 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_29 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "RestrictionStructuredDataPropertyContext"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "RestrictionStructuredDataPropertyContext"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_29));
         };
@@ -1509,8 +1644,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_29 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_30 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "TerminologyBox"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "TerminologyBox"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_30));
         };
@@ -1538,8 +1673,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_30 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_31 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "ConceptTreeDisjunction"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "ConceptTreeDisjunction"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_31));
         };
@@ -1567,8 +1702,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_31 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_32 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "ConceptualEntitySingletonInstance"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "ConceptualEntitySingletonInstance"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_32));
         };
@@ -1596,8 +1731,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         final Function1<EClass, Boolean> _function_32 = (EClass it) -> {
           final Function1<EClass, Boolean> _function_33 = (EClass it_1) -> {
-            String _name_11 = it_1.getName();
-            return Boolean.valueOf(Objects.equal(_name_11, "SingletonInstanceStructuredDataPropertyContext"));
+            String _name_14 = it_1.getName();
+            return Boolean.valueOf(Objects.equal(_name_14, "SingletonInstanceStructuredDataPropertyContext"));
           };
           return Boolean.valueOf(IterableExtensions.<EClass>exists(it.getEAllSuperTypes(), _function_33));
         };
@@ -1627,8 +1762,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
         for(final EClass eClass_21 : _filter_15) {
           _builder.append("    ");
           _builder.append("resolve");
-          String _upperCaseInitialOrWord_4 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_21));
-          _builder.append(_upperCaseInitialOrWord_4, "    ");
+          String _upperCaseInitialOrWord_5 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_21));
+          _builder.append(_upperCaseInitialOrWord_5, "    ");
           _builder.append("(rs)");
           _builder.newLineIfNotEmpty();
         }
@@ -1646,14 +1781,14 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
         for(final EClass eClass_22 : _filter_16) {
           _builder.append("  ");
           _builder.append("protected def void resolve");
-          String _upperCaseInitialOrWord_5 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_22));
-          _builder.append(_upperCaseInitialOrWord_5, "  ");
+          String _upperCaseInitialOrWord_6 = OMLUtilities.upperCaseInitialOrWord(OMLUtilities.tableVariableName(eClass_22));
+          _builder.append(_upperCaseInitialOrWord_6, "  ");
           _builder.append("(ResourceSet rs) {");
           _builder.newLineIfNotEmpty();
           {
             final Function1<EClass, Boolean> _function_35 = (EClass it) -> {
-              String _name_11 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_11, "ModuleEdge"));
+              String _name_14 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_14, "ModuleEdge"));
             };
             boolean _exists_16 = IterableExtensions.<EClass>exists(eClass_22.getEAllSuperTypes(), _function_35);
             if (_exists_16) {
@@ -1669,8 +1804,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
               _builder.append("\t");
               _builder.append("\t");
               _builder.append("val queue = new HashMap<String, Pair<");
-              String _name_11 = eClass_22.getName();
-              _builder.append(_name_11, "  \t\t");
+              String _name_14 = eClass_22.getName();
+              _builder.append(_name_14, "  \t\t");
               _builder.append(", Map<String, String>>>()");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1699,8 +1834,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
               _builder.append("\t");
               _builder.append("  \t\t\t");
               _builder.append("val ");
-              String _name_12 = eClass_22.getName();
-              _builder.append(_name_12, "  \t  \t\t\t");
+              String _name_15 = eClass_22.getName();
+              _builder.append(_name_15, "  \t  \t\t\t");
               _builder.append(" oml = oml_kv.key");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1717,50 +1852,42 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                 Iterable<ETypedElement> _schemaAPIOrOrderingKeyReferences = OMLUtilities.schemaAPIOrOrderingKeyReferences(eClass_22);
                 for(final ETypedElement attr_2 : _schemaAPIOrOrderingKeyReferences) {
                   {
-                    Boolean _isIRIReference_1 = OMLUtilities.isIRIReference(attr_2);
-                    if ((_isIRIReference_1).booleanValue()) {
+                    Boolean _isIRIReference_2 = OMLUtilities.isIRIReference(attr_2);
+                    if ((_isIRIReference_2).booleanValue()) {
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    \t\t\t\t");
                       _builder.append("val String ");
-                      String _name_13 = attr_2.getName();
-                      _builder.append(_name_13, "  \t    \t\t\t\t");
+                      String _name_16 = attr_2.getName();
+                      _builder.append(_name_16, "  \t    \t\t\t\t");
                       _builder.append("IRI = kv.remove(\"");
-                      String _columnName_3 = OMLUtilities.columnName(attr_2);
-                      _builder.append(_columnName_3, "  \t    \t\t\t\t");
+                      String _columnName_5 = OMLUtilities.columnName(attr_2);
+                      _builder.append(_columnName_5, "  \t    \t\t\t\t");
                       _builder.append("\")");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    \t\t\t\t");
-                      _builder.append("loadOMLZipResource(rs, URI.createURI(");
-                      String _name_14 = attr_2.getName();
-                      _builder.append(_name_14, "  \t    \t\t\t\t");
-                      _builder.append("IRI))");
-                      _builder.newLineIfNotEmpty();
-                      _builder.append("  ");
-                      _builder.append("\t");
-                      _builder.append("    \t\t\t\t");
                       _builder.append("val Pair<");
-                      String _name_15 = OMLUtilities.EClassType(attr_2).getName();
-                      _builder.append(_name_15, "  \t    \t\t\t\t");
+                      String _name_17 = OMLUtilities.EClassType(attr_2).getName();
+                      _builder.append(_name_17, "  \t    \t\t\t\t");
                       _builder.append(", Map<String, String>> ");
-                      String _name_16 = attr_2.getName();
-                      _builder.append(_name_16, "  \t    \t\t\t\t");
+                      String _name_18 = attr_2.getName();
+                      _builder.append(_name_18, "  \t    \t\t\t\t");
                       _builder.append("Pair = ");
                       String _tableVariableName_21 = OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_2));
                       _builder.append(_tableVariableName_21, "  \t    \t\t\t\t");
                       _builder.append(".get(");
-                      String _name_17 = attr_2.getName();
-                      _builder.append(_name_17, "  \t    \t\t\t\t");
+                      String _name_19 = attr_2.getName();
+                      _builder.append(_name_19, "  \t    \t\t\t\t");
                       _builder.append("IRI)");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    \t\t\t\t");
                       _builder.append("if (null === ");
-                      String _name_18 = attr_2.getName();
-                      _builder.append(_name_18, "  \t    \t\t\t\t");
+                      String _name_20 = attr_2.getName();
+                      _builder.append(_name_20, "  \t    \t\t\t\t");
                       _builder.append("Pair)");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
@@ -1768,25 +1895,25 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                       _builder.append("    \t\t\t\t");
                       _builder.append("\t");
                       _builder.append("throw new IllegalArgumentException(\"Null cross-reference lookup for ");
-                      String _name_19 = attr_2.getName();
-                      _builder.append(_name_19, "  \t    \t\t\t\t\t");
+                      String _name_21 = attr_2.getName();
+                      _builder.append(_name_21, "  \t    \t\t\t\t\t");
                       _builder.append(" in ");
                       String _tableVariableName_22 = OMLUtilities.tableVariableName(eClass_22);
                       _builder.append(_tableVariableName_22, "  \t    \t\t\t\t\t");
                       _builder.append(": \"+");
-                      String _name_20 = attr_2.getName();
-                      _builder.append(_name_20, "  \t    \t\t\t\t\t");
+                      String _name_22 = attr_2.getName();
+                      _builder.append(_name_22, "  \t    \t\t\t\t\t");
                       _builder.append("IRI)");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    \t\t\t\t");
                       _builder.append("oml.");
-                      String _name_21 = attr_2.getName();
-                      _builder.append(_name_21, "  \t    \t\t\t\t");
+                      String _name_23 = attr_2.getName();
+                      _builder.append(_name_23, "  \t    \t\t\t\t");
                       _builder.append(" = ");
-                      String _name_22 = attr_2.getName();
-                      _builder.append(_name_22, "  \t    \t\t\t\t");
+                      String _name_24 = attr_2.getName();
+                      _builder.append(_name_24, "  \t    \t\t\t\t");
                       _builder.append("Pair.key\t\t  \t  ");
                       _builder.newLineIfNotEmpty();
                     } else {
@@ -1797,19 +1924,19 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("\t");
                         _builder.append("    \t\t\t\t");
                         _builder.append("val String ");
-                        String _name_23 = attr_2.getName();
-                        _builder.append(_name_23, "  \t    \t\t\t\t");
+                        String _name_25 = attr_2.getName();
+                        _builder.append(_name_25, "  \t    \t\t\t\t");
                         _builder.append("XRef = kv.remove(\"");
-                        String _columnName_4 = OMLUtilities.columnName(attr_2);
-                        _builder.append(_columnName_4, "  \t    \t\t\t\t");
+                        String _columnName_6 = OMLUtilities.columnName(attr_2);
+                        _builder.append(_columnName_6, "  \t    \t\t\t\t");
                         _builder.append("\")");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    \t\t\t\t");
                         _builder.append("if (\"null\" != ");
-                        String _name_24 = attr_2.getName();
-                        _builder.append(_name_24, "  \t    \t\t\t\t");
+                        String _name_26 = attr_2.getName();
+                        _builder.append(_name_26, "  \t    \t\t\t\t");
                         _builder.append("XRef) {");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -1817,17 +1944,17 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    \t\t\t\t");
                         _builder.append("\t");
                         _builder.append("val Pair<");
-                        String _name_25 = OMLUtilities.EClassType(attr_2).getName();
-                        _builder.append(_name_25, "  \t    \t\t\t\t\t");
+                        String _name_27 = OMLUtilities.EClassType(attr_2).getName();
+                        _builder.append(_name_27, "  \t    \t\t\t\t\t");
                         _builder.append(", Map<String, String>> ");
-                        String _name_26 = attr_2.getName();
-                        _builder.append(_name_26, "  \t    \t\t\t\t\t");
+                        String _name_28 = attr_2.getName();
+                        _builder.append(_name_28, "  \t    \t\t\t\t\t");
                         _builder.append("Pair = ");
                         String _tableVariableName_23 = OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_2));
                         _builder.append(_tableVariableName_23, "  \t    \t\t\t\t\t");
                         _builder.append(".get(");
-                        String _name_27 = attr_2.getName();
-                        _builder.append(_name_27, "  \t    \t\t\t\t\t");
+                        String _name_29 = attr_2.getName();
+                        _builder.append(_name_29, "  \t    \t\t\t\t\t");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -1835,8 +1962,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    \t\t\t\t");
                         _builder.append("\t");
                         _builder.append("if (null === ");
-                        String _name_28 = attr_2.getName();
-                        _builder.append(_name_28, "  \t    \t\t\t\t\t");
+                        String _name_30 = attr_2.getName();
+                        _builder.append(_name_30, "  \t    \t\t\t\t\t");
                         _builder.append("Pair)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -1844,14 +1971,14 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    \t\t\t\t");
                         _builder.append("\t\t");
                         _builder.append("throw new IllegalArgumentException(\"Null cross-reference lookup for ");
-                        String _name_29 = attr_2.getName();
-                        _builder.append(_name_29, "  \t    \t\t\t\t\t\t");
+                        String _name_31 = attr_2.getName();
+                        _builder.append(_name_31, "  \t    \t\t\t\t\t\t");
                         _builder.append(" in ");
                         String _tableVariableName_24 = OMLUtilities.tableVariableName(eClass_22);
                         _builder.append(_tableVariableName_24, "  \t    \t\t\t\t\t\t");
                         _builder.append(": \"+");
-                        String _name_30 = attr_2.getName();
-                        _builder.append(_name_30, "  \t    \t\t\t\t\t\t");
+                        String _name_32 = attr_2.getName();
+                        _builder.append(_name_32, "  \t    \t\t\t\t\t\t");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -1859,11 +1986,11 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    \t\t\t\t");
                         _builder.append("\t");
                         _builder.append("oml.");
-                        String _name_31 = attr_2.getName();
-                        _builder.append(_name_31, "  \t    \t\t\t\t\t");
+                        String _name_33 = attr_2.getName();
+                        _builder.append(_name_33, "  \t    \t\t\t\t\t");
                         _builder.append(" = ");
-                        String _name_32 = attr_2.getName();
-                        _builder.append(_name_32, "  \t    \t\t\t\t\t");
+                        String _name_34 = attr_2.getName();
+                        _builder.append(_name_34, "  \t    \t\t\t\t\t");
                         _builder.append("Pair.key");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -1876,36 +2003,36 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("\t");
                         _builder.append("    \t\t\t\t");
                         _builder.append("val String ");
-                        String _name_33 = attr_2.getName();
-                        _builder.append(_name_33, "  \t    \t\t\t\t");
+                        String _name_35 = attr_2.getName();
+                        _builder.append(_name_35, "  \t    \t\t\t\t");
                         _builder.append("XRef = kv.remove(\"");
-                        String _columnName_5 = OMLUtilities.columnName(attr_2);
-                        _builder.append(_columnName_5, "  \t    \t\t\t\t");
+                        String _columnName_7 = OMLUtilities.columnName(attr_2);
+                        _builder.append(_columnName_7, "  \t    \t\t\t\t");
                         _builder.append("\")");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    \t\t\t\t");
                         _builder.append("val Pair<");
-                        String _name_34 = OMLUtilities.EClassType(attr_2).getName();
-                        _builder.append(_name_34, "  \t    \t\t\t\t");
+                        String _name_36 = OMLUtilities.EClassType(attr_2).getName();
+                        _builder.append(_name_36, "  \t    \t\t\t\t");
                         _builder.append(", Map<String, String>> ");
-                        String _name_35 = attr_2.getName();
-                        _builder.append(_name_35, "  \t    \t\t\t\t");
+                        String _name_37 = attr_2.getName();
+                        _builder.append(_name_37, "  \t    \t\t\t\t");
                         _builder.append("Pair = ");
                         String _tableVariableName_25 = OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_2));
                         _builder.append(_tableVariableName_25, "  \t    \t\t\t\t");
                         _builder.append(".get(");
-                        String _name_36 = attr_2.getName();
-                        _builder.append(_name_36, "  \t    \t\t\t\t");
+                        String _name_38 = attr_2.getName();
+                        _builder.append(_name_38, "  \t    \t\t\t\t");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    \t\t\t\t");
                         _builder.append("if (null === ");
-                        String _name_37 = attr_2.getName();
-                        _builder.append(_name_37, "  \t    \t\t\t\t");
+                        String _name_39 = attr_2.getName();
+                        _builder.append(_name_39, "  \t    \t\t\t\t");
                         _builder.append("Pair)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -1913,25 +2040,25 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    \t\t\t\t");
                         _builder.append("\t");
                         _builder.append("throw new IllegalArgumentException(\"Null cross-reference lookup for ");
-                        String _name_38 = attr_2.getName();
-                        _builder.append(_name_38, "  \t    \t\t\t\t\t");
+                        String _name_40 = attr_2.getName();
+                        _builder.append(_name_40, "  \t    \t\t\t\t\t");
                         _builder.append(" in ");
                         String _tableVariableName_26 = OMLUtilities.tableVariableName(eClass_22);
                         _builder.append(_tableVariableName_26, "  \t    \t\t\t\t\t");
                         _builder.append(": \"+");
-                        String _name_39 = attr_2.getName();
-                        _builder.append(_name_39, "  \t    \t\t\t\t\t");
+                        String _name_41 = attr_2.getName();
+                        _builder.append(_name_41, "  \t    \t\t\t\t\t");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    \t\t\t\t");
                         _builder.append("oml.");
-                        String _name_40 = attr_2.getName();
-                        _builder.append(_name_40, "  \t    \t\t\t\t");
+                        String _name_42 = attr_2.getName();
+                        _builder.append(_name_42, "  \t    \t\t\t\t");
                         _builder.append(" = ");
-                        String _name_41 = attr_2.getName();
-                        _builder.append(_name_41, "  \t    \t\t\t\t");
+                        String _name_43 = attr_2.getName();
+                        _builder.append(_name_43, "  \t    \t\t\t\t");
                         _builder.append("Pair.key");
                         _builder.newLineIfNotEmpty();
                       }
@@ -1972,8 +2099,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
               _builder.append("\t");
               _builder.append("  ");
               _builder.append("val ");
-              String _name_42 = eClass_22.getName();
-              _builder.append(_name_42, "  \t  ");
+              String _name_44 = eClass_22.getName();
+              _builder.append(_name_44, "  \t  ");
               _builder.append(" oml = oml_kv.key");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1990,50 +2117,42 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                 Iterable<ETypedElement> _schemaAPIOrOrderingKeyReferences_1 = OMLUtilities.schemaAPIOrOrderingKeyReferences(eClass_22);
                 for(final ETypedElement attr_3 : _schemaAPIOrOrderingKeyReferences_1) {
                   {
-                    Boolean _isIRIReference_2 = OMLUtilities.isIRIReference(attr_3);
-                    if ((_isIRIReference_2).booleanValue()) {
+                    Boolean _isIRIReference_3 = OMLUtilities.isIRIReference(attr_3);
+                    if ((_isIRIReference_3).booleanValue()) {
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    ");
                       _builder.append("val String ");
-                      String _name_43 = attr_3.getName();
-                      _builder.append(_name_43, "  \t    ");
+                      String _name_45 = attr_3.getName();
+                      _builder.append(_name_45, "  \t    ");
                       _builder.append("IRI = kv.remove(\"");
-                      String _columnName_6 = OMLUtilities.columnName(attr_3);
-                      _builder.append(_columnName_6, "  \t    ");
+                      String _columnName_8 = OMLUtilities.columnName(attr_3);
+                      _builder.append(_columnName_8, "  \t    ");
                       _builder.append("\")");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    ");
-                      _builder.append("loadOMLZipResource(rs, URI.createURI(");
-                      String _name_44 = attr_3.getName();
-                      _builder.append(_name_44, "  \t    ");
-                      _builder.append("IRI))");
-                      _builder.newLineIfNotEmpty();
-                      _builder.append("  ");
-                      _builder.append("\t");
-                      _builder.append("    ");
                       _builder.append("val Pair<");
-                      String _name_45 = OMLUtilities.EClassType(attr_3).getName();
-                      _builder.append(_name_45, "  \t    ");
-                      _builder.append(", Map<String, String>> ");
-                      String _name_46 = attr_3.getName();
+                      String _name_46 = OMLUtilities.EClassType(attr_3).getName();
                       _builder.append(_name_46, "  \t    ");
+                      _builder.append(", Map<String, String>> ");
+                      String _name_47 = attr_3.getName();
+                      _builder.append(_name_47, "  \t    ");
                       _builder.append("Pair = ");
                       String _tableVariableName_28 = OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_3));
                       _builder.append(_tableVariableName_28, "  \t    ");
                       _builder.append(".get(");
-                      String _name_47 = attr_3.getName();
-                      _builder.append(_name_47, "  \t    ");
+                      String _name_48 = attr_3.getName();
+                      _builder.append(_name_48, "  \t    ");
                       _builder.append("IRI)");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    ");
                       _builder.append("if (null === ");
-                      String _name_48 = attr_3.getName();
-                      _builder.append(_name_48, "  \t    ");
+                      String _name_49 = attr_3.getName();
+                      _builder.append(_name_49, "  \t    ");
                       _builder.append("Pair)");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
@@ -2041,25 +2160,25 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                       _builder.append("    ");
                       _builder.append("  ");
                       _builder.append("throw new IllegalArgumentException(\"Null cross-reference lookup for ");
-                      String _name_49 = attr_3.getName();
-                      _builder.append(_name_49, "  \t      ");
+                      String _name_50 = attr_3.getName();
+                      _builder.append(_name_50, "  \t      ");
                       _builder.append(" in ");
                       String _tableVariableName_29 = OMLUtilities.tableVariableName(eClass_22);
                       _builder.append(_tableVariableName_29, "  \t      ");
                       _builder.append(": \"+");
-                      String _name_50 = attr_3.getName();
-                      _builder.append(_name_50, "  \t      ");
+                      String _name_51 = attr_3.getName();
+                      _builder.append(_name_51, "  \t      ");
                       _builder.append("IRI)");
                       _builder.newLineIfNotEmpty();
                       _builder.append("  ");
                       _builder.append("\t");
                       _builder.append("    ");
                       _builder.append("oml.");
-                      String _name_51 = attr_3.getName();
-                      _builder.append(_name_51, "  \t    ");
-                      _builder.append(" = ");
                       String _name_52 = attr_3.getName();
                       _builder.append(_name_52, "  \t    ");
+                      _builder.append(" = ");
+                      String _name_53 = attr_3.getName();
+                      _builder.append(_name_53, "  \t    ");
                       _builder.append("Pair.key\t\t  \t  ");
                       _builder.newLineIfNotEmpty();
                     } else {
@@ -2070,19 +2189,19 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("\t");
                         _builder.append("    ");
                         _builder.append("val String ");
-                        String _name_53 = attr_3.getName();
-                        _builder.append(_name_53, "  \t    ");
+                        String _name_54 = attr_3.getName();
+                        _builder.append(_name_54, "  \t    ");
                         _builder.append("XRef = kv.remove(\"");
-                        String _columnName_7 = OMLUtilities.columnName(attr_3);
-                        _builder.append(_columnName_7, "  \t    ");
+                        String _columnName_9 = OMLUtilities.columnName(attr_3);
+                        _builder.append(_columnName_9, "  \t    ");
                         _builder.append("\")");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    ");
                         _builder.append("if (\"null\" != ");
-                        String _name_54 = attr_3.getName();
-                        _builder.append(_name_54, "  \t    ");
+                        String _name_55 = attr_3.getName();
+                        _builder.append(_name_55, "  \t    ");
                         _builder.append("XRef) {");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -2090,17 +2209,17 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    ");
                         _builder.append("  ");
                         _builder.append("val Pair<");
-                        String _name_55 = OMLUtilities.EClassType(attr_3).getName();
-                        _builder.append(_name_55, "  \t      ");
-                        _builder.append(", Map<String, String>> ");
-                        String _name_56 = attr_3.getName();
+                        String _name_56 = OMLUtilities.EClassType(attr_3).getName();
                         _builder.append(_name_56, "  \t      ");
+                        _builder.append(", Map<String, String>> ");
+                        String _name_57 = attr_3.getName();
+                        _builder.append(_name_57, "  \t      ");
                         _builder.append("Pair = ");
                         String _tableVariableName_30 = OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_3));
                         _builder.append(_tableVariableName_30, "  \t      ");
                         _builder.append(".get(");
-                        String _name_57 = attr_3.getName();
-                        _builder.append(_name_57, "  \t      ");
+                        String _name_58 = attr_3.getName();
+                        _builder.append(_name_58, "  \t      ");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -2108,8 +2227,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    ");
                         _builder.append("  ");
                         _builder.append("if (null === ");
-                        String _name_58 = attr_3.getName();
-                        _builder.append(_name_58, "  \t      ");
+                        String _name_59 = attr_3.getName();
+                        _builder.append(_name_59, "  \t      ");
                         _builder.append("Pair)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -2117,14 +2236,14 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    ");
                         _builder.append("    ");
                         _builder.append("throw new IllegalArgumentException(\"Null cross-reference lookup for ");
-                        String _name_59 = attr_3.getName();
-                        _builder.append(_name_59, "  \t        ");
+                        String _name_60 = attr_3.getName();
+                        _builder.append(_name_60, "  \t        ");
                         _builder.append(" in ");
                         String _tableVariableName_31 = OMLUtilities.tableVariableName(eClass_22);
                         _builder.append(_tableVariableName_31, "  \t        ");
                         _builder.append(": \"+");
-                        String _name_60 = attr_3.getName();
-                        _builder.append(_name_60, "  \t        ");
+                        String _name_61 = attr_3.getName();
+                        _builder.append(_name_61, "  \t        ");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -2132,11 +2251,11 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    ");
                         _builder.append("  ");
                         _builder.append("oml.");
-                        String _name_61 = attr_3.getName();
-                        _builder.append(_name_61, "  \t      ");
-                        _builder.append(" = ");
                         String _name_62 = attr_3.getName();
                         _builder.append(_name_62, "  \t      ");
+                        _builder.append(" = ");
+                        String _name_63 = attr_3.getName();
+                        _builder.append(_name_63, "  \t      ");
                         _builder.append("Pair.key");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -2149,36 +2268,36 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("\t");
                         _builder.append("    ");
                         _builder.append("val String ");
-                        String _name_63 = attr_3.getName();
-                        _builder.append(_name_63, "  \t    ");
+                        String _name_64 = attr_3.getName();
+                        _builder.append(_name_64, "  \t    ");
                         _builder.append("XRef = kv.remove(\"");
-                        String _columnName_8 = OMLUtilities.columnName(attr_3);
-                        _builder.append(_columnName_8, "  \t    ");
+                        String _columnName_10 = OMLUtilities.columnName(attr_3);
+                        _builder.append(_columnName_10, "  \t    ");
                         _builder.append("\")");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    ");
                         _builder.append("val Pair<");
-                        String _name_64 = OMLUtilities.EClassType(attr_3).getName();
-                        _builder.append(_name_64, "  \t    ");
-                        _builder.append(", Map<String, String>> ");
-                        String _name_65 = attr_3.getName();
+                        String _name_65 = OMLUtilities.EClassType(attr_3).getName();
                         _builder.append(_name_65, "  \t    ");
+                        _builder.append(", Map<String, String>> ");
+                        String _name_66 = attr_3.getName();
+                        _builder.append(_name_66, "  \t    ");
                         _builder.append("Pair = ");
                         String _tableVariableName_32 = OMLUtilities.tableVariableName(OMLUtilities.EClassType(attr_3));
                         _builder.append(_tableVariableName_32, "  \t    ");
                         _builder.append(".get(");
-                        String _name_66 = attr_3.getName();
-                        _builder.append(_name_66, "  \t    ");
+                        String _name_67 = attr_3.getName();
+                        _builder.append(_name_67, "  \t    ");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    ");
                         _builder.append("if (null === ");
-                        String _name_67 = attr_3.getName();
-                        _builder.append(_name_67, "  \t    ");
+                        String _name_68 = attr_3.getName();
+                        _builder.append(_name_68, "  \t    ");
                         _builder.append("Pair)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
@@ -2186,25 +2305,25 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.append("    ");
                         _builder.append("  ");
                         _builder.append("throw new IllegalArgumentException(\"Null cross-reference lookup for ");
-                        String _name_68 = attr_3.getName();
-                        _builder.append(_name_68, "  \t      ");
+                        String _name_69 = attr_3.getName();
+                        _builder.append(_name_69, "  \t      ");
                         _builder.append(" in ");
                         String _tableVariableName_33 = OMLUtilities.tableVariableName(eClass_22);
                         _builder.append(_tableVariableName_33, "  \t      ");
                         _builder.append(": \"+");
-                        String _name_69 = attr_3.getName();
-                        _builder.append(_name_69, "  \t      ");
+                        String _name_70 = attr_3.getName();
+                        _builder.append(_name_70, "  \t      ");
                         _builder.append("XRef)");
                         _builder.newLineIfNotEmpty();
                         _builder.append("  ");
                         _builder.append("\t");
                         _builder.append("    ");
                         _builder.append("oml.");
-                        String _name_70 = attr_3.getName();
-                        _builder.append(_name_70, "  \t    ");
-                        _builder.append(" = ");
                         String _name_71 = attr_3.getName();
                         _builder.append(_name_71, "  \t    ");
+                        _builder.append(" = ");
+                        String _name_72 = attr_3.getName();
+                        _builder.append(_name_72, "  \t    ");
                         _builder.append("Pair.key");
                         _builder.newLineIfNotEmpty();
                       }
@@ -2289,19 +2408,43 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.append("]]");
       _builder.newLine();
       _builder.append("\t\t");
-      _builder.append("if (null !== r0a)");
-      _builder.newLine();
-      _builder.append("\t\t\t");
-      _builder.append("r0a");
+      _builder.append("val r0 = r0a ?: r0b");
       _builder.newLine();
       _builder.append("\t\t");
-      _builder.append("else if (null !== r0b)");
+      _builder.append("if (null !== r0) {");
       _builder.newLine();
       _builder.append("\t\t\t");
-      _builder.append("r0b");
+      _builder.append("switch r0 {");
+      _builder.newLine();
+      _builder.append("\t\t\t\t");
+      _builder.append("OMLZipResource: {");
+      _builder.newLine();
+      _builder.append("\t\t\t\t");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("\t\t\t\t");
+      _builder.append("XtextResource: {");
+      _builder.newLine();
+      _builder.append("\t\t\t\t\t");
+      _builder.append("scan = true");
+      _builder.newLine();
+      _builder.append("\t\t\t\t");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("\t\t\t\t");
+      _builder.append("default: {");
+      _builder.newLine();
+      _builder.append("\t\t\t\t");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("\t\t\t");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("\t\t\t");
+      _builder.append("r0");
       _builder.newLine();
       _builder.append("\t\t");
-      _builder.append("else {");
+      _builder.append("} else {");
       _builder.newLine();
       _builder.append("\t\t\t");
       _builder.append("val r1 = omlCatalog.resolveURI(uriString + \".oml\")");
@@ -2472,15 +2615,15 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       {
         for(final EClass eClass_23 : eClassesExceptModules) {
           _builder.append("  \t      ");
-          String _name_72 = eClass_23.getName();
-          _builder.append(_name_72, "  \t      ");
+          String _name_73 = eClass_23.getName();
+          _builder.append(_name_73, "  \t      ");
           _builder.append(": {");
           _builder.newLineIfNotEmpty();
           _builder.append("  \t      ");
           _builder.append("  ");
           _builder.append("val pair = new Pair<");
-          String _name_73 = eClass_23.getName();
-          _builder.append(_name_73, "  \t        ");
+          String _name_74 = eClass_23.getName();
+          _builder.append(_name_74, "  \t        ");
           _builder.append(", Map<String,String>>(e, Collections.emptyMap)");
           _builder.newLineIfNotEmpty();
           _builder.append("  \t      ");
@@ -2491,8 +2634,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           _builder.newLineIfNotEmpty();
           {
             final Function1<EClass, Boolean> _function_36 = (EClass it) -> {
-              String _name_74 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_74, "LogicalElement"));
+              String _name_75 = it.getName();
+              return Boolean.valueOf(Objects.equal(_name_75, "LogicalElement"));
             };
             boolean _exists_17 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_36);
             if (_exists_17) {
@@ -2502,8 +2645,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
               _builder.newLine();
             } else {
               final Function1<EClass, Boolean> _function_37 = (EClass it) -> {
-                String _name_74 = it.getName();
-                return Boolean.valueOf(Objects.equal(_name_74, "Entity"));
+                String _name_75 = it.getName();
+                return Boolean.valueOf(Objects.equal(_name_75, "Entity"));
               };
               boolean _exists_18 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_37);
               if (_exists_18) {
@@ -2513,8 +2656,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                 _builder.newLine();
               } else {
                 final Function1<EClass, Boolean> _function_38 = (EClass it) -> {
-                  String _name_74 = it.getName();
-                  return Boolean.valueOf(Objects.equal(_name_74, "EntityRelationship"));
+                  String _name_75 = it.getName();
+                  return Boolean.valueOf(Objects.equal(_name_75, "EntityRelationship"));
                 };
                 boolean _exists_19 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_38);
                 if (_exists_19) {
@@ -2524,8 +2667,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                   _builder.newLine();
                 } else {
                   final Function1<EClass, Boolean> _function_39 = (EClass it) -> {
-                    String _name_74 = it.getName();
-                    return Boolean.valueOf(Objects.equal(_name_74, "ConceptualRelationship"));
+                    String _name_75 = it.getName();
+                    return Boolean.valueOf(Objects.equal(_name_75, "ConceptualRelationship"));
                   };
                   boolean _exists_20 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_39);
                   if (_exists_20) {
@@ -2535,8 +2678,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                     _builder.newLine();
                   } else {
                     final Function1<EClass, Boolean> _function_40 = (EClass it) -> {
-                      String _name_74 = it.getName();
-                      return Boolean.valueOf(Objects.equal(_name_74, "DataRange"));
+                      String _name_75 = it.getName();
+                      return Boolean.valueOf(Objects.equal(_name_75, "DataRange"));
                     };
                     boolean _exists_21 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_40);
                     if (_exists_21) {
@@ -2546,8 +2689,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                       _builder.newLine();
                     } else {
                       final Function1<EClass, Boolean> _function_41 = (EClass it) -> {
-                        String _name_74 = it.getName();
-                        return Boolean.valueOf(Objects.equal(_name_74, "DataRelationshipToScalar"));
+                        String _name_75 = it.getName();
+                        return Boolean.valueOf(Objects.equal(_name_75, "DataRelationshipToScalar"));
                       };
                       boolean _exists_22 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_41);
                       if (_exists_22) {
@@ -2557,8 +2700,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                         _builder.newLine();
                       } else {
                         final Function1<EClass, Boolean> _function_42 = (EClass it) -> {
-                          String _name_74 = it.getName();
-                          return Boolean.valueOf(Objects.equal(_name_74, "DataRelationshipToStructure"));
+                          String _name_75 = it.getName();
+                          return Boolean.valueOf(Objects.equal(_name_75, "DataRelationshipToStructure"));
                         };
                         boolean _exists_23 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_42);
                         if (_exists_23) {
@@ -2568,8 +2711,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                           _builder.newLine();
                         } else {
                           final Function1<EClass, Boolean> _function_43 = (EClass it) -> {
-                            String _name_74 = it.getName();
-                            return Boolean.valueOf(Objects.equal(_name_74, "Predicate"));
+                            String _name_75 = it.getName();
+                            return Boolean.valueOf(Objects.equal(_name_75, "Predicate"));
                           };
                           boolean _exists_24 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_43);
                           if (_exists_24) {
@@ -2579,8 +2722,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                             _builder.newLine();
                           } else {
                             final Function1<EClass, Boolean> _function_44 = (EClass it) -> {
-                              String _name_74 = it.getName();
-                              return Boolean.valueOf(Objects.equal(_name_74, "RestrictableRelationship"));
+                              String _name_75 = it.getName();
+                              return Boolean.valueOf(Objects.equal(_name_75, "RestrictableRelationship"));
                             };
                             boolean _exists_25 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_44);
                             if (_exists_25) {
@@ -2590,8 +2733,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                               _builder.newLine();
                             } else {
                               final Function1<EClass, Boolean> _function_45 = (EClass it) -> {
-                                String _name_74 = it.getName();
-                                return Boolean.valueOf(Objects.equal(_name_74, "RestrictionStructuredDataPropertyContext"));
+                                String _name_75 = it.getName();
+                                return Boolean.valueOf(Objects.equal(_name_75, "RestrictionStructuredDataPropertyContext"));
                               };
                               boolean _exists_26 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_45);
                               if (_exists_26) {
@@ -2601,8 +2744,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                                 _builder.newLine();
                               } else {
                                 final Function1<EClass, Boolean> _function_46 = (EClass it) -> {
-                                  String _name_74 = it.getName();
-                                  return Boolean.valueOf(Objects.equal(_name_74, "TerminologyBox"));
+                                  String _name_75 = it.getName();
+                                  return Boolean.valueOf(Objects.equal(_name_75, "TerminologyBox"));
                                 };
                                 boolean _exists_27 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_46);
                                 if (_exists_27) {
@@ -2612,8 +2755,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                                   _builder.newLine();
                                 } else {
                                   final Function1<EClass, Boolean> _function_47 = (EClass it) -> {
-                                    String _name_74 = it.getName();
-                                    return Boolean.valueOf(Objects.equal(_name_74, "ConceptTreeDisjunction"));
+                                    String _name_75 = it.getName();
+                                    return Boolean.valueOf(Objects.equal(_name_75, "ConceptTreeDisjunction"));
                                   };
                                   boolean _exists_28 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_47);
                                   if (_exists_28) {
@@ -2623,8 +2766,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                                     _builder.newLine();
                                   } else {
                                     final Function1<EClass, Boolean> _function_48 = (EClass it) -> {
-                                      String _name_74 = it.getName();
-                                      return Boolean.valueOf(Objects.equal(_name_74, "ConceptualEntitySingletonInstance"));
+                                      String _name_75 = it.getName();
+                                      return Boolean.valueOf(Objects.equal(_name_75, "ConceptualEntitySingletonInstance"));
                                     };
                                     boolean _exists_29 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_48);
                                     if (_exists_29) {
@@ -2634,8 +2777,8 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                                       _builder.newLine();
                                     } else {
                                       final Function1<EClass, Boolean> _function_49 = (EClass it) -> {
-                                        String _name_74 = it.getName();
-                                        return Boolean.valueOf(Objects.equal(_name_74, "SingletonInstanceStructuredDataPropertyContext"));
+                                        String _name_75 = it.getName();
+                                        return Boolean.valueOf(Objects.equal(_name_75, "SingletonInstanceStructuredDataPropertyContext"));
                                       };
                                       boolean _exists_30 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_49);
                                       if (_exists_30) {
@@ -2656,19 +2799,6 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
                   }
                 }
               }
-            }
-          }
-          {
-            final Function1<EClass, Boolean> _function_50 = (EClass it) -> {
-              String _name_74 = it.getName();
-              return Boolean.valueOf(Objects.equal(_name_74, "ModuleEdge"));
-            };
-            boolean _exists_31 = IterableExtensions.<EClass>exists(eClass_23.getEAllSuperTypes(), _function_50);
-            if (_exists_31) {
-              _builder.append("  \t      ");
-              _builder.append("  ");
-              _builder.append("//includeModule(e.targetModule)");
-              _builder.newLine();
             }
           }
           _builder.append("  \t      ");
