@@ -983,6 +983,7 @@ class OMLUtilities extends OMLXcorePackages {
 		"ReifiedRelationship", 
 		"ForwardProperty",
 		"InverseProperty",
+		"SpecializedReifiedRelationship",
 		
 		"UnreifiedRelationship",
 		
@@ -1024,7 +1025,6 @@ class OMLUtilities extends OMLXcorePackages {
 		
 		"AspectSpecializationAxiom",
 		"ConceptSpecializationAxiom",
-		"ReifiedRelationshipSpecializationAxiom",
 		
 		// Other TermAxioms
 		
@@ -1098,7 +1098,7 @@ class OMLUtilities extends OMLXcorePackages {
 		"descriptionBoxUUID",
 		"refiningDescriptionBoxUUID",
 		"singletonConceptClassifierUUID",
-		"singletonReifiedRelationshipClassifierUUID",
+		"singletonConceptualRelationshipClassifierUUID",
 		"dataStructureTypeUUID",
 		"superAspectUUID",
 		"subEntityUUID",
@@ -1134,6 +1134,7 @@ class OMLUtilities extends OMLXcorePackages {
 		"rangeUUID",
 		"sourceUUID",
 		"targetUUID",
+		"generalUUID",
 		"superRelationshipUUID",
 		"subRelationshipUUID",
 		"rootUUID",

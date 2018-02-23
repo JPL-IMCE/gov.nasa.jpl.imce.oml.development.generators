@@ -138,6 +138,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.ChainRule
 		import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 		import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
+		import gov.nasa.jpl.imce.oml.model.terminologies.ConceptualRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.DataRange
 		import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToScalar
 		import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToStructure
@@ -158,7 +159,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.Predicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
-		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictableRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionScalarDataPropertyValue
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionStructuredDataPropertyContext
@@ -169,6 +169,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.SegmentPredicate
+		import gov.nasa.jpl.imce.oml.model.terminologies.SpecializedReifiedRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.SubDataPropertyOfAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.SubObjectPropertyOfAxiom
@@ -199,6 +200,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  protected val Map<String, Pair<LogicalElement, Map<String,String>>> logicalElements
 		  protected val Map<String, Pair<Entity, Map<String,String>>> entities
 		  protected val Map<String, Pair<EntityRelationship, Map<String,String>>> entityRelationships
+		  protected val Map<String, Pair<ConceptualRelationship, Map<String,String>>> conceptualRelationships
 		  protected val Map<String, Pair<DataRange, Map<String,String>>> dataRanges 
 		  protected val Map<String, Pair<DataRelationshipToScalar, Map<String,String>>> dataRelationshipToScalars
 		  protected val Map<String, Pair<DataRelationshipToStructure, Map<String,String>>> dataRelationshipToStructures
@@ -229,6 +231,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    	logicalElements = new HashMap<String, Pair<LogicalElement, Map<String,String>>>()
 		    entities = new HashMap<String, Pair<Entity, Map<String,String>>>()
 		    entityRelationships = new HashMap<String, Pair<EntityRelationship, Map<String,String>>>()
+		    conceptualRelationships = new HashMap<String, Pair<ConceptualRelationship, Map<String,String>>>()
 		    dataRanges = new HashMap<String, Pair<DataRange, Map<String,String>>>()
 		    dataRelationshipToScalars = new HashMap<String, Pair<DataRelationshipToScalar, Map<String,String>>>()
 		    dataRelationshipToStructures = new HashMap<String, Pair<DataRelationshipToStructure, Map<String,String>>>()
@@ -371,6 +374,9 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	«IF eClass.EAllSuperTypes.exists[name == "EntityRelationship"]»
 		  		entityRelationships.put(uuid, new Pair<EntityRelationship, Map<String, String>>(oml, Collections.emptyMap))
 		  	«ENDIF»
+		  	«IF eClass.EAllSuperTypes.exists[name == "ConceptualRelationship"]»
+		  		conceptualRelationships.put(uuid, new Pair<ConceptualRelationship, Map<String, String>>(oml, Collections.emptyMap))
+		  	«ENDIF»
 		  	«IF eClass.EAllSuperTypes.exists[name == "DataRange"]»
 		  		dataRanges.put(uuid, new Pair<DataRange, Map<String, String>>(oml, Collections.emptyMap))
 		  	«ENDIF»
@@ -418,6 +424,9 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    
 			// Lookup table for EntityRelationship cross references
 		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "EntityRelationship"]] SEPARATOR "\n"»includeMap(entityRelationships, «eClass.tableVariableName»)«ENDFOR»
+		    
+			// Lookup table for ConceptualRelationship cross references
+		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "ConceptualRelationship"]] SEPARATOR "\n"»includeMap(conceptualRelationships, «eClass.tableVariableName»)«ENDFOR»
 		    
 			// Lookup table for DataRange cross references
 		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "DataRange"]] SEPARATOR "\n"»includeMap(dataRanges, «eClass.tableVariableName»)«ENDFOR»
@@ -624,6 +633,8 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	        entities.put(e.uuid(), new Pair<Entity, Map<String,String>>(e, Collections.emptyMap))
 		  	        «ELSEIF (eClass.EAllSuperTypes.exists[name == "EntityRelationship"])»
 		  	        entityRelationships.put(e.uuid(), new Pair<EntityRelationship, Map<String,String>>(e, Collections.emptyMap))
+		  	        «ELSEIF (eClass.EAllSuperTypes.exists[name == "ConceptualRelationship"])»
+		  	        conceptualRelationships.put(e.uuid(), new Pair<ConceptualRelationship, Map<String,String>>(e, Collections.emptyMap))
 		  	        «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRange"])»
 		  	        dataRanges.put(e.uuid(), new Pair<DataRange, Map<String,String>>(e, Collections.emptyMap))
 		  	        «ELSEIF (eClass.EAllSuperTypes.exists[name == "DataRelationshipToScalar"])»
