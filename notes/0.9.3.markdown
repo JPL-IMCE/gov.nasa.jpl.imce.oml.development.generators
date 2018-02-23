@@ -5,3 +5,5 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.3 is a significant update
 - [#27 Update for new SpecializedReifiedRelationship pattern](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/27)
 
 - [#28 Update for OMLZipResource.load](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/28)
+
+- [#29 Update for OMLSpecificationTables.read methods](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/29)
