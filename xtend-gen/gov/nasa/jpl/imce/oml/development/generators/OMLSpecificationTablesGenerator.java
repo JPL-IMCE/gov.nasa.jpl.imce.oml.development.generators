@@ -115,15 +115,24 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       final Path bundlePath = Paths.get(targetDir);
       final Path oml_Folder = bundlePath.resolve("shared/src/main/scala/gov/nasa/jpl/imce/oml/tables");
       oml_Folder.toFile().mkdirs();
+      final Path jvm_Folder = bundlePath.resolve("jvm/src/main/scala/gov/nasa/jpl/imce/oml/tables");
+      jvm_Folder.toFile().mkdirs();
       this.generate(ePackages, 
         oml_Folder.toAbsolutePath().toString(), packageQName, 
         "OMLSpecificationTables");
+      File _file = jvm_Folder.resolve("OMLSpecificationTables.scala").toFile();
+      final FileOutputStream tablesFile = new FileOutputStream(_file);
+      try {
+        tablesFile.write(this.generateTablesFile(ePackages, packageQName, "OMLSpecificationTables").getBytes());
+      } finally {
+        tablesFile.close();
+      }
       final Path oml_testFolder = bundlePath.resolve("shared/src/test/scala/test/oml/tables");
       oml_testFolder.toFile().mkdirs();
       String _plus = (oml_testFolder + File.separator);
       String _plus_1 = (_plus + "UUIDGenerators.scala");
-      File _file = new File(_plus_1);
-      final FileOutputStream uuidGeneratorFile = new FileOutputStream(_file);
+      File _file_1 = new File(_plus_1);
+      final FileOutputStream uuidGeneratorFile = new FileOutputStream(_file_1);
       try {
         uuidGeneratorFile.write(this.generateUUIDGeneratorFile(ePackages, packageQName).getBytes());
       } finally {
@@ -133,8 +142,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       oml_apiFolder.toFile().mkdirs();
       String _plus_2 = (oml_apiFolder + File.separator);
       String _plus_3 = (_plus_2 + "taggedTypes.scala");
-      File _file_1 = new File(_plus_3);
-      final FileOutputStream apiTaggedTypesFile = new FileOutputStream(_file_1);
+      File _file_2 = new File(_plus_3);
+      final FileOutputStream apiTaggedTypesFile = new FileOutputStream(_file_2);
       try {
         apiTaggedTypesFile.write(this.generateAPITaggedTypesFile(ePackages, "gov.nasa.jpl.imce.oml.resolver.api").getBytes());
       } finally {
@@ -161,13 +170,6 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       } finally {
         taggedTypesFile.close();
       }
-      File _file_2 = new File((((targetFolder + File.separator) + tableName) + ".scala"));
-      final FileOutputStream tablesFile = new FileOutputStream(_file_2);
-      try {
-        tablesFile.write(this.generateTablesFile(ePackages, packageQName, tableName).getBytes());
-      } finally {
-        tablesFile.close();
-      }
       final Function1<EPackage, EList<EClassifier>> _function = (EPackage it) -> {
         return it.getEClassifiers();
       };
@@ -178,8 +180,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           String _name = eClass.getName();
           String _plus = ((targetFolder + File.separator) + _name);
           String _plus_1 = (_plus + ".scala");
-          File _file_3 = new File(_plus_1);
-          final FileOutputStream classFile = new FileOutputStream(_file_3);
+          File _file_2 = new File(_plus_1);
+          final FileOutputStream classFile = new FileOutputStream(_file_2);
           try {
             classFile.write(this.generateClassFile(eClass, packageQName).getBytes());
           } finally {
@@ -190,8 +192,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
             String _name_1 = eClass.getName();
             String _plus_2 = ((targetFolder + File.separator) + _name_1);
             String _plus_3 = (_plus_2 + ".scala");
-            File _file_4 = new File(_plus_3);
-            final FileOutputStream classFile_1 = new FileOutputStream(_file_4);
+            File _file_3 = new File(_plus_3);
+            final FileOutputStream classFile_1 = new FileOutputStream(_file_3);
             try {
               classFile_1.write(this.generateTraitFile(eClass, packageQName).getBytes());
             } finally {
@@ -229,6 +231,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       _builder.append("import java.io.{File,InputStream}");
       _builder.newLine();
       _builder.append("import org.apache.commons.compress.archivers.zip.{ZipArchiveEntry, ZipFile}");
+      _builder.newLine();
+      _builder.append("import gov.nasa.jpl.imce.oml.parallelSort");
       _builder.newLine();
       _builder.newLine();
       {
@@ -506,7 +510,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           }
           String _tableVariableName_3 = OMLUtilities.tableVariableName(eClass_4);
           _builder.append(_tableVariableName_3, "  ");
-          _builder.append(" = (");
+          _builder.append(" = parallelSort.parSortBy((");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append("      ");
@@ -524,7 +528,10 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append("    ");
-          _builder.append(").to[Seq].sortBy(_.uuid)");
+          _builder.append(").to[Seq], (a: ");
+          String _name = eClass_4.getName();
+          _builder.append(_name, "      ");
+          _builder.append(") => a.uuid)");
         }
         if (_hasElements_3) {
           _builder.append(")", "  ");
@@ -561,8 +568,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         for(final EClass eClass_5 : eClasses) {
           _builder.append("  \t  ");
           _builder.append("case ");
-          String _name = eClass_5.getName();
-          _builder.append(_name, "  \t  ");
+          String _name_1 = eClass_5.getName();
+          _builder.append(_name_1, "  \t  ");
           _builder.append("Helper.TABLE_JSON_FILENAME =>");
           _builder.newLineIfNotEmpty();
           _builder.append("  \t  ");
@@ -649,8 +656,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
         for(final EClass eClass_6 : eClasses) {
           _builder.append("      ");
           _builder.append("zos.putNextEntry(new java.util.zip.ZipEntry(");
-          String _name_1 = eClass_6.getName();
-          _builder.append(_name_1, "      ");
+          String _name_2 = eClass_6.getName();
+          _builder.append(_name_2, "      ");
           _builder.append("Helper.TABLE_JSON_FILENAME))");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
@@ -662,8 +669,8 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.append("      ");
           _builder.append("   ");
           _builder.append("val line = ");
-          String _name_2 = eClass_6.getName();
-          _builder.append(_name_2, "         ");
+          String _name_3 = eClass_6.getName();
+          _builder.append(_name_3, "         ");
           _builder.append("Helper.toJSON(t)+\"\\n\"");
           _builder.newLineIfNotEmpty();
           _builder.append("      ");
@@ -732,7 +739,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     _builder.append(" = ");
     _builder.newLineIfNotEmpty();
     _builder.append("  ");
-    _builder.append("(");
+    _builder.append("parallelSort.parSortBy((");
     String _tableVariableName_1 = OMLUtilities.tableVariableName(eClass);
     _builder.append(_tableVariableName_1, "  ");
     _builder.append(".to[Set] ++ ");
@@ -744,8 +751,11 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
     _builder.append("Helper.fromJSON).to[Set]");
     _builder.newLineIfNotEmpty();
     _builder.append("  ");
-    _builder.append(").to[Seq].sortBy(_.uuid))");
-    _builder.newLine();
+    _builder.append(").to[Seq], (a: ");
+    String _name_1 = eClass.getName();
+    _builder.append(_name_1, "  ");
+    _builder.append(") => a.uuid))");
+    _builder.newLineIfNotEmpty();
     return _builder.toString();
   }
   
