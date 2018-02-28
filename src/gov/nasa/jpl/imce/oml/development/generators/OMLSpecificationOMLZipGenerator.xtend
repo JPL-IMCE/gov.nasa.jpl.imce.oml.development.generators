@@ -162,8 +162,10 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.IRIScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.NumericScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction
+		import gov.nasa.jpl.imce.oml.model.terminologies.PartialReifiedRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.Predicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
+		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictableRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionScalarDataPropertyValue
 		import gov.nasa.jpl.imce.oml.model.terminologies.RestrictionStructuredDataPropertyContext
@@ -174,7 +176,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.SegmentPredicate
-		import gov.nasa.jpl.imce.oml.model.terminologies.SpecializedReifiedRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.SubDataPropertyOfAxiom
 		import gov.nasa.jpl.imce.oml.model.terminologies.SubObjectPropertyOfAxiom
@@ -326,6 +327,15 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		   */
 		  static def void load(ResourceSet rs, OMLZipResource r, File omlZipFile) {
 		
+			val fileURI = URI.createFileURI(omlZipFile.absolutePath)
+			val c = OMLExtensions.findCatalogIfExists(rs, fileURI)
+			if (null === c)
+				throw new IllegalArgumentException("«tableName».load(): failed to find an OML catalog from: "+fileURI)
+			if (c.parsedCatalogs.empty)
+				throw new IllegalArgumentException("«tableName».load(): No OML catalog found from: "+fileURI)
+			if (c.entries.empty)
+				throw new IllegalArgumentException("«tableName».load(): Empty OML catalog from: "+c.parsedCatalogs.join("\n"))
+								      
 		    val tables = OMLZipResource.getOrInitializeOMLSpecificationTables(rs)
 		    val ext = tables.omlCommonFactory.createExtent()
 		    r.contents.add(ext)
@@ -335,7 +345,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		      val buffer = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
 		      val lines = new ArrayList<String>()
 		      lines.addAll(buffer.lines().iterator.toIterable)
-		      buffer.close()
+		      is.close()
 		      switch ze.name {
 		  	    «FOR eClass : eClasses»
 		  	    case "«pluralize(eClass.name)».json":
@@ -347,29 +357,37 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    ]
 		    zip.close()   
 		    
+		    tables.processQueue(rs)
+		    
+		    	tables.resolve(rs, r)
+		  }
+		  
+		  def void queueModule(Module m) {
+		  	moduleQueue.add(m)
+		  }
+		  
+		  def void processQueue(ResourceSet rs) {
 		    var Boolean more = false
 		    do {
 		        more = false
-		        	if (!tables.iriLoadQueue.empty) {
-		        		val iri = tables.iriLoadQueue.remove
-		        		if (tables.visitedIRIs.add(iri)) {
+		        	if (!iriLoadQueue.empty) {
+		        		val iri = iriLoadQueue.remove
+		        		if (visitedIRIs.add(iri)) {
 		        			more = true
-		     	 	    	tables.loadOMLZipResource(rs, URI.createURI(iri))	
+		     	 	    	loadOMLZipResource(rs, URI.createURI(iri))	
 		     	 	}
 		        }
 		        	
-		        	if (!tables.moduleQueue.empty) {
-		        		val m = tables.moduleQueue.remove
-		        		if (tables.visitedModules.add(m)) {
+		        	if (!moduleQueue.empty) {
+		        		val m = moduleQueue.remove
+		        		if (visitedModules.add(m)) {
 		        			more = true
-		        			tables.includeModule(m)
+		        			includeModule(m)
 		        		}
 		        	}
 		    } while (more)
-
-		    tables.resolve(rs, r)
 		  }
-
+		  
 		  «FOR eClass : eClasses»
 		  protected def void read«eClass.tableVariableName.upperCaseInitialOrWord»(Extent ext, ArrayList<String> lines) {
 		  	val kvs = OMLZipResource.lines2tuples(lines)

@@ -298,8 +298,8 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		«FOR ct : containedTypes BEFORE "// Contained types:\n// - " SEPARATOR "\n// - " AFTER "\n"»«ct.name» («ct.EPackage.name»)«ENDFOR»
 		«eClass.doc("")»case class «eClass.name»
 		(«FOR em : extManaged.filter[!isAbstract] BEFORE " " SEPARATOR ",\n  " AFTER ",\n"»«em.tableVariableName»
-		  : Map[taggedTypes.«em.name»UUID, «em.name»] 
-		  = HashMap.empty[taggedTypes.«em.name»UUID, «em.name»]«ENDFOR»
+		  : Map[taggedTypes.ModuleUUID, «em.name»] 
+		  = HashMap.empty[taggedTypes.ModuleUUID, «em.name»]«ENDFOR»
 		«FOR c : containers BEFORE "\n  " SEPARATOR ",\n  " AFTER ",\n"»«c.name»
 		  : Map[«c.EClassContainer.name», «IF (c.upperBound == 1)»«c.EType.name»«ELSE»Set[«c.EType.name»]«ENDIF»]
 		  = HashMap.empty[«c.EClassContainer.name», «IF (c.upperBound == 1)»«c.EType.name»«ELSE»Set[«c.EType.name»]«ENDIF»]«ENDFOR»
@@ -354,32 +354,32 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  def lookupModule
 		  (uuid: taggedTypes.ModuleUUID)
 		  : Option[Module]
-		  = lookupTerminologyBox(uuid.asInstanceOf[taggedTypes.TerminologyBoxUUID]) orElse
-		  lookupDescriptionBox(uuid.asInstanceOf[taggedTypes.DescriptionBoxUUID])
+		  = lookupTerminologyBox(uuid) orElse
+		  lookupDescriptionBox(uuid)
 		  
 		  def lookupTerminologyBox
-		  (uuid: Option[taggedTypes.TerminologyBoxUUID])
+		  (uuid: Option[taggedTypes.ModuleUUID])
 		  : Option[TerminologyBox]
 		  = uuid.flatMap { 
 		  	lookupTerminologyBox
 		  }
 		  
 		  def lookupTerminologyBox
-		  (uuid: taggedTypes.TerminologyBoxUUID)
+		  (uuid: taggedTypes.ModuleUUID)
 		  : Option[TerminologyBox]
-		  = lookupTerminologyGraph(uuid.asInstanceOf[taggedTypes.TerminologyGraphUUID]) orElse 
-		  lookupBundle(uuid.asInstanceOf[taggedTypes.BundleUUID])
+		  = lookupTerminologyGraph(uuid) orElse 
+		  lookupBundle(uuid)
 		  «FOR em : extManaged.filter[!isAbstract] SEPARATOR "\n  " AFTER "\n"»
 		  
 		  def lookup«em.name»
-		  (uuid: Option[taggedTypes.«em.name»UUID])
+		  (uuid: Option[taggedTypes.ModuleUUID])
 		  : Option[«em.name»]
 		  = uuid.flatMap {
 		    lookup«em.name»
 		  } 
 		  
 		  def lookup«em.name»
-		  (uuid: taggedTypes.«em.name»UUID)
+		  (uuid: taggedTypes.ModuleUUID)
 		  : Option[«em.name»]
 		  = «em.tableVariableName».get(uuid)
 		  «ENDFOR»

@@ -981,9 +981,9 @@ class OMLUtilities extends OMLXcorePackages {
 		// EntityRelationship (DirectedBinaryRelationshipKind)
 		
 		"ReifiedRelationship", 
+		"PartialReifiedRelationship",
 		"ForwardProperty",
 		"InverseProperty",
-		"SpecializedReifiedRelationship",
 		
 		"UnreifiedRelationship",
 		
@@ -1025,6 +1025,7 @@ class OMLUtilities extends OMLXcorePackages {
 		
 		"AspectSpecializationAxiom",
 		"ConceptSpecializationAxiom",
+		"ReifiedRelationshipSpecializationAxiom",
 		
 		// Other TermAxioms
 		
@@ -1134,7 +1135,6 @@ class OMLUtilities extends OMLXcorePackages {
 		"rangeUUID",
 		"sourceUUID",
 		"targetUUID",
-		"generalUUID",
 		"superRelationshipUUID",
 		"subRelationshipUUID",
 		"rootUUID",

@@ -77,12 +77,21 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		val oml_Folder = bundlePath.resolve("shared/src/main/scala/gov/nasa/jpl/imce/oml/tables")
 		oml_Folder.toFile.mkdirs	
 		
+		val jvm_Folder = bundlePath.resolve("jvm/src/main/scala/gov/nasa/jpl/imce/oml/tables")
+		jvm_Folder.toFile.mkdirs	
+		
 		generate(
       		ePackages, 
       		oml_Folder.toAbsolutePath.toString, 
       		packageQName,
       		"OMLSpecificationTables")
-      		
+      	
+      	val tablesFile = new FileOutputStream(jvm_Folder.resolve("OMLSpecificationTables.scala").toFile)
+		try {
+			tablesFile.write(generateTablesFile(ePackages, packageQName, "OMLSpecificationTables").bytes)
+		} finally {
+			tablesFile.close
+		}
       	val oml_testFolder = bundlePath.resolve("shared/src/test/scala/test/oml/tables")
       	oml_testFolder.toFile.mkdirs	
 		
@@ -134,12 +143,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		} finally {
 			taggedTypesFile.close
 		}
-		val tablesFile = new FileOutputStream(new File(targetFolder + File::separator + tableName + ".scala"))
-		try {
-			tablesFile.write(generateTablesFile(ePackages, packageQName, tableName).bytes)
-		} finally {
-			tablesFile.close
-		}
+		
 		for(eClass : ePackages.map[EClassifiers].flatten.filter(EClass))  {
 			if (eClass.isFunctionalAPI) {
 				val classFile = new FileOutputStream(new File(targetFolder + File::separator + eClass.name + ".scala"))			
@@ -168,6 +172,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		
 		import java.io.{File,InputStream}
 		import org.apache.commons.compress.archivers.zip.{ZipArchiveEntry, ZipFile}
+		import gov.nasa.jpl.imce.oml.parallelSort
 		
 		«IF 'OMLSpecificationTables' == tableName»
 		import scala.collection.immutable.{Seq,Set}
@@ -244,10 +249,10 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  def mergeTables
 		  (t1: «tableName», t2: «tableName»)
 		  : «tableName»
-		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = (
+		  = «FOR eClass : eClasses BEFORE tableName + "(\n    " SEPARATOR ",\n    " AFTER ")"»«eClass.tableVariableName» = parallelSort.parSortBy((
 		        t1.«eClass.tableVariableName».to[Set] ++ 
 		        t2.«eClass.tableVariableName».to[Set]
-		      ).to[Seq].sortBy(_.uuid)«ENDFOR»
+		      ).to[Seq], (a: «eClass.name») => a.uuid)«ENDFOR»
 		  
 		  def readZipArchive
 		  (zipFile: ZipFile)
@@ -312,9 +317,9 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 	def «eClass.tableReaderName»(is: InputStream)
 	: «tableName»
 	= copy(«eClass.tableVariableName» = 
-	  («eClass.tableVariableName».to[Set] ++ 
+	  parallelSort.parSortBy((«eClass.tableVariableName».to[Set] ++ 
 	   readJSonTable(is, «eClass.name»Helper.fromJSON).to[Set]
-	  ).to[Seq].sortBy(_.uuid))
+	  ).to[Seq], (a: «eClass.name») => a.uuid))
 	'''
 	
 	def generateJS(EPackage ePackage, String targetJSFolder) {
