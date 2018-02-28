@@ -7,3 +7,7 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.3 is a significant update
 - [#28 Update for OMLZipResource.load](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/28)
 
 - [#29 Update for OMLSpecificationTables.read methods](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/29)
+
+- [#30 Code generation update for parallel sorting](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/30)
+
+- [#31 Miscellaneous code generation fixes](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/31)
