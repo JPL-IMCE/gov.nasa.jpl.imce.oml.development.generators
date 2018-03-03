@@ -11,3 +11,5 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.3 is a significant update
 - [#30 Code generation update for parallel sorting](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/30)
 
 - [#31 Miscellaneous code generation fixes](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/31)
+
+- [#32 Code generation update for API change](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/32)
