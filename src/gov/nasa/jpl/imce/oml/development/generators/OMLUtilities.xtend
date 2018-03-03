@@ -981,7 +981,7 @@ class OMLUtilities extends OMLXcorePackages {
 		// EntityRelationship (DirectedBinaryRelationshipKind)
 		
 		"ReifiedRelationship", 
-		"PartialReifiedRelationship",
+		"ReifiedRelationshipRestriction",
 		"ForwardProperty",
 		"InverseProperty",
 		

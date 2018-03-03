@@ -162,7 +162,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.terminologies.IRIScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.NumericScalarRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction
-		import gov.nasa.jpl.imce.oml.model.terminologies.PartialReifiedRelationship
+		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipRestriction
 		import gov.nasa.jpl.imce.oml.model.terminologies.Predicate
 		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
 		import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom

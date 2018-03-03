@@ -81,7 +81,7 @@ class OMLSpecificationDocGenerator extends OMLUtilities {
 				''')
 			
 			
-		val glossaryFile = new FileOutputStream(new File(targetPath.toAbsolutePath.toString + File::separator + "GLOSSARY.md"))
+		val glossaryFile = new FileOutputStream(new File(targetPath.toAbsolutePath.toString + File::separator + "docs" + File::separator + "GLOSSARY.md"))
 		
 		try {
 			
