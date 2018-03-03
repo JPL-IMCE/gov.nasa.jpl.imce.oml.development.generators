@@ -282,7 +282,7 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction");
       _builder.newLine();
-      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.PartialReifiedRelationship");
+      _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipRestriction");
       _builder.newLine();
       _builder.append("import gov.nasa.jpl.imce.oml.model.terminologies.Predicate");
       _builder.newLine();

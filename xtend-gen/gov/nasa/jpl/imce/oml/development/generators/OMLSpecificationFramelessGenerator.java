@@ -1586,12 +1586,11 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       cClasses2.addAll(cClasses);
       CollectionExtensions.<EClass>removeAll(cClasses2, cClasses1);
       final Function1<EClass, Boolean> _function_6 = (EClass it) -> {
-        boolean _endsWith = it.getName().endsWith("Restriction");
-        return Boolean.valueOf((!_endsWith));
+        return Boolean.valueOf(((!it.getName().endsWith("Restriction")) && (!it.getName().endsWith("ReifiedRelationshipRestriction"))));
       };
       final Iterable<EClass> cClasses3 = IterableExtensions.<EClass>filter(cClasses2, _function_6);
       final Function1<EClass, Boolean> _function_7 = (EClass it) -> {
-        return Boolean.valueOf(it.getName().endsWith("Restriction"));
+        return Boolean.valueOf((it.getName().endsWith("Restriction") && (!it.getName().endsWith("ReifiedRelationshipRestriction"))));
       };
       final Iterable<EClass> restrictions = IterableExtensions.<EClass>filter(cClasses, _function_7);
       StringConcatenation _builder = new StringConcatenation();

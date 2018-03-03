@@ -190,8 +190,10 @@ public class OMLSpecificationDocGenerator extends OMLUtilities {
       final StringBuffer buffer = new StringBuffer(_builder);
       String _string = targetPath.toAbsolutePath().toString();
       String _plus = (_string + File.separator);
-      String _plus_1 = (_plus + "GLOSSARY.md");
-      File _file = new File(_plus_1);
+      String _plus_1 = (_plus + "docs");
+      String _plus_2 = (_plus_1 + File.separator);
+      String _plus_3 = (_plus_2 + "GLOSSARY.md");
+      File _file = new File(_plus_3);
       final FileOutputStream glossaryFile = new FileOutputStream(_file);
       try {
         final Function1<EClass, Boolean> _function_7 = (EClass it) -> {
