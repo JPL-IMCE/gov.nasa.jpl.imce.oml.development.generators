@@ -655,11 +655,26 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       {
         for(final EClass eClass_6 : eClasses) {
           _builder.append("      ");
-          _builder.append("zos.putNextEntry(new java.util.zip.ZipEntry(");
+          _builder.append("{");
+          _builder.newLine();
+          _builder.append("      ");
+          _builder.append("\t");
+          _builder.append("val e = new java.util.zip.ZipEntry(");
           String _name_2 = eClass_6.getName();
-          _builder.append(_name_2, "      ");
-          _builder.append("Helper.TABLE_JSON_FILENAME))");
+          _builder.append(_name_2, "      \t");
+          _builder.append("Helper.TABLE_JSON_FILENAME)");
           _builder.newLineIfNotEmpty();
+          _builder.append("      ");
+          _builder.append("\t");
+          _builder.append("e.setTime(0L)");
+          _builder.newLine();
+          _builder.append("      ");
+          _builder.append("\t");
+          _builder.append("zos.putNextEntry(e)");
+          _builder.newLine();
+          _builder.append("      ");
+          _builder.append("}");
+          _builder.newLine();
           _builder.append("      ");
           _builder.append("tables.");
           String _tableVariableName_6 = OMLUtilities.tableVariableName(eClass_6);

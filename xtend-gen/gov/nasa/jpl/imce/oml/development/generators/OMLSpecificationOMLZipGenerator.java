@@ -568,6 +568,9 @@ public class OMLSpecificationOMLZipGenerator extends OMLUtilities {
           _builder.append(".json\")");
           _builder.newLineIfNotEmpty();
           _builder.append("    ");
+          _builder.append("entry.time = 0L");
+          _builder.newLine();
+          _builder.append("    ");
           _builder.append("zos.putArchiveEntry(entry)");
           _builder.newLine();
           _builder.append("    ");
