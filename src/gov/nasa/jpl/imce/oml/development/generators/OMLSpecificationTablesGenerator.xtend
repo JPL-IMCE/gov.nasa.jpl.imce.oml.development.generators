@@ -290,7 +290,11 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		  	  zos.setMethod(java.util.zip.ZipOutputStream.DEFLATED)
 		  
 		      «FOR eClass : eClasses»
-		      zos.putNextEntry(new java.util.zip.ZipEntry(«eClass.name»Helper.TABLE_JSON_FILENAME))
+		      {
+		      	val e = new java.util.zip.ZipEntry(«eClass.name»Helper.TABLE_JSON_FILENAME)
+		      	e.setTime(0L)
+		      	zos.putNextEntry(e)
+		      }
 		      tables.«eClass.tableVariableName».foreach { t =>
 		         val line = «eClass.name»Helper.toJSON(t)+"\n"
 		         zos.write(line.getBytes(java.nio.charset.Charset.forName("UTF-8")))

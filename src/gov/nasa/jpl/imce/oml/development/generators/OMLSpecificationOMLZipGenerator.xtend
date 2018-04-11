@@ -265,6 +265,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    «FOR eClass : eClasses»
 		    // «eClass.name»
 		    entry = new ZipArchiveEntry("«pluralize(eClass.name)».json")
+		    entry.time = 0L
 		    zos.putArchiveEntry(entry)
 		    try {
 		      zos.write(«eClass.tableVariableName»ByteArray(e))
