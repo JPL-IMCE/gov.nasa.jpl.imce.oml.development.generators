@@ -340,23 +340,26 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    val ext = tables.omlCommonFactory.createExtent()
 		    r.contents.add(ext)
 		    val zip = new ZipFile(omlZipFile)
-		  	Collections.list(zip.entries).forEach[ze | 
-		      val is = zip.getInputStream(ze)
-		      val buffer = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
-		      val lines = new ArrayList<String>()
-		      lines.addAll(buffer.lines().iterator.toIterable)
-		      is.close()
-		      switch ze.name {
-		  	    «FOR eClass : eClasses»
-		  	    case "«pluralize(eClass.name)».json":
-		  	      tables.read«eClass.tableVariableName.upperCaseInitialOrWord»(ext, lines)
-    		        «ENDFOR»
-		        default:
-		          throw new IllegalArgumentException("«tableName».load(): unrecognized table name: "+ze.name)
-		      }
-		    ]
-		    zip.close()   
-		    
+		    try {
+		  		Collections.list(zip.entries).forEach[ze | 
+		      		val is = zip.getInputStream(ze)
+		      		val buffer = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
+		      		val lines = new ArrayList<String>()
+		      		lines.addAll(buffer.lines().iterator.toIterable)
+		      		is.close()
+		      		switch ze.name {
+		  	    			«FOR eClass : eClasses»
+		  	    			case "«pluralize(eClass.name)».json":
+		  	    				tables.read«eClass.tableVariableName.upperCaseInitialOrWord»(ext, lines)
+    		        			«ENDFOR»
+		        			default:
+		          			throw new IllegalArgumentException("«tableName».load(): unrecognized table name: "+ze.name)
+		      		}
+		    		]
+		    } finally {
+			    zip.close()
+			}
+		
 		    tables.processQueue(rs)
 		    
 		    	tables.resolve(rs, r)
@@ -371,18 +374,18 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		    do {
 		        more = false
 		        	if (!iriLoadQueue.empty) {
+		        		more = true
 		        		val iri = iriLoadQueue.remove
 		        		if (visitedIRIs.add(iri)) {
-		        			more = true
-		     	 	    	loadOMLZipResource(rs, URI.createURI(iri))	
+						loadOMLZipResource(rs, URI.createURI(iri))	
 		     	 	}
 		        }
 		        	
 		        	if (!moduleQueue.empty) {
+		        		more = true
 		        		val m = moduleQueue.remove
 		        		if (visitedModules.add(m)) {
-		        			more = true
-		        			includeModule(m)
+						includeModule(m)
 		        		}
 		        	}
 		    } while (more)
@@ -427,8 +430,15 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  }
 		  
 		  «ENDFOR»
-		  protected def <U,V extends U> void includeMap(Map<String, Pair<U, Map<String, String>>> uMap, Map<String, Pair<V, Map<String, String>>> vMap) {
-		    vMap.forEach[uuid,kv|uMap.put(uuid, new Pair<U, Map<String, String>>(kv.key, Collections.emptyMap))]
+		  protected def <U,V extends U> Boolean includeMap(Map<String, Pair<U, Map<String, String>>> uMap, Map<String, Pair<V, Map<String, String>>> vMap) {
+		    val Boolean[] updated = #{ false }
+		    vMap.forEach[uuid,kv|
+		    		val prev = uMap.put(uuid, new Pair<U, Map<String, String>>(kv.key, Collections.emptyMap))
+		        	if (null === prev) {
+		        		updated.set(0, true)
+		        	}
+		    ]
+		    updated.get(0)
 		  }
 
 		  «FOR eClass : eClasses»
@@ -479,59 +489,120 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	«IF eClass.EAllSuperTypes.exists[name == "SingletonInstanceStructuredDataPropertyContext"]»
 		  		singletonInstanceStructuredDataPropertyContexts.put(uuid, new Pair<SingletonInstanceStructuredDataPropertyContext, Map<String, String>>(oml, Collections.emptyMap))
 		  	«ENDIF»
-		  	«IF eClass.name == "DescriptionBox"»
-		  		descriptionBoxes.put(oml.iri(), new Pair<DescriptionBox, Map<String, String>>(oml, Collections.emptyMap))
-		  	«ENDIF»
 		  	
 		  }
 		  «ENDFOR»
 		  
 		  protected def void resolve(ResourceSet rs, OMLZipResource r) {
-			// Lookup table for LogicalElement cross references
-		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "LogicalElement"]] SEPARATOR "\n"»includeMap(logicalElements, «eClass.tableVariableName»)«ENDFOR»
+		  	
+		  	System.out.println("Resolve: "+r.URI)
+		  	val t0 = System.currentTimeMillis
+		  	// Lookup table for LogicalElement cross references
+		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "LogicalElement"]]»
+		    if (includeMap(logicalElements, «eClass.tableVariableName»)) {
+		    		System.out.println("+ logicalElements, «eClass.tableVariableName»")
+		    	}
+		    «ENDFOR»
 		  	
 			// Lookup table for Entity cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "Entity"]] SEPARATOR "\n"»includeMap(entities, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "Entity"]]»
+		  	if (includeMap(entities, «eClass.tableVariableName»)) {
+		  		System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		    
 			// Lookup table for EntityRelationship cross references
-		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "EntityRelationship"]] SEPARATOR "\n"»includeMap(entityRelationships, «eClass.tableVariableName»)«ENDFOR»
+		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "EntityRelationship"]]»
+		    if (includeMap(entityRelationships, «eClass.tableVariableName»)) {
+		    		System.out.println("+ entities, «eClass.tableVariableName»")
+		    	}
+		    	«ENDFOR»
 		    
 			// Lookup table for ConceptualRelationship cross references
-		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "ConceptualRelationship"]] SEPARATOR "\n"»includeMap(conceptualRelationships, «eClass.tableVariableName»)«ENDFOR»
+		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "ConceptualRelationship"]]»
+		    if (includeMap(conceptualRelationships, «eClass.tableVariableName»)) {
+		    		 System.out.println("+ entities, «eClass.tableVariableName»")
+		    	}
+		    	«ENDFOR»
 		    
 			// Lookup table for DataRange cross references
-		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "DataRange"]] SEPARATOR "\n"»includeMap(dataRanges, «eClass.tableVariableName»)«ENDFOR»
+		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "DataRange"]]»
+		    if (includeMap(dataRanges, «eClass.tableVariableName»)) {
+		    		 System.out.println("+ entities, «eClass.tableVariableName»")
+		    	}
+		    	«ENDFOR»
 		  	
 			// Lookup table for DataRelationshipToScalar cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "DataRelationshipToScalar"]] SEPARATOR "\n"»includeMap(dataRelationshipToScalars, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "DataRelationshipToScalar"]]»
+		  	if (includeMap(dataRelationshipToScalars, «eClass.tableVariableName»)) {
+		  		 System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		  	
 			// Lookup table for DataRelationshipToStructure cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "DataRelationshipToStructure"]] SEPARATOR "\n"»includeMap(dataRelationshipToStructures, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "DataRelationshipToStructure"]]»
+		  	if (includeMap(dataRelationshipToStructures, «eClass.tableVariableName»)) {
+		  		System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		  	
 			// Lookup table for Predicate cross references
-		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "Predicate"]] SEPARATOR "\n"»includeMap(predicates, «eClass.tableVariableName»)«ENDFOR»
+		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "Predicate"]]»
+		    if (includeMap(predicates, «eClass.tableVariableName»)) {
+		    		System.out.println("+ entities, «eClass.tableVariableName»")
+		    	}
+		    	«ENDFOR»
 
 			// Lookup table for RestrictableRelationship cross references
-		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "RestrictableRelationship"]] SEPARATOR "\n"»includeMap(restrictableRelationships, «eClass.tableVariableName»)«ENDFOR»
+		    «FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "RestrictableRelationship"]]»
+		    if (includeMap(restrictableRelationships, «eClass.tableVariableName»)) {
+		    		System.out.println("+ entities, «eClass.tableVariableName»")
+		    	}
+		    	«ENDFOR»
 
 			// Lookup table for RestrictionStructuredDataPropertyContext cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "RestrictionStructuredDataPropertyContext"]] SEPARATOR "\n"»includeMap(restrictionStructuredDataPropertyContexts, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "RestrictionStructuredDataPropertyContext"]]»
+		  	if (includeMap(restrictionStructuredDataPropertyContexts, «eClass.tableVariableName»)) {
+		  		System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		  	
 			// Lookup table for TerminologyBox cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "TerminologyBox"]] SEPARATOR "\n"»includeMap(terminologyBoxes, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "TerminologyBox"]]»
+		  	if (includeMap(terminologyBoxes, «eClass.tableVariableName»)) {
+		  		System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		  	
 			// Lookup table for ConceptTreeDisjunction cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "ConceptTreeDisjunction"]] SEPARATOR "\n"»includeMap(conceptTreeDisjunctions, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "ConceptTreeDisjunction"]]»
+		  	if (includeMap(conceptTreeDisjunctions, «eClass.tableVariableName»)) {
+		  		System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		  	
 			// Lookup table for ConceptualEntitySingletonInstance cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "ConceptualEntitySingletonInstance"]] SEPARATOR "\n"»includeMap(conceptualEntitySingletonInstances, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "ConceptualEntitySingletonInstance"]]»
+		  	if (includeMap(conceptualEntitySingletonInstances, «eClass.tableVariableName»)) {
+		  		System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		  	
 			// Lookup table for SingletonInstanceStructuredDataPropertyContext cross references
-		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "SingletonInstanceStructuredDataPropertyContext"]] SEPARATOR "\n"»includeMap(singletonInstanceStructuredDataPropertyContexts, «eClass.tableVariableName»)«ENDFOR»
+		  	«FOR eClass : eClasses.filter[EAllSuperTypes.exists[name == "SingletonInstanceStructuredDataPropertyContext"]]»
+		  	if (includeMap(singletonInstanceStructuredDataPropertyContexts, «eClass.tableVariableName»)) {
+		  		System.out.println("+ entities, «eClass.tableVariableName»")
+		  	}
+		  	«ENDFOR»
 		  	
 		    «FOR eClass : eClasses.filter[schemaAPIOrOrderingKeyReferences.size > 0]»
 		    resolve«eClass.tableVariableName.upperCaseInitialOrWord»(rs)
 		    «ENDFOR»
+		    
+		    val dt = t0 - System.currentTimeMillis
+		    val ms = dt % 1000
+		    val s = dt / 1000
+		    System.out.println("Resolve: "+r.URI+" in "+s+"s, "+ms+"ms")
 		  }
 
 		  «FOR eClass : eClasses.filter[schemaAPIOrOrderingKeyReferences.size > 0]»
@@ -614,10 +685,8 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	if (null === omlCatalog)
 		  		throw new IllegalArgumentException("loadOMLZipResource: ResourceSet must have an OMLCatalog!")
 		
-			var scan = false
 			val uriString = uri.toString
 		  	val Resource r = if (uriString.startsWith("file:")) {
-		  		scan = true
 		  		rs.getResource(uri, true)
 		  	} else if (uriString.startsWith("http:")) {
 				val r0a = rs.getResource(uri, false)
@@ -631,15 +700,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 				]]
 				val r0 = r0a ?: r0b
 				if (null !== r0) {
-					switch r0 {
-						OMLZipResource: {
-						}
-						XtextResource: {
-							scan = true
-						}
-						default: {
-						}
-					}
 					r0
 				} else {
 					val r1 = omlCatalog.resolveURI(uriString + ".oml")
@@ -649,8 +709,6 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 			  		val f1 = if (null !== r1 && r1.startsWith("file:")) new File(r1.substring(5)) else null
 			  		val f2 = if (null !== r2 && r2.startsWith("file:")) new File(r2.substring(5)) else null
 			  		val f3 = if (null !== r3 && r3.startsWith("file:")) new File(r3.substring(5)) else null
-			  	
-			  		scan = true
 			  		
 			  		if (null !== f1 && f1.exists && f1.canRead)
 			  			rs.getResource(URI.createURI(r1), true)
@@ -663,15 +721,17 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  		}
 		  	}
 		  	
-		  	if (scan)
-		  		r.contents.forEach[e|
-		  			switch e {
-		  				Extent: {
-		  					e.modules.forEach[includeModule]
-		  				}
-		  			}
-		  		]
-		  	
+		  	switch r {
+		  		XtextResource:
+		  			r.contents.forEach[e|
+		  				switch e {
+		  					Extent: {
+		  						e.modules.forEach[queueModule]
+							}
+						}
+					]
+			}
+		
 		  	r
 		  }
 
