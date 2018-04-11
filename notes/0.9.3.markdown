@@ -16,3 +16,4 @@ gov.nasa.jpl.imce.oml.development.generators 0.9.3 is a significant update
 
 - [#33 Code generation for performance update](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/33)
 
+- [#34 Code generation for deterministic OMLZip timestamps](https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.development.generators/issues/34)
