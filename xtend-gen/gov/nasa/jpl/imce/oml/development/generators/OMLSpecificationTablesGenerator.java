@@ -696,7 +696,7 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
           _builder.append("}");
           _builder.newLine();
           _builder.append("      ");
-          _builder.append("zos.closeEntry()");
+          _builder.append("zos.closeEntry();");
           _builder.newLine();
         }
       }
