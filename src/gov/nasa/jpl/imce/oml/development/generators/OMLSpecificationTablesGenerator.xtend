@@ -299,7 +299,7 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 		         val line = «eClass.name»Helper.toJSON(t)+"\n"
 		         zos.write(line.getBytes(java.nio.charset.Charset.forName("UTF-8")))
 		      }
-		      zos.closeEntry()
+		      zos.closeEntry();
 		      «ENDFOR»
 		      
 		      zos.close()
