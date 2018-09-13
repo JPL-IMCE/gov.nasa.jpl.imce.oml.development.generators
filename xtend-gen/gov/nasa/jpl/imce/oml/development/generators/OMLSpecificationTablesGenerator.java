@@ -20,10 +20,8 @@ package gov.nasa.jpl.imce.oml.development.generators;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import gov.nasa.jpl.imce.oml.development.generators.OMLUtilities;
-import gov.nasa.jpl.imce.oml.oti.provenance.ProvenancePackage;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -75,36 +73,6 @@ public class OMLSpecificationTablesGenerator extends OMLUtilities {
       } else {
         System.err.println("Abnormal exit!");
       }
-    }
-  }
-  
-  public static String locateOML2OTI(final String path) {
-    try {
-      String _xblockexpression = null;
-      {
-        final URL url = ProvenancePackage.class.getResource(path);
-        String _xifexpression = null;
-        if ((null != url)) {
-          _xifexpression = url.toURI().toString();
-        } else {
-          String _xblockexpression_1 = null;
-          {
-            final URL binURL = ProvenancePackage.class.getResource("/gov/nasa/jpl/imce/oml/oti/provenance/ProvenancePackage.class");
-            if ((null == binURL)) {
-              throw new IllegalArgumentException(("locateXcore: failed to locate path: " + path));
-            }
-            final Path binPath = Paths.get(binURL.toURI());
-            final Path xcorePath = binPath.getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getParent().resolve(path.substring(1));
-            final String located = xcorePath.toAbsolutePath().toString();
-            _xblockexpression_1 = located;
-          }
-          _xifexpression = _xblockexpression_1;
-        }
-        _xblockexpression = _xifexpression;
-      }
-      return _xblockexpression;
-    } catch (Throwable _e) {
-      throw Exceptions.sneakyThrow(_e);
     }
   }
   

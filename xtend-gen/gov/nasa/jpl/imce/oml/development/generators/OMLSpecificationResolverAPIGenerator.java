@@ -1336,6 +1336,25 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
     return _builder.toString();
   }
   
+  public static String containedTypeUUUID(final EClass ct) {
+    String _xblockexpression = null;
+    {
+      final EList<EClass> sups = ct.getESuperTypes();
+      String _xifexpression = null;
+      int _size = sups.size();
+      boolean _tripleEquals = (1 == _size);
+      if (_tripleEquals) {
+        String _name = sups.get(0).getName();
+        _xifexpression = (_name + "UUID");
+      } else {
+        String _name_1 = ct.getName();
+        _xifexpression = (_name_1 + "UUID");
+      }
+      _xblockexpression = _xifexpression;
+    }
+    return _xblockexpression;
+  }
+  
   public String generateExtentContainerClassFile(final EClass eClass, final Iterable<EClass> allEClasses) {
     String _xblockexpression = null;
     {
@@ -1357,13 +1376,13 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
         return it.getName();
       };
       final List<EClass> containerTypes = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>toList(IterableExtensions.<EClass>toSet(IterableExtensions.<EStructuralFeature, EClass>map(containers, _function_3))), _function_4);
-      final Function1<EStructuralFeature, EClassifier> _function_5 = (EStructuralFeature it) -> {
-        return it.getEType();
+      final Function1<EStructuralFeature, EClass> _function_5 = (EStructuralFeature it) -> {
+        return OMLUtilities.EClassType(it);
       };
-      final Function1<EClassifier, String> _function_6 = (EClassifier it) -> {
+      final Function1<EClass, String> _function_6 = (EClass it) -> {
         return it.getName();
       };
-      final List<EClassifier> containedTypes = IterableExtensions.<EClassifier, String>sortBy(IterableExtensions.<EClassifier>toList(IterableExtensions.<EClassifier>toSet(IterableExtensions.<EStructuralFeature, EClassifier>map(containers, _function_5))), _function_6);
+      final List<EClass> containedTypes = IterableExtensions.<EClass, String>sortBy(IterableExtensions.<EClass>toList(IterableExtensions.<EClass>toSet(IterableExtensions.<EStructuralFeature, EClass>map(containers, _function_5))), _function_6);
       StringConcatenation _builder = new StringConcatenation();
       String _copyright = OMLUtilities.copyright();
       _builder.append(_copyright);
@@ -1403,7 +1422,7 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.newLineIfNotEmpty();
       {
         boolean _hasElements_1 = false;
-        for(final EClassifier ct_1 : containedTypes) {
+        for(final EClass ct_1 : containedTypes) {
           if (!_hasElements_1) {
             _hasElements_1 = true;
             _builder.append("// Contained types:\n// - ");
@@ -1560,7 +1579,7 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.newLineIfNotEmpty();
       {
         boolean _hasElements_5 = false;
-        for(final EClassifier ct_2 : containedTypes) {
+        for(final EClass ct_2 : containedTypes) {
           if (!_hasElements_5) {
             _hasElements_5 = true;
             _builder.append("\n  ");
@@ -1573,20 +1592,20 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append(": Map[taggedTypes.");
+          String _containedTypeUUUID = OMLSpecificationResolverAPIGenerator.containedTypeUUUID(ct_2);
+          _builder.append(_containedTypeUUUID, "  ");
+          _builder.append(", ");
           String _name_19 = ct_2.getName();
           _builder.append(_name_19, "  ");
-          _builder.append("UUID, ");
-          String _name_20 = ct_2.getName();
-          _builder.append(_name_20, "  ");
           _builder.append("]");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append("= HashMap.empty[taggedTypes.");
-          String _name_21 = ct_2.getName();
-          _builder.append(_name_21, "  ");
-          _builder.append("UUID, ");
-          String _name_22 = ct_2.getName();
-          _builder.append(_name_22, "  ");
+          String _containedTypeUUUID_1 = OMLSpecificationResolverAPIGenerator.containedTypeUUUID(ct_2);
+          _builder.append(_containedTypeUUUID_1, "  ");
+          _builder.append(", ");
+          String _name_20 = ct_2.getName();
+          _builder.append(_name_20, "  ");
           _builder.append("]");
         }
         if (_hasElements_5) {
@@ -1604,31 +1623,31 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             if (_equals_2) {
               _builder.append("  ");
               _builder.append("def with");
-              String _name_23 = c_2.getEType().getName();
-              _builder.append(_name_23, "  ");
+              String _name_21 = c_2.getEType().getName();
+              _builder.append(_name_21, "  ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("(key: ");
-              String _name_24 = OMLUtilities.EClassContainer(c_2).getName();
-              _builder.append(_name_24, "  ");
+              String _name_22 = OMLUtilities.EClassContainer(c_2).getName();
+              _builder.append(_name_22, "  ");
               _builder.append(", value: ");
-              String _name_25 = c_2.getEType().getName();
-              _builder.append(_name_25, "  ");
+              String _name_23 = c_2.getEType().getName();
+              _builder.append(_name_23, "  ");
               _builder.append(")");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append(": Map[");
-              String _name_26 = OMLUtilities.EClassContainer(c_2).getName();
-              _builder.append(_name_26, "  ");
+              String _name_24 = OMLUtilities.EClassContainer(c_2).getName();
+              _builder.append(_name_24, "  ");
               _builder.append(", ");
-              String _name_27 = c_2.getEType().getName();
-              _builder.append(_name_27, "  ");
+              String _name_25 = c_2.getEType().getName();
+              _builder.append(_name_25, "  ");
               _builder.append("] ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("= ");
-              String _name_28 = c_2.getName();
-              _builder.append(_name_28, "  ");
+              String _name_26 = c_2.getName();
+              _builder.append(_name_26, "  ");
               _builder.append(".updated(key, value)");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1636,40 +1655,40 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             } else {
               _builder.append("  ");
               _builder.append("def with");
-              String _name_29 = c_2.getEType().getName();
-              _builder.append(_name_29, "  ");
+              String _name_27 = c_2.getEType().getName();
+              _builder.append(_name_27, "  ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("(key: ");
-              String _name_30 = OMLUtilities.EClassContainer(c_2).getName();
-              _builder.append(_name_30, "  ");
+              String _name_28 = OMLUtilities.EClassContainer(c_2).getName();
+              _builder.append(_name_28, "  ");
               _builder.append(", value: ");
-              String _name_31 = c_2.getEType().getName();
-              _builder.append(_name_31, "  ");
+              String _name_29 = c_2.getEType().getName();
+              _builder.append(_name_29, "  ");
               _builder.append(")");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append(": Map[");
-              String _name_32 = OMLUtilities.EClassContainer(c_2).getName();
-              _builder.append(_name_32, "  ");
+              String _name_30 = OMLUtilities.EClassContainer(c_2).getName();
+              _builder.append(_name_30, "  ");
               _builder.append(", Set[");
-              String _name_33 = c_2.getEType().getName();
-              _builder.append(_name_33, "  ");
+              String _name_31 = c_2.getEType().getName();
+              _builder.append(_name_31, "  ");
               _builder.append("]] ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("= ");
-              String _name_34 = c_2.getName();
-              _builder.append(_name_34, "  ");
+              String _name_32 = c_2.getName();
+              _builder.append(_name_32, "  ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("  ");
               _builder.append(".updated(key, ");
-              String _name_35 = c_2.getName();
-              _builder.append(_name_35, "    ");
+              String _name_33 = c_2.getName();
+              _builder.append(_name_33, "    ");
               _builder.append(".getOrElse(key, Set.empty[");
-              String _name_36 = c_2.getEType().getName();
-              _builder.append(_name_36, "    ");
+              String _name_34 = c_2.getEType().getName();
+              _builder.append(_name_34, "    ");
               _builder.append("]) + value)");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1803,6 +1822,55 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
       _builder.append("  ");
       _builder.append("lookupBundle(uuid)");
       _builder.newLine();
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("def lookupRestrictableRelationship");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("(uuid: taggedTypes.RestrictableRelationshipUUID)");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append(": Option[RestrictableRelationship]");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("= lookupForwardProperty(uuid) orElse");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("lookupInverseProperty(uuid) orElse");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("lookupUnreifiedRelationship(uuid)");
+      _builder.newLine();
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("def lookupUnreifiedRelationship");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("(uuid: taggedTypes.RestrictableRelationshipUUID)");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append(": Option[UnreifiedRelationship]");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("= terminologyBoxStatementByUUID.get(taggedTypes.terminologyBoxStatementUUID(uuid)) match {");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("case Some(ur: UnreifiedRelationship) =>");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("Some(ur)");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("case _ =>");
+      _builder.newLine();
+      _builder.append("      ");
+      _builder.append("None");
+      _builder.newLine();
+      _builder.append("  ");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append(" ");
+      _builder.newLine();
       {
         final Function1<EClass, Boolean> _function_8 = (EClass it) -> {
           boolean _isAbstract = it.isAbstract();
@@ -1820,16 +1888,16 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
           _builder.newLine();
           _builder.append("  ");
           _builder.append("def lookup");
-          String _name_37 = em_1.getName();
-          _builder.append(_name_37, "  ");
+          String _name_35 = em_1.getName();
+          _builder.append(_name_35, "  ");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append("(uuid: Option[taggedTypes.ModuleUUID])");
           _builder.newLine();
           _builder.append("  ");
           _builder.append(": Option[");
-          String _name_38 = em_1.getName();
-          _builder.append(_name_38, "  ");
+          String _name_36 = em_1.getName();
+          _builder.append(_name_36, "  ");
           _builder.append("]");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
@@ -1838,8 +1906,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
           _builder.append("  ");
           _builder.append("  ");
           _builder.append("lookup");
-          String _name_39 = em_1.getName();
-          _builder.append(_name_39, "    ");
+          String _name_37 = em_1.getName();
+          _builder.append(_name_37, "    ");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append("} ");
@@ -1848,16 +1916,16 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
           _builder.newLine();
           _builder.append("  ");
           _builder.append("def lookup");
-          String _name_40 = em_1.getName();
-          _builder.append(_name_40, "  ");
+          String _name_38 = em_1.getName();
+          _builder.append(_name_38, "  ");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
           _builder.append("(uuid: taggedTypes.ModuleUUID)");
           _builder.newLine();
           _builder.append("  ");
           _builder.append(": Option[");
-          String _name_41 = em_1.getName();
-          _builder.append(_name_41, "  ");
+          String _name_39 = em_1.getName();
+          _builder.append(_name_39, "  ");
           _builder.append("]");
           _builder.newLineIfNotEmpty();
           _builder.append("  ");
@@ -1890,14 +1958,14 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("(key: Option[");
-              String _name_42 = OMLUtilities.EClassContainer(c_3).getName();
-              _builder.append(_name_42, "  ");
+              String _name_40 = OMLUtilities.EClassContainer(c_3).getName();
+              _builder.append(_name_40, "  ");
               _builder.append("])");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append(": Option[");
-              String _name_43 = c_3.getEType().getName();
-              _builder.append(_name_43, "  ");
+              String _name_41 = c_3.getEType().getName();
+              _builder.append(_name_41, "  ");
               _builder.append("]");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1915,20 +1983,20 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("(key: ");
-              String _name_44 = OMLUtilities.EClassContainer(c_3).getName();
-              _builder.append(_name_44, "  ");
+              String _name_42 = OMLUtilities.EClassContainer(c_3).getName();
+              _builder.append(_name_42, "  ");
               _builder.append(")");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append(": Option[");
-              String _name_45 = c_3.getEType().getName();
-              _builder.append(_name_45, "  ");
+              String _name_43 = c_3.getEType().getName();
+              _builder.append(_name_43, "  ");
               _builder.append("]");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("= ");
-              String _name_46 = c_3.getName();
-              _builder.append(_name_46, "  ");
+              String _name_44 = c_3.getName();
+              _builder.append(_name_44, "  ");
               _builder.append(".get(key)");
               _builder.newLineIfNotEmpty();
               {
@@ -1937,19 +2005,19 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
                   _builder.newLine();
                   _builder.append("  ");
                   _builder.append("def lookup");
-                  String _name_47 = c_3.getEType().getName();
-                  _builder.append(_name_47, "  ");
+                  String _name_45 = c_3.getEType().getName();
+                  _builder.append(_name_45, "  ");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
                   _builder.append("(uuid: taggedTypes.");
-                  String _name_48 = c_3.getEType().getName();
-                  _builder.append(_name_48, "  ");
-                  _builder.append("UUID)");
+                  String _containedTypeUUUID_2 = OMLSpecificationResolverAPIGenerator.containedTypeUUUID(OMLUtilities.EClassType(c_3));
+                  _builder.append(_containedTypeUUUID_2, "  ");
+                  _builder.append(")");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
                   _builder.append(": Option[");
-                  String _name_49 = c_3.getEType().getName();
-                  _builder.append(_name_49, "  ");
+                  String _name_46 = c_3.getEType().getName();
+                  _builder.append(_name_46, "  ");
                   _builder.append("]");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
@@ -1968,14 +2036,14 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("(key: Option[");
-              String _name_50 = OMLUtilities.EClassContainer(c_3).getName();
-              _builder.append(_name_50, "  ");
+              String _name_47 = OMLUtilities.EClassContainer(c_3).getName();
+              _builder.append(_name_47, "  ");
               _builder.append("])");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append(": Set[");
-              String _name_51 = c_3.getEType().getName();
-              _builder.append(_name_51, "  ");
+              String _name_48 = c_3.getEType().getName();
+              _builder.append(_name_48, "  ");
               _builder.append("]");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -1983,15 +2051,15 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
               _builder.newLine();
               _builder.append("  ");
               _builder.append(".fold[Set[");
-              String _name_52 = c_3.getEType().getName();
-              _builder.append(_name_52, "  ");
+              String _name_49 = c_3.getEType().getName();
+              _builder.append(_name_49, "  ");
               _builder.append("]] { ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("\t");
               _builder.append("Set.empty[");
-              String _name_53 = c_3.getEType().getName();
-              _builder.append(_name_53, "  \t");
+              String _name_50 = c_3.getEType().getName();
+              _builder.append(_name_50, "  \t");
               _builder.append("] ");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
@@ -2009,46 +2077,46 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("(key: ");
-              String _name_54 = OMLUtilities.EClassContainer(c_3).getName();
-              _builder.append(_name_54, "  ");
+              String _name_51 = OMLUtilities.EClassContainer(c_3).getName();
+              _builder.append(_name_51, "  ");
               _builder.append(")");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append(": Set[");
-              String _name_55 = c_3.getEType().getName();
-              _builder.append(_name_55, "  ");
+              String _name_52 = c_3.getEType().getName();
+              _builder.append(_name_52, "  ");
               _builder.append("]");
               _builder.newLineIfNotEmpty();
               _builder.append("  ");
               _builder.append("= ");
-              String _name_56 = c_3.getName();
-              _builder.append(_name_56, "  ");
+              String _name_53 = c_3.getName();
+              _builder.append(_name_53, "  ");
               _builder.append(".getOrElse(key, Set.empty[");
-              String _name_57 = c_3.getEType().getName();
-              _builder.append(_name_57, "  ");
+              String _name_54 = c_3.getEType().getName();
+              _builder.append(_name_54, "  ");
               _builder.append("])");
               _builder.newLineIfNotEmpty();
               {
-                String _name_58 = c_3.getEType().getName();
-                boolean _notEquals = (!Objects.equal(_name_58, "Annotation"));
+                String _name_55 = c_3.getEType().getName();
+                boolean _notEquals = (!Objects.equal(_name_55, "Annotation"));
                 if (_notEquals) {
                   _builder.append("  ");
                   _builder.newLine();
                   _builder.append("  ");
                   _builder.append("def lookup");
-                  String _name_59 = c_3.getEType().getName();
-                  _builder.append(_name_59, "  ");
+                  String _name_56 = c_3.getEType().getName();
+                  _builder.append(_name_56, "  ");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
                   _builder.append("(uuid: Option[taggedTypes.");
-                  String _name_60 = c_3.getEType().getName();
-                  _builder.append(_name_60, "  ");
-                  _builder.append("UUID])");
+                  String _containedTypeUUUID_3 = OMLSpecificationResolverAPIGenerator.containedTypeUUUID(OMLUtilities.EClassType(c_3));
+                  _builder.append(_containedTypeUUUID_3, "  ");
+                  _builder.append("])");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
                   _builder.append(": Option[");
-                  String _name_61 = c_3.getEType().getName();
-                  _builder.append(_name_61, "  ");
+                  String _name_57 = c_3.getEType().getName();
+                  _builder.append(_name_57, "  ");
                   _builder.append("]");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
@@ -2057,8 +2125,8 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
                   _builder.append("  ");
                   _builder.append("  ");
                   _builder.append("lookup");
-                  String _name_62 = c_3.getEType().getName();
-                  _builder.append(_name_62, "    ");
+                  String _name_58 = c_3.getEType().getName();
+                  _builder.append(_name_58, "    ");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
                   _builder.append("}");
@@ -2067,19 +2135,19 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
                   _builder.newLine();
                   _builder.append("  ");
                   _builder.append("def lookup");
-                  String _name_63 = c_3.getEType().getName();
-                  _builder.append(_name_63, "  ");
+                  String _name_59 = c_3.getEType().getName();
+                  _builder.append(_name_59, "  ");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
                   _builder.append("(uuid: taggedTypes.");
-                  String _name_64 = c_3.getEType().getName();
-                  _builder.append(_name_64, "  ");
-                  _builder.append("UUID)");
+                  String _containedTypeUUUID_4 = OMLSpecificationResolverAPIGenerator.containedTypeUUUID(OMLUtilities.EClassType(c_3));
+                  _builder.append(_containedTypeUUUID_4, "  ");
+                  _builder.append(")");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
                   _builder.append(": Option[");
-                  String _name_65 = c_3.getEType().getName();
-                  _builder.append(_name_65, "  ");
+                  String _name_60 = c_3.getEType().getName();
+                  _builder.append(_name_60, "  ");
                   _builder.append("]");
                   _builder.newLineIfNotEmpty();
                   _builder.append("  ");
@@ -2151,11 +2219,11 @@ public class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
             _builder.appendImmediate(" orElse\n  ", "  ");
           }
           _builder.append("lookup");
-          String _name_66 = c_4.getEType().getName();
-          _builder.append(_name_66, "  ");
+          String _name_61 = c_4.getEType().getName();
+          _builder.append(_name_61, "  ");
           _builder.append("(uuid.asInstanceOf[taggedTypes.");
-          String _name_67 = c_4.getEType().getName();
-          _builder.append(_name_67, "  ");
+          String _name_62 = c_4.getEType().getName();
+          _builder.append(_name_62, "  ");
           _builder.append("UUID])");
         }
         if (_hasElements_8) {

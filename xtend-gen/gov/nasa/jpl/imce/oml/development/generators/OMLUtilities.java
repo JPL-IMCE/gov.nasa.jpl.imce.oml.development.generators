@@ -19,15 +19,18 @@ package gov.nasa.jpl.imce.oml.development.generators;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
-import gov.nasa.jpl.imce.oml.model.extensions.OMLXcorePackages;
+import gov.nasa.jpl.imce.oml.model.common.CommonPackage;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.eclipse.emf.codegen.ecore.genmodel.GenModelPackage;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.EMap;
@@ -36,6 +39,7 @@ import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnumLiteral;
 import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EOperation;
@@ -45,24 +49,34 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.plugin.EcorePlugin;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xcore.XOperation;
+import org.eclipse.emf.ecore.xcore.XcorePackage;
+import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
 import org.eclipse.emf.ecore.xcore.mappings.XcoreMapper;
+import org.eclipse.emf.ecore.xml.namespace.XMLNamespacePackage;
+import org.eclipse.emf.ecore.xml.type.XMLTypePackage;
 import org.eclipse.xtend2.lib.StringConcatenation;
+import org.eclipse.xtext.XtextPackage;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.xbase.XBlockExpression;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XFeatureCall;
 import org.eclipse.xtext.xbase.XMemberFeatureCall;
 import org.eclipse.xtext.xbase.lib.CollectionExtensions;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
+import org.eclipse.xtext.xbase.lib.Conversions;
+import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 @SuppressWarnings("all")
-public class OMLUtilities extends OMLXcorePackages {
+public class OMLUtilities {
   public static class OMLTableCompare implements Comparator<EClass> {
     private final List<String> knownTables = Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList("Extent", "TerminologyBox", "TerminologyGraph", "Bundle", "DescriptionBox", "AnnotationProperty", "Aspect", "Concept", "Scalar", "Structure", "ConceptDesignationTerminologyAxiom", "TerminologyExtensionAxiom", "TerminologyNestingAxiom", "BundledTerminologyAxiom", "DescriptionBoxExtendsClosedWorldDefinitions", "DescriptionBoxRefinement", "BinaryScalarRestriction", "IRIScalarRestriction", "NumericScalarRestriction", "PlainLiteralScalarRestriction", "ScalarOneOfRestriction", "ScalarOneOfLiteralAxiom", "StringScalarRestriction", "SynonymScalarRestriction", "TimeScalarRestriction", "EntityScalarDataProperty", "EntityStructuredDataProperty", "ScalarDataProperty", "StructuredDataProperty", "ReifiedRelationship", "ReifiedRelationshipRestriction", "ForwardProperty", "InverseProperty", "UnreifiedRelationship", "ChainRule", "RuleBodySegment", "SegmentPredicate", "EntityExistentialRestrictionAxiom", "EntityUniversalRestrictionAxiom", "EntityScalarDataPropertyExistentialRestrictionAxiom", "EntityScalarDataPropertyParticularRestrictionAxiom", "EntityScalarDataPropertyUniversalRestrictionAxiom", "EntityStructuredDataPropertyParticularRestrictionAxiom", "RestrictionStructuredDataPropertyTuple", "RestrictionScalarDataPropertyValue", "AspectSpecializationAxiom", "ConceptSpecializationAxiom", "ReifiedRelationshipSpecializationAxiom", "SubDataPropertyOfAxiom", "SubObjectPropertyOfAxiom", "RootConceptTaxonomyAxiom", "AnonymousConceptUnionAxiom", "SpecificDisjointConceptAxiom", "ConceptInstance", "ReifiedRelationshipInstance", "ReifiedRelationshipInstanceDomain", "ReifiedRelationshipInstanceRange", "UnreifiedRelationshipInstanceTuple", "SingletonInstanceStructuredDataPropertyValue", "SingletonInstanceScalarDataPropertyValue", "StructuredDataPropertyTuple", "ScalarDataPropertyValue", "AnnotationPropertyValue"));
     
@@ -130,6 +144,108 @@ public class OMLUtilities extends OMLXcorePackages {
         _xblockexpression = _xifexpression;
       }
       return _xblockexpression;
+    }
+  }
+  
+  public final XtextResourceSet set;
+  
+  public final EPackage c;
+  
+  public final EPackage t;
+  
+  public final EPackage g;
+  
+  public final EPackage b;
+  
+  public final EPackage d;
+  
+  public OMLUtilities() {
+    try {
+      XcoreStandaloneSetup.doSetup();
+      final String omlc = "/OMLCommon.xcore";
+      final URI omlc_uri = URI.createPlatformResourceURI(("/gov.nasa.jpl.imce.oml.model/model" + omlc), false);
+      final String omlt = "/OMLTerminologies.xcore";
+      final URI omlt_uri = URI.createPlatformResourceURI(("/gov.nasa.jpl.imce.oml.model/model" + omlt), false);
+      final String omlg = "/OMLGraphs.xcore";
+      final URI omlg_uri = URI.createPlatformResourceURI(("/gov.nasa.jpl.imce.oml.model/model" + omlg), false);
+      final String omlb = "/OMLBundles.xcore";
+      final URI omlb_uri = URI.createPlatformResourceURI(("/gov.nasa.jpl.imce.oml.model/model" + omlb), false);
+      final String omld = "/OMLDescriptions.xcore";
+      final URI omld_uri = URI.createPlatformResourceURI(("/gov.nasa.jpl.imce.oml.model/model" + omld), false);
+      XtextResourceSet _xtextResourceSet = new XtextResourceSet();
+      this.set = _xtextResourceSet;
+      this.set.setPackageRegistry(EPackage.Registry.INSTANCE);
+      final Map<URI, URI> uriMap = this.set.getURIConverter().getURIMap();
+      uriMap.putAll(EcorePlugin.computePlatformURIMap(false));
+      uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore"), 
+        URI.createURI(EcorePackage.class.getResource("/model/Ecore.ecore").toURI().toString()));
+      uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel"), 
+        URI.createURI(EcorePackage.class.getResource("/model/Ecore.genmodel").toURI().toString()));
+      uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLNamespace.ecore"), 
+        URI.createURI(XMLNamespacePackage.class.getResource("/model/XMLNamespace.ecore").toURI().toString()));
+      uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLNamespace.genmodel"), 
+        URI.createURI(XMLNamespacePackage.class.getResource("/model/XMLNamespace.genmodel").toURI().toString()));
+      uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLType.ecore"), 
+        URI.createURI(XMLTypePackage.class.getResource("/model/XMLType.ecore").toURI().toString()));
+      uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLType.genmodel"), 
+        URI.createURI(XMLTypePackage.class.getResource("/model/XMLType.genmodel").toURI().toString()));
+      final Resource ecore = this.set.getResource(URI.createURI(EcorePackage.eNS_URI), true);
+      boolean _isEmpty = ecore.getErrors().isEmpty();
+      boolean _not = (!_isEmpty);
+      if (_not) {
+        throw new IllegalArgumentException("Failed to load the Ecore package");
+      }
+      final Resource genModel = this.set.getResource(URI.createURI(GenModelPackage.eNS_URI), true);
+      boolean _isEmpty_1 = genModel.getErrors().isEmpty();
+      boolean _not_1 = (!_isEmpty_1);
+      if (_not_1) {
+        throw new IllegalArgumentException("Failed to load the GenModel package");
+      }
+      final Resource xtext = this.set.getResource(URI.createURI(XtextPackage.eNS_URI), true);
+      boolean _isEmpty_2 = xtext.getErrors().isEmpty();
+      boolean _not_2 = (!_isEmpty_2);
+      if (_not_2) {
+        throw new IllegalArgumentException("Failed to load the Xtext package");
+      }
+      final Resource xcore = this.set.getResource(URI.createURI(XcorePackage.eNS_URI), true);
+      boolean _isEmpty_3 = xcore.getErrors().isEmpty();
+      boolean _not_3 = (!_isEmpty_3);
+      if (_not_3) {
+        throw new IllegalArgumentException("Failed to load the Xcore package");
+      }
+      uriMap.put(omlc_uri, URI.createURI(OMLUtilities.locateXcore(omlc)));
+      uriMap.put(omlt_uri, URI.createURI(OMLUtilities.locateXcore(omlt)));
+      uriMap.put(omlg_uri, URI.createURI(OMLUtilities.locateXcore(omlg)));
+      uriMap.put(omlb_uri, URI.createURI(OMLUtilities.locateXcore(omlb)));
+      uriMap.put(omld_uri, URI.createURI(OMLUtilities.locateXcore(omld)));
+      final Resource omlc_r = this.set.getResource(omlc_uri, true);
+      final Resource omlt_r = this.set.getResource(omlt_uri, true);
+      final Resource omlg_r = this.set.getResource(omlg_uri, true);
+      final Resource omlb_r = this.set.getResource(omlb_uri, true);
+      final Resource omld_r = this.set.getResource(omld_uri, true);
+      this.c = ((EPackage[])Conversions.unwrapArray(Iterables.<EPackage>filter(omlc_r.getContents(), EPackage.class), EPackage.class))[0];
+      this.t = ((EPackage[])Conversions.unwrapArray(Iterables.<EPackage>filter(omlt_r.getContents(), EPackage.class), EPackage.class))[0];
+      this.g = ((EPackage[])Conversions.unwrapArray(Iterables.<EPackage>filter(omlg_r.getContents(), EPackage.class), EPackage.class))[0];
+      this.b = ((EPackage[])Conversions.unwrapArray(Iterables.<EPackage>filter(omlb_r.getContents(), EPackage.class), EPackage.class))[0];
+      this.d = ((EPackage[])Conversions.unwrapArray(Iterables.<EPackage>filter(omld_r.getContents(), EPackage.class), EPackage.class))[0];
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
+    }
+  }
+  
+  public static String locateXcore(final String path) {
+    try {
+      String _xblockexpression = null;
+      {
+        final URL url = CommonPackage.class.getResource(path);
+        if ((null == url)) {
+          throw new IllegalArgumentException(("locateXcore: failed to locate path: " + path));
+        }
+        _xblockexpression = url.toURI().toString();
+      }
+      return _xblockexpression;
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
     }
   }
   
@@ -479,6 +595,9 @@ public class OMLUtilities extends OMLXcorePackages {
             break;
           case "EString":
             _switchResult = "scala.Predef.String";
+            break;
+          case "CardinalityRestrictionKind":
+            _switchResult = "gov.nasa.jpl.imce.oml.tables.CardinalityRestrictionKind";
             break;
           case "DescriptionKind":
             _switchResult = "gov.nasa.jpl.imce.oml.tables.DescriptionKind";
@@ -868,6 +987,12 @@ public class OMLUtilities extends OMLXcorePackages {
         }
       }
       if (!_matched) {
+        if (Objects.equal(_name, "CardinalityRestrictionKind")) {
+          _matched=true;
+          _switchResult = "CardinalityRestrictionKind";
+        }
+      }
+      if (!_matched) {
         if (Objects.equal(_name, "DescriptionKind")) {
           _matched=true;
           _switchResult = "DescriptionKind";
@@ -963,6 +1088,12 @@ public class OMLUtilities extends OMLXcorePackages {
         if (Objects.equal(_name, "EString")) {
           _matched=true;
           _switchResult = "scala.Predef.String";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "CardinalityRestrictionKind")) {
+          _matched=true;
+          _switchResult = "CardinalityRestrictionKind.encodeCardinalityRestrictionKind";
         }
       }
       if (!_matched) {
@@ -1065,6 +1196,12 @@ public class OMLUtilities extends OMLXcorePackages {
         if (Objects.equal(_name, "EString")) {
           _matched=true;
           _switchResult = "scala.Predef.String";
+        }
+      }
+      if (!_matched) {
+        if (Objects.equal(_name, "CardinalityRestrictionKind")) {
+          _matched=true;
+          _switchResult = "CardinalityRestrictionKind";
         }
       }
       if (!_matched) {
@@ -2199,6 +2336,30 @@ public class OMLUtilities extends OMLXcorePackages {
       _xifexpression = feature.getName();
     }
     return _xifexpression;
+  }
+  
+  public static String enumLiteralName(final EEnumLiteral lit) {
+    String _switchResult = null;
+    String _name = lit.getName();
+    if (_name != null) {
+      switch (_name) {
+        case "Min":
+          _switchResult = "MinCardinalityRestriction";
+          break;
+        case "Max":
+          _switchResult = "MaxCardinalityRestriction";
+          break;
+        case "Exact":
+          _switchResult = "ExactCardinalityRestriction";
+          break;
+        default:
+          _switchResult = lit.getName();
+          break;
+      }
+    } else {
+      _switchResult = lit.getName();
+    }
+    return _switchResult;
   }
   
   public static String markDown(final ENamedElement e) {

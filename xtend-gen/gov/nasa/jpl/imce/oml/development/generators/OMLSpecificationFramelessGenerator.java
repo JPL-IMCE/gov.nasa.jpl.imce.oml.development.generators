@@ -652,6 +652,7 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
     String _xblockexpression = null;
     {
       final String tname = col.getEType().getName();
+      final String cname = OMLUtilities.columnName(col);
       String _xifexpression = null;
       boolean _equals = Objects.equal(tname, "LiteralNumber");
       if (_equals) {
@@ -668,8 +669,7 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
             _xifexpression_2 = "Boolean";
           } else {
             String _xifexpression_3 = null;
-            boolean _endsWith = tname.endsWith("Kind");
-            if (_endsWith) {
+            if ((tname.endsWith("Kind") && (!cname.endsWith("UUID")))) {
               _xifexpression_3 = "Int";
             } else {
               _xifexpression_3 = "String";
@@ -689,16 +689,16 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
     String _xblockexpression = null;
     {
       final String tname = col.getEType().getName();
+      final String cname = OMLUtilities.columnName(col);
       String _xifexpression = null;
       boolean _equals = Objects.equal(tname, "LiteralNumber");
       if (_equals) {
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("row.getAs[GenericRowWithSchema](\"");
+        _builder.append(cname);
+        _builder.append("\").getAs[String](\"value\"),row.getAs[GenericRowWithSchema](\"");
         String _columnName = OMLUtilities.columnName(col);
         _builder.append(_columnName);
-        _builder.append("\").getAs[String](\"value\"),row.getAs[GenericRowWithSchema](\"");
-        String _columnName_1 = OMLUtilities.columnName(col);
-        _builder.append(_columnName_1);
         _builder.append("\").getAs[String](\"literalType\")");
         _xifexpression = _builder.toString();
       } else {
@@ -707,11 +707,10 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
         if (_equals_1) {
           StringConcatenation _builder_1 = new StringConcatenation();
           _builder_1.append("row.getAs[GenericRowWithSchema](\"");
-          String _columnName_2 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_2);
+          _builder_1.append(cname);
           _builder_1.append("\").getAs[String](\"value\"),row.getAs[GenericRowWithSchema](\"");
-          String _columnName_3 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_3);
+          String _columnName_1 = OMLUtilities.columnName(col);
+          _builder_1.append(_columnName_1);
           _builder_1.append("\").getAs[String](\"literalType\")");
           _xifexpression_1 = _builder_1.toString();
         } else {
@@ -720,25 +719,21 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           if (_equals_2) {
             StringConcatenation _builder_2 = new StringConcatenation();
             _builder_2.append("row.getAs[Boolean](\"");
-            String _columnName_4 = OMLUtilities.columnName(col);
-            _builder_2.append(_columnName_4);
+            _builder_2.append(cname);
             _builder_2.append("\")");
             _xifexpression_2 = _builder_2.toString();
           } else {
             String _xifexpression_3 = null;
-            boolean _endsWith = tname.endsWith("Kind");
-            if (_endsWith) {
+            if ((tname.endsWith("Kind") && (!cname.endsWith("UUID")))) {
               StringConcatenation _builder_3 = new StringConcatenation();
               _builder_3.append("row.getAs[Int](\"");
-              String _columnName_5 = OMLUtilities.columnName(col);
-              _builder_3.append(_columnName_5);
+              _builder_3.append(cname);
               _builder_3.append("\")");
               _xifexpression_3 = _builder_3.toString();
             } else {
               StringConcatenation _builder_4 = new StringConcatenation();
               _builder_4.append("row.getAs[String](\"");
-              String _columnName_6 = OMLUtilities.columnName(col);
-              _builder_4.append(_columnName_6);
+              _builder_4.append(cname);
               _builder_4.append("\")");
               _xifexpression_3 = _builder_4.toString();
             }
@@ -757,16 +752,15 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
     String _xblockexpression = null;
     {
       final String tname = col.getEType().getName();
+      final String cname = OMLUtilities.columnName(col);
       String _xifexpression = null;
       boolean _equals = Objects.equal(tname, "LiteralNumber");
       if (_equals) {
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("row.getAs[String](\"");
-        String _columnName = OMLUtilities.columnName(col);
-        _builder.append(_columnName);
+        _builder.append(cname);
         _builder.append("\"),row.getAs[String](\"");
-        String _columnName_1 = OMLUtilities.columnName(col);
-        _builder.append(_columnName_1);
+        _builder.append(cname);
         _builder.append("LiteralType\")");
         _xifexpression = _builder.toString();
       } else {
@@ -775,11 +769,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
         if (_equals_1) {
           StringConcatenation _builder_1 = new StringConcatenation();
           _builder_1.append("row.getAs[String](\"");
-          String _columnName_2 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_2);
+          _builder_1.append(cname);
           _builder_1.append("\"),row.getAs[String](\"");
-          String _columnName_3 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_3);
+          _builder_1.append(cname);
           _builder_1.append("LiteralType\")");
           _xifexpression_1 = _builder_1.toString();
         } else {
@@ -788,25 +780,21 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           if (_equals_2) {
             StringConcatenation _builder_2 = new StringConcatenation();
             _builder_2.append("row.getAs[Boolean](\"");
-            String _columnName_4 = OMLUtilities.columnName(col);
-            _builder_2.append(_columnName_4);
+            _builder_2.append(cname);
             _builder_2.append("\")");
             _xifexpression_2 = _builder_2.toString();
           } else {
             String _xifexpression_3 = null;
-            boolean _endsWith = tname.endsWith("Kind");
-            if (_endsWith) {
+            if ((tname.endsWith("Kind") && (!cname.endsWith("UUID")))) {
               StringConcatenation _builder_3 = new StringConcatenation();
               _builder_3.append("row.getAs[Int](\"");
-              String _columnName_5 = OMLUtilities.columnName(col);
-              _builder_3.append(_columnName_5);
+              _builder_3.append(cname);
               _builder_3.append("\")");
               _xifexpression_3 = _builder_3.toString();
             } else {
               StringConcatenation _builder_4 = new StringConcatenation();
               _builder_4.append("row.getAs[String](\"");
-              String _columnName_6 = OMLUtilities.columnName(col);
-              _builder_4.append(_columnName_6);
+              _builder_4.append(cname);
               _builder_4.append("\")");
               _xifexpression_3 = _builder_4.toString();
             }
@@ -825,15 +813,14 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
     String _xblockexpression = null;
     {
       final String tname = col.getEType().getName();
+      final String cname = OMLUtilities.columnName(col);
       String _xifexpression = null;
       boolean _equals = Objects.equal(tname, "LiteralNumber");
       if (_equals) {
         StringConcatenation _builder = new StringConcatenation();
-        String _columnName = OMLUtilities.columnName(col);
-        _builder.append(_columnName);
+        _builder.append(cname);
         _builder.append(": String, ");
-        String _columnName_1 = OMLUtilities.columnName(col);
-        _builder.append(_columnName_1);
+        _builder.append(cname);
         _builder.append("LiteralType: String");
         _xifexpression = _builder.toString();
       } else {
@@ -841,11 +828,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
         boolean _equals_1 = Objects.equal(tname, "LiteralValue");
         if (_equals_1) {
           StringConcatenation _builder_1 = new StringConcatenation();
-          String _columnName_2 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_2);
+          _builder_1.append(cname);
           _builder_1.append(": String, ");
-          String _columnName_3 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_3);
+          _builder_1.append(cname);
           _builder_1.append("LiteralType: String");
           _xifexpression_1 = _builder_1.toString();
         } else {
@@ -853,23 +838,19 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           boolean _equals_2 = Objects.equal(tname, "EBoolean");
           if (_equals_2) {
             StringConcatenation _builder_2 = new StringConcatenation();
-            String _columnName_4 = OMLUtilities.columnName(col);
-            _builder_2.append(_columnName_4);
+            _builder_2.append(cname);
             _builder_2.append(": Boolean");
             _xifexpression_2 = _builder_2.toString();
           } else {
             String _xifexpression_3 = null;
-            boolean _endsWith = tname.endsWith("Kind");
-            if (_endsWith) {
+            if ((tname.endsWith("Kind") && (!cname.endsWith("UUID")))) {
               StringConcatenation _builder_3 = new StringConcatenation();
-              String _columnName_5 = OMLUtilities.columnName(col);
-              _builder_3.append(_columnName_5);
+              _builder_3.append(cname);
               _builder_3.append(": Int");
               _xifexpression_3 = _builder_3.toString();
             } else {
               StringConcatenation _builder_4 = new StringConcatenation();
-              String _columnName_6 = OMLUtilities.columnName(col);
-              _builder_4.append(_columnName_6);
+              _builder_4.append(cname);
               _builder_4.append(": String");
               _xifexpression_3 = _builder_4.toString();
             }
@@ -888,15 +869,14 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
     String _xblockexpression = null;
     {
       final String tname = col.getEType().getName();
+      final String cname = OMLUtilities.columnName(col);
       String _xifexpression = null;
       boolean _equals = Objects.equal(tname, "LiteralNumber");
       if (_equals) {
         StringConcatenation _builder = new StringConcatenation();
-        String _columnName = OMLUtilities.columnName(col);
-        _builder.append(_columnName);
+        _builder.append(cname);
         _builder.append(", ");
-        String _columnName_1 = OMLUtilities.columnName(col);
-        _builder.append(_columnName_1);
+        _builder.append(cname);
         _builder.append("LiteralType");
         _xifexpression = _builder.toString();
       } else {
@@ -904,11 +884,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
         boolean _equals_1 = Objects.equal(tname, "LiteralValue");
         if (_equals_1) {
           StringConcatenation _builder_1 = new StringConcatenation();
-          String _columnName_2 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_2);
+          _builder_1.append(cname);
           _builder_1.append(", ");
-          String _columnName_3 = OMLUtilities.columnName(col);
-          _builder_1.append(_columnName_3);
+          _builder_1.append(cname);
           _builder_1.append("LiteralType");
           _xifexpression_1 = _builder_1.toString();
         } else {
@@ -916,21 +894,17 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           boolean _equals_2 = Objects.equal(tname, "EBoolean");
           if (_equals_2) {
             StringConcatenation _builder_2 = new StringConcatenation();
-            String _columnName_4 = OMLUtilities.columnName(col);
-            _builder_2.append(_columnName_4);
+            _builder_2.append(cname);
             _xifexpression_2 = _builder_2.toString();
           } else {
             String _xifexpression_3 = null;
-            boolean _endsWith = tname.endsWith("Kind");
-            if (_endsWith) {
+            if ((tname.endsWith("Kind") && (!cname.endsWith("UUID")))) {
               StringConcatenation _builder_3 = new StringConcatenation();
-              String _columnName_5 = OMLUtilities.columnName(col);
-              _builder_3.append(_columnName_5);
+              _builder_3.append(cname);
               _xifexpression_3 = _builder_3.toString();
             } else {
               StringConcatenation _builder_4 = new StringConcatenation();
-              String _columnName_6 = OMLUtilities.columnName(col);
-              _builder_4.append(_columnName_6);
+              _builder_4.append(cname);
               _xifexpression_3 = _builder_4.toString();
             }
             _xifexpression_2 = _xifexpression_3;
@@ -983,6 +957,69 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
       _builder.append("\t");
       _builder.newLine();
       _builder.append("\t");
+      _builder.append("def cardinalityRestrictionKind(kind: Int)");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append(": tables.CardinalityRestrictionKind");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append("= kind match {");
+      _builder.newLine();
+      _builder.append("\t\t");
+      _builder.append("case 0 =>");
+      _builder.newLine();
+      _builder.append("\t\t  ");
+      _builder.append("tables.MinCardinalityRestriction");
+      _builder.newLine();
+      _builder.append("\t\t");
+      _builder.append("case 1 =>");
+      _builder.newLine();
+      _builder.append("\t\t  ");
+      _builder.append("tables.MaxCardinalityRestriction");
+      _builder.newLine();
+      _builder.append("\t\t");
+      _builder.append("case 2 =>");
+      _builder.newLine();
+      _builder.append("\t\t  ");
+      _builder.append("tables.ExactCardinalityRestriction");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append("def cardinalityRestrictionKind(kind: tables.CardinalityRestrictionKind)");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append(": Int");
+      _builder.newLine();
+      _builder.append("\t");
+      _builder.append("= kind match {");
+      _builder.newLine();
+      _builder.append("\t\t");
+      _builder.append("case tables.MinCardinalityRestriction =>");
+      _builder.newLine();
+      _builder.append("\t\t  ");
+      _builder.append("0");
+      _builder.newLine();
+      _builder.append("\t\t");
+      _builder.append("case tables.MaxCardinalityRestriction =>");
+      _builder.newLine();
+      _builder.append("\t\t  ");
+      _builder.append("1");
+      _builder.newLine();
+      _builder.append("\t\t");
+      _builder.append("case tables.ExactCardinalityRestriction =>");
+      _builder.newLine();
+      _builder.append("\t\t  ");
+      _builder.append("2");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.append("}");
+      _builder.newLine();
+      _builder.append("    ");
+      _builder.newLine();
+      _builder.append("    ");
       _builder.append("def terminologyKind(kind: Int)");
       _builder.newLine();
       _builder.append("\t");
@@ -1307,9 +1344,7 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                               _xifexpression_7 = (_plus_10 + ")");
                             } else {
                               String _xifexpression_8 = null;
-                              String _name_16 = col_3.getName();
-                              boolean _equals_6 = Objects.equal(_name_16, "kind");
-                              if (_equals_6) {
+                              if ((Objects.equal(col_3.getName(), "kind") || Objects.equal(col_3.getName(), "restrictionKind"))) {
                                 String _lowerCaseInitialOrWord_2 = OMLUtilities.lowerCaseInitialOrWord(col_3.getEType().getName());
                                 String _plus_11 = (_lowerCaseInitialOrWord_2 + "(tuple.");
                                 String _columnName_12 = OMLUtilities.columnName(col_3);
@@ -1344,9 +1379,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                 if (((col_3.getLowerBound() == 0) && (!Objects.equal(col_3.getEType().getName(), "LiteralDateTime")))) {
                   _builder.append("if (");
                   {
-                    String _name_17 = col_3.getEType().getName();
-                    boolean _equals_7 = Objects.equal(_name_17, "LiteralNumber");
-                    if (_equals_7) {
+                    String _name_16 = col_3.getEType().getName();
+                    boolean _equals_6 = Objects.equal(_name_16, "LiteralNumber");
+                    if (_equals_6) {
                       _builder.append("(null == tuple.");
                       String _columnName_14 = OMLUtilities.columnName(col_3);
                       _builder.append(_columnName_14, "\t");
@@ -1386,20 +1421,20 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
           _builder.newLine();
           _builder.append("\t");
           _builder.append("def ");
-          String _name_18 = eClass.getName();
-          _builder.append(_name_18, "\t");
+          String _name_17 = eClass.getName();
+          _builder.append(_name_17, "\t");
           _builder.append("Type2Tuple");
           _builder.newLineIfNotEmpty();
           _builder.append("\t");
           _builder.append("(e: tables.");
-          String _name_19 = eClass.getName();
-          _builder.append(_name_19, "\t");
+          String _name_18 = eClass.getName();
+          _builder.append(_name_18, "\t");
           _builder.append(")");
           _builder.newLineIfNotEmpty();
           _builder.append("\t");
           _builder.append(": ");
-          String _name_20 = eClass.getName();
-          _builder.append(_name_20, "\t");
+          String _name_19 = eClass.getName();
+          _builder.append(_name_19, "\t");
           _builder.append("Tuple");
           _builder.newLineIfNotEmpty();
           _builder.append("\t");
@@ -1409,16 +1444,16 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
             for(final ETypedElement col_4 : cols) {
               if (!_hasElements_4) {
                 _hasElements_4 = true;
-                String _name_21 = eClass.getName();
-                String _plus_16 = (_name_21 + "Tuple(\n  ");
+                String _name_20 = eClass.getName();
+                String _plus_16 = (_name_20 + "Tuple(\n  ");
                 _builder.append(_plus_16, "\t");
               } else {
                 _builder.appendImmediate(",\n  ", "\t");
               }
               String _xifexpression_9 = null;
               String _columnName_20 = OMLUtilities.columnName(col_4);
-              boolean _equals_8 = Objects.equal(_columnName_20, "uuid");
-              if (_equals_8) {
+              boolean _equals_7 = Objects.equal(_columnName_20, "uuid");
+              if (_equals_7) {
                 String _columnName_21 = OMLUtilities.columnName(col_4);
                 _xifexpression_9 = ("e." + _columnName_21);
               } else {
@@ -1428,9 +1463,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                   _xifexpression_10 = ("e." + _columnName_22);
                 } else {
                   String _xifexpression_11 = null;
-                  String _name_22 = col_4.getEType().getName();
-                  boolean _equals_9 = Objects.equal(_name_22, "EBoolean");
-                  if (_equals_9) {
+                  String _name_21 = col_4.getEType().getName();
+                  boolean _equals_8 = Objects.equal(_name_21, "EBoolean");
+                  if (_equals_8) {
                     String _columnName_23 = OMLUtilities.columnName(col_4);
                     _xifexpression_11 = ("e." + _columnName_23);
                   } else {
@@ -1459,9 +1494,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                         _xifexpression_13 = _builder_6.toString();
                       } else {
                         String _xifexpression_14 = null;
-                        String _name_23 = col_4.getEType().getName();
-                        boolean _equals_10 = Objects.equal(_name_23, "LiteralNumber");
-                        if (_equals_10) {
+                        String _name_22 = col_4.getEType().getName();
+                        boolean _equals_9 = Objects.equal(_name_22, "LiteralNumber");
+                        if (_equals_9) {
                           StringConcatenation _builder_7 = new StringConcatenation();
                           _builder_7.append("e.");
                           String _columnName_28 = OMLUtilities.columnName(col_4);
@@ -1473,9 +1508,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                           _xifexpression_14 = _builder_7.toString();
                         } else {
                           String _xifexpression_15 = null;
-                          String _name_24 = col_4.getEType().getName();
-                          boolean _equals_11 = Objects.equal(_name_24, "LiteralString");
-                          if (_equals_11) {
+                          String _name_23 = col_4.getEType().getName();
+                          boolean _equals_10 = Objects.equal(_name_23, "LiteralString");
+                          if (_equals_10) {
                             StringConcatenation _builder_8 = new StringConcatenation();
                             _builder_8.append("e.");
                             String _columnName_30 = OMLUtilities.columnName(col_4);
@@ -1483,9 +1518,9 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                             _xifexpression_15 = _builder_8.toString();
                           } else {
                             String _xifexpression_16 = null;
-                            String _name_25 = col_4.getEType().getName();
-                            boolean _equals_12 = Objects.equal(_name_25, "LiteralDateTime");
-                            if (_equals_12) {
+                            String _name_24 = col_4.getEType().getName();
+                            boolean _equals_11 = Objects.equal(_name_24, "LiteralDateTime");
+                            if (_equals_11) {
                               StringConcatenation _builder_9 = new StringConcatenation();
                               _builder_9.append("e.");
                               String _columnName_31 = OMLUtilities.columnName(col_4);
@@ -1494,9 +1529,7 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                               _xifexpression_16 = _builder_9.toString();
                             } else {
                               String _xifexpression_17 = null;
-                              String _name_26 = col_4.getName();
-                              boolean _equals_13 = Objects.equal(_name_26, "kind");
-                              if (_equals_13) {
+                              if ((Objects.equal(col_4.getName(), "kind") || Objects.equal(col_4.getName(), "restrictionKind"))) {
                                 String _lowerCaseInitialOrWord_4 = OMLUtilities.lowerCaseInitialOrWord(col_4.getEType().getName());
                                 String _plus_17 = (_lowerCaseInitialOrWord_4 + "(e.");
                                 String _columnName_32 = OMLUtilities.columnName(col_4);
@@ -1505,8 +1538,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
                               } else {
                                 String _xifexpression_18 = null;
                                 int _lowerBound = col_4.getLowerBound();
-                                boolean _equals_14 = (_lowerBound == 0);
-                                if (_equals_14) {
+                                boolean _equals_12 = (_lowerBound == 0);
+                                if (_equals_12) {
                                   StringConcatenation _builder_10 = new StringConcatenation();
                                   _builder_10.append("e.");
                                   String _columnName_33 = OMLUtilities.columnName(col_4);
@@ -2039,8 +2072,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
               _builder.append("  ");
               _builder.append("\t");
               _builder.append("case tables.");
-              String _literal = elit.getLiteral();
-              _builder.append(_literal, "  \t");
+              String _enumLiteralName = OMLUtilities.enumLiteralName(elit);
+              _builder.append(_enumLiteralName, "  \t");
               _builder.append(" => ");
               int _indexOf = eClass_5.getELiterals().indexOf(elit);
               _builder.append(_indexOf, "  \t");
@@ -2062,8 +2095,8 @@ public class OMLSpecificationFramelessGenerator extends OMLUtilities {
               int _indexOf_1 = eClass_5.getELiterals().indexOf(elit_1);
               _builder.append(_indexOf_1, "  \t");
               _builder.append(" => tables.");
-              String _literal_1 = elit_1.getLiteral();
-              _builder.append(_literal_1, "  \t");
+              String _enumLiteralName_1 = OMLUtilities.enumLiteralName(elit_1);
+              _builder.append(_enumLiteralName_1, "  \t");
               _builder.newLineIfNotEmpty();
             }
           }

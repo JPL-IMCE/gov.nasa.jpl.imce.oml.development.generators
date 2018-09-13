@@ -4,3 +4,6 @@
 /OMLSpecificationResolverLibraryGenerator.java
 /OMLSpecificationTablesGenerator.java
 /OMLUtilities.java
+/OMLSpecificationFramelessGenerator.java
+/OMLSpecificationOMLSQLGenerator.java
+/OMLSpecificationOMLZipGenerator.java
