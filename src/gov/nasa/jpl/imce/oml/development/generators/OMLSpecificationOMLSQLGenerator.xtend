@@ -185,16 +185,18 @@ class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
 	'''
 	}
 	
-	static val String SPACES = "                     "
+	static val String SPACES = "                                       "
 	
 	static def String pad(EClass eClass) {
 		val abbrev = eClass.abbreviatedTableName
 		SPACES.substring(1, SPACES.length - abbrev.length)
 	}
 	static def String abbreviatedTableName(EClass eClass) {
-		val abbrev = 
-		eClass
+		val n = eClass
 		.tableVariableName.upperCaseInitialOrWord
+		
+		val abbrev = 
+		n
 		.replace("CrossReferencabilityKinds","CRTK")
 		.replace("CrossReferencableKinds","CRBK")
 		.replace("CrossReference","CRef")
@@ -218,12 +220,16 @@ class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
 		
 		
 		.replace("Annotation","Annot")
+		.replace("AspectKind", "Ak")
+		.replace("Aspects", "As")
 		.replace("Axioms","Ax")
 		.replace("Assertions","Asts")
 		.replace("Binary","Bin")
 		.replace("Bundle","Bdl")
+		.replace("ChainRules", "CR")
 		.replace("Concept","C")
 		.replace("Conceptual","C")
+		.replace("ConceptTreeDisjunction","CTD")
 		.replace("Context","Ctxt")
 		.replace("Datatypes","Dt")
 		.replace("DataRange","Dr")
@@ -267,6 +273,8 @@ class OMLSpecificationOMLSQLGenerator extends OMLUtilities {
 		.replace("Universal","Ux")
 		.replace("Value","Val")
 		
+		if (n == abbrev && n.length > 8)
+			throw new IllegalArgumentException('''No abbreviation defined for «n»''')
 		abbrev
 	}
 	

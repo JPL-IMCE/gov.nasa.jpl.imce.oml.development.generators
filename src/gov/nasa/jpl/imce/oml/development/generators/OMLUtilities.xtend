@@ -17,12 +17,18 @@
  */
 package gov.nasa.jpl.imce.oml.development.generators
 
+import gov.nasa.jpl.imce.oml.model.common.CommonPackage
+import java.util.ArrayList
 import java.util.Comparator
 import java.util.HashSet
+import java.util.Map
 import java.util.Set
 import java.util.regex.Pattern
+import org.eclipse.emf.codegen.ecore.genmodel.GenModelPackage
 import org.eclipse.emf.common.util.BasicEList
+import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EClassifier
 import org.eclipse.emf.ecore.EDataType
 import org.eclipse.emf.ecore.ENamedElement
 import org.eclipse.emf.ecore.EOperation
@@ -30,18 +36,104 @@ import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.emf.ecore.ETypedElement
+import org.eclipse.emf.ecore.EcorePackage
+import org.eclipse.emf.ecore.plugin.EcorePlugin
+import org.eclipse.emf.ecore.xcore.XcorePackage
+import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup
 import org.eclipse.emf.ecore.xcore.mappings.XcoreMapper
+import org.eclipse.emf.ecore.xml.namespace.XMLNamespacePackage
+import org.eclipse.emf.ecore.xml.type.XMLTypePackage
+import org.eclipse.xtext.XtextPackage
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.xtext.xbase.XExpression
 import org.eclipse.xtext.xbase.XFeatureCall
 import org.eclipse.xtext.xbase.XMemberFeatureCall
-import gov.nasa.jpl.imce.oml.model.extensions.OMLXcorePackages
-import java.util.ArrayList
-import org.eclipse.emf.ecore.EClassifier
-import org.eclipse.emf.ecore.EcorePackage
+import org.eclipse.emf.ecore.EEnumLiteral
 
-class OMLUtilities extends OMLXcorePackages {
+class OMLUtilities {
 
+	public val XtextResourceSet set
+	public val EPackage c
+	public val EPackage t
+	public val EPackage g
+	public val EPackage b
+	public val EPackage d
+
+	new() {
+		XcoreStandaloneSetup.doSetup()
+
+		val omlc = "/OMLCommon.xcore"
+		val omlc_uri = URI.createPlatformResourceURI("/gov.nasa.jpl.imce.oml.model/model" + omlc, false)
+		val omlt = "/OMLTerminologies.xcore"
+		val omlt_uri = URI.createPlatformResourceURI("/gov.nasa.jpl.imce.oml.model/model" + omlt, false)
+		val omlg = "/OMLGraphs.xcore"
+		val omlg_uri = URI.createPlatformResourceURI("/gov.nasa.jpl.imce.oml.model/model" + omlg, false)
+		val omlb = "/OMLBundles.xcore"
+		val omlb_uri = URI.createPlatformResourceURI("/gov.nasa.jpl.imce.oml.model/model" + omlb, false)
+		val omld = "/OMLDescriptions.xcore"
+		val omld_uri = URI.createPlatformResourceURI("/gov.nasa.jpl.imce.oml.model/model" + omld, false)
+
+		this.set = new XtextResourceSet()
+		this.set.setPackageRegistry(EPackage.Registry.INSTANCE)
+		val Map<URI, URI> uriMap = set.getURIConverter().getURIMap()
+		uriMap.putAll(EcorePlugin.computePlatformURIMap(false))
+		uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore"),
+			URI.createURI(EcorePackage.getResource("/model/Ecore.ecore").toURI.toString))
+		uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel"),
+			URI.createURI(EcorePackage.getResource("/model/Ecore.genmodel").toURI.toString))
+		uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLNamespace.ecore"),
+			URI.createURI(XMLNamespacePackage.getResource("/model/XMLNamespace.ecore").toURI.toString))
+		uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLNamespace.genmodel"),
+			URI.createURI(XMLNamespacePackage.getResource("/model/XMLNamespace.genmodel").toURI.toString))
+		uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLType.ecore"),
+			URI.createURI(XMLTypePackage.getResource("/model/XMLType.ecore").toURI.toString))
+		uriMap.put(URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/XMLType.genmodel"),
+			URI.createURI(XMLTypePackage.getResource("/model/XMLType.genmodel").toURI.toString))
+
+		val ecore = set.getResource(URI.createURI(EcorePackage.eNS_URI), true)
+		if (!ecore.errors.empty) {
+			throw new IllegalArgumentException("Failed to load the Ecore package")
+		}
+		val genModel = set.getResource(URI.createURI(GenModelPackage.eNS_URI), true)
+		if (!genModel.errors.empty) {
+			throw new IllegalArgumentException("Failed to load the GenModel package")
+		}
+		val xtext = set.getResource(URI.createURI(XtextPackage.eNS_URI), true)
+		if (!xtext.errors.empty) {
+			throw new IllegalArgumentException("Failed to load the Xtext package")
+		}
+		val xcore = set.getResource(URI.createURI(XcorePackage.eNS_URI), true)
+		if (!xcore.errors.empty) {
+			throw new IllegalArgumentException("Failed to load the Xcore package")
+		}
+		uriMap.put(omlc_uri, URI.createURI(locateXcore(omlc)))
+		uriMap.put(omlt_uri, URI.createURI(locateXcore(omlt)))
+		uriMap.put(omlg_uri, URI.createURI(locateXcore(omlg)))
+		uriMap.put(omlb_uri, URI.createURI(locateXcore(omlb)))
+		uriMap.put(omld_uri, URI.createURI(locateXcore(omld)))
+
+		val omlc_r = set.getResource(omlc_uri, true)
+		val omlt_r = set.getResource(omlt_uri, true)
+		val omlg_r = set.getResource(omlg_uri, true)
+		val omlb_r = set.getResource(omlb_uri, true)
+		val omld_r = set.getResource(omld_uri, true)
+		
+		this.c = omlc_r.getContents().filter(EPackage).get(0)
+		this.t = omlt_r.getContents().filter(EPackage).get(0)
+		this.g = omlg_r.getContents().filter(EPackage).get(0)
+		this.b = omlb_r.getContents().filter(EPackage).get(0)
+		this.d = omld_r.getContents().filter(EPackage).get(0)
+	}
+	
+	static def String locateXcore(String path) {
+		val url = CommonPackage.getResource(path)
+		if (null === url)
+			throw new IllegalArgumentException("locateXcore: failed to locate path: "+path)
+	
+		url.toURI.toString
+	}
+	
 	static def String queryResolverName(EOperation op, String typePrefix) {
 		if (null !== op.getEAnnotation("http://imce.jpl.nasa.gov/oml/OverrideVal")) {
 			if (!op.EParameters.empty)
@@ -122,7 +214,7 @@ class OMLUtilities extends OMLXcorePackages {
 						case "SortedSet": 
 							"scala.collection.immutable.SortedSet["+typePrefix+type.name+"]"	
 						default:
-							throw new java.lang.IllegalArgumentException("Multi-valued operation: "+feature.EClassContainer.name+"."+feature.name+" needs a @Collection(...) annotation!")		
+							throw new IllegalArgumentException("Multi-valued operation: "+feature.EClassContainer.name+"."+feature.name+" needs a @Collection(...) annotation!")		
 						}	
 					}
 					else {
@@ -154,6 +246,7 @@ class OMLUtilities extends OMLXcorePackages {
 			case "EBoolean": "scala.Boolean"
 			case "EString": "scala.Predef.String"
 			
+			case "CardinalityRestrictionKind": "gov.nasa.jpl.imce.oml.tables.CardinalityRestrictionKind"
 			case "DescriptionKind": "gov.nasa.jpl.imce.oml.tables.DescriptionKind"
 			case "TerminologyKind": "gov.nasa.jpl.imce.oml.tables.TerminologyKind"
 			
@@ -295,6 +388,7 @@ class OMLUtilities extends OMLXcorePackages {
 			case "EInt": "scala.Int"
 			case "EBoolean": "scala.Boolean"
 			case "EString": "scala.Predef.String"
+			case "CardinalityRestrictionKind": "CardinalityRestrictionKind"
 			case "DescriptionKind": "DescriptionKind"
 			case "TerminologyKind": "TerminologyKind"
 			case "UUID": eClass.name+"UUID"
@@ -324,6 +418,7 @@ class OMLUtilities extends OMLXcorePackages {
 			case "EInt": "scala.Int"
 			case "EBoolean": "Encoder.encodeBoolean"
 			case "EString": "scala.Predef.String"
+			case "CardinalityRestrictionKind": "CardinalityRestrictionKind.encodeCardinalityRestrictionKind"
 			case "DescriptionKind": "DescriptionKind.encodeDescriptionKind"
 			case "TerminologyKind": "TerminologyKind.encodeTerminologyKind"
 			case "UUID": "taggedTypes.encode"+eClass.name+"UUID"
@@ -353,6 +448,7 @@ class OMLUtilities extends OMLXcorePackages {
 			case "EInt": "scala.Int"
 			case "EBoolean": "scala.Boolean"
 			case "EString": "scala.Predef.String"
+			case "CardinalityRestrictionKind": "CardinalityRestrictionKind"
 			case "DescriptionKind": "DescriptionKind"
 			case "TerminologyKind": "TerminologyKind"
 			case "UUID": "taggedTypes."+eClass.name+"UUID"
@@ -1242,6 +1338,19 @@ class OMLUtilities extends OMLXcorePackages {
 				feature.name+"UUID" 
 		} else 
 			feature.name
+	}
+	
+	static def String enumLiteralName(EEnumLiteral lit) {
+		switch lit.name {
+			case "Min":
+				"MinCardinalityRestriction"
+			case "Max":
+				"MaxCardinalityRestriction"
+			case "Exact":
+				"ExactCardinalityRestriction"
+			default:
+				lit.name
+		}
 	}
 	
 	static def String markDown(ENamedElement e) {

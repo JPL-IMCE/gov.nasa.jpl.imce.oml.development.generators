@@ -277,12 +277,19 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		}
 	'''
 	
+	static def String containedTypeUUUID(EClass ct) {
+		val sups = ct.ESuperTypes
+		if (1 === sups.size)
+			sups.get(0).name + "UUID"
+		else
+			ct.name + "UUID"
+	}
 	def String generateExtentContainerClassFile(EClass eClass, Iterable<EClass> allEClasses) {
 		val extManaged = allEClasses.filter[isExtentManaged]
 		val containers = allEClasses.map[EStructuralFeatures].flatten.filter[isContainment && !isLiteralFeature]
 		
 		val containerTypes = containers.map[EClassContainer].toSet.toList.sortBy[name]
-		val containedTypes = containers.map[EType].toSet.toList.sortBy[name]
+		val containedTypes = containers.map[EClassType].toSet.toList.sortBy[name]
 		
 		
 	'''
@@ -307,8 +314,8 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  : Map[«c.EType.name», «c.EClassContainer.name»]
 		  = HashMap.empty[«c.EType.name», «c.EClassContainer.name»]«ENDFOR»
 		«FOR ct : containedTypes BEFORE "\n  " SEPARATOR ",\n  " AFTER "\n"»«ct.name.toFirstLower»ByUUID
-		  : Map[taggedTypes.«ct.name»UUID, «ct.name»]
-		  = HashMap.empty[taggedTypes.«ct.name»UUID, «ct.name»]«ENDFOR»
+		  : Map[taggedTypes.«containedTypeUUUID(ct)», «ct.name»]
+		  = HashMap.empty[taggedTypes.«containedTypeUUUID(ct)», «ct.name»]«ENDFOR»
 		) {
 		  «FOR c : containers»«IF (c.upperBound == 1)»
 		  def with«c.EType.name»
@@ -369,6 +376,24 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  : Option[TerminologyBox]
 		  = lookupTerminologyGraph(uuid) orElse 
 		  lookupBundle(uuid)
+		
+		  def lookupRestrictableRelationship
+		  (uuid: taggedTypes.RestrictableRelationshipUUID)
+		  : Option[RestrictableRelationship]
+		  = lookupForwardProperty(uuid) orElse
+		    lookupInverseProperty(uuid) orElse
+		    lookupUnreifiedRelationship(uuid)
+		
+		  def lookupUnreifiedRelationship
+		  (uuid: taggedTypes.RestrictableRelationshipUUID)
+		  : Option[UnreifiedRelationship]
+		  = terminologyBoxStatementByUUID.get(taggedTypes.terminologyBoxStatementUUID(uuid)) match {
+		    case Some(ur: UnreifiedRelationship) =>
+		      Some(ur)
+		    case _ =>
+		      None
+		  }
+		 
 		  «FOR em : extManaged.filter[!isAbstract] SEPARATOR "\n  " AFTER "\n"»
 		  
 		  def lookup«em.name»
@@ -396,7 +421,7 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  «IF (c.EType.name != "Annotation" && c.EType != c.EClassContainer)»
 		  
 		  def lookup«c.EType.name»
-		  (uuid: taggedTypes.«c.EType.name»UUID)
+		  (uuid: taggedTypes.«containedTypeUUUID(c.EClassType)»)
 		  : Option[«c.EType.name»]
 		  = «c.EType.name.toFirstLower»ByUUID.get(uuid)
 	  	  «ENDIF»
@@ -416,14 +441,14 @@ class OMLSpecificationResolverAPIGenerator extends OMLUtilities {
 		  «IF (c.EType.name != "Annotation")»
 		  
 		  def lookup«c.EType.name»
-		  (uuid: Option[taggedTypes.«c.EType.name»UUID])
+		  (uuid: Option[taggedTypes.«containedTypeUUUID(c.EClassType)»])
 		  : Option[«c.EType.name»]
 		  = uuid.flatMap {
 		    lookup«c.EType.name»
 		  }
 		  
 		  def lookup«c.EType.name»
-		  (uuid: taggedTypes.«c.EType.name»UUID)
+		  (uuid: taggedTypes.«containedTypeUUUID(c.EClassType)»)
 		  : Option[«c.EType.name»]
 		  = «c.EType.name.toFirstLower»ByUUID.get(uuid)
 	  	  «ENDIF»

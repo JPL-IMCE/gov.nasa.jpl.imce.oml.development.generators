@@ -257,13 +257,14 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 	
 	static def String rowColumnType(ETypedElement col) {
 		val tname = col.EType.name
+		val cname = col.columnName
 		if (tname == "LiteralNumber")
 			"String, String"
 		else if (tname == "LiteralValue")
 			"String, String"
 		else if (tname == "EBoolean")
 			"Boolean"
-		else if (tname.endsWith("Kind"))
+		else if (tname.endsWith("Kind") && !cname.endsWith("UUID"))
 			"Int"
 		else
 			"String"
@@ -271,58 +272,62 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 	
 	static def String rowColumnQuery(ETypedElement col) {
 		val tname = col.EType.name
+		val cname = col.columnName
 		if (tname == "LiteralNumber")
-			'''row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("value"),row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("literalType")'''
+			'''row.getAs[GenericRowWithSchema]("«cname»").getAs[String]("value"),row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("literalType")'''
 		else if (tname == "LiteralValue")
-			'''row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("value"),row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("literalType")'''
+			'''row.getAs[GenericRowWithSchema]("«cname»").getAs[String]("value"),row.getAs[GenericRowWithSchema]("«col.columnName»").getAs[String]("literalType")'''
 		else if (tname == "EBoolean")
-			'''row.getAs[Boolean]("«col.columnName»")'''
-		else if (tname.endsWith("Kind"))
-			'''row.getAs[Int]("«col.columnName»")'''
+			'''row.getAs[Boolean]("«cname»")'''
+		else if (tname.endsWith("Kind") && !cname.endsWith("UUID"))
+			'''row.getAs[Int]("«cname»")'''
 		else
-			'''row.getAs[String]("«col.columnName»")'''
+			'''row.getAs[String]("«cname»")'''
 	}
 	
 	static def String sqlColumnQuery(ETypedElement col) {
 		val tname = col.EType.name
+		val cname = col.columnName
 		if (tname == "LiteralNumber")
-			'''row.getAs[String]("«col.columnName»"),row.getAs[String]("«col.columnName»LiteralType")'''
+			'''row.getAs[String]("«cname»"),row.getAs[String]("«cname»LiteralType")'''
 		else if (tname == "LiteralValue")
-			'''row.getAs[String]("«col.columnName»"),row.getAs[String]("«col.columnName»LiteralType")'''
+			'''row.getAs[String]("«cname»"),row.getAs[String]("«cname»LiteralType")'''
 		else if (tname == "EBoolean")
-			'''row.getAs[Boolean]("«col.columnName»")'''
-		else if (tname.endsWith("Kind"))
-			'''row.getAs[Int]("«col.columnName»")'''
+			'''row.getAs[Boolean]("«cname»")'''
+		else if (tname.endsWith("Kind") && !cname.endsWith("UUID"))
+			'''row.getAs[Int]("«cname»")'''
 		else
-			'''row.getAs[String]("«col.columnName»")'''
+			'''row.getAs[String]("«cname»")'''
 	}
 	
 	static def String rowColumnDecl(ETypedElement col) {
 		val tname = col.EType.name
+		val cname = col.columnName
 		if (tname == "LiteralNumber")
-			'''«col.columnName»: String, «col.columnName»LiteralType: String'''
+			'''«cname»: String, «cname»LiteralType: String'''
 		else if (tname == "LiteralValue")
-			'''«col.columnName»: String, «col.columnName»LiteralType: String'''
+			'''«cname»: String, «cname»LiteralType: String'''
 		else if (tname == "EBoolean")
-			'''«col.columnName»: Boolean'''
-		else if (tname.endsWith("Kind"))
-			'''«col.columnName»: Int'''
+			'''«cname»: Boolean'''
+		else if (tname.endsWith("Kind") && !cname.endsWith("UUID"))
+			'''«cname»: Int'''
 		else
-			'''«col.columnName»: String'''
+			'''«cname»: String'''
 	}
 	
 	static def String rowColumnVars(ETypedElement col) {
 		val tname = col.EType.name
+		val cname = col.columnName
 		if (tname == "LiteralNumber")
-			'''«col.columnName», «col.columnName»LiteralType'''
+			'''«cname», «cname»LiteralType'''
 		else if (tname == "LiteralValue")
-			'''«col.columnName», «col.columnName»LiteralType'''
+			'''«cname», «cname»LiteralType'''
 		else if (tname == "EBoolean")
-			'''«col.columnName»'''
-		else if (tname.endsWith("Kind"))
-			'''«col.columnName»'''
+			'''«cname»'''
+		else if (tname.endsWith("Kind") && !cname.endsWith("UUID"))
+			'''«cname»'''
 		else
-			'''«col.columnName»'''
+			'''«cname»'''
 	}
 	
 	
@@ -342,7 +347,29 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		
 		object OMLReaders {
 			
-			def terminologyKind(kind: Int)
+			def cardinalityRestrictionKind(kind: Int)
+			: tables.CardinalityRestrictionKind
+			= kind match {
+				case 0 =>
+				  tables.MinCardinalityRestriction
+				case 1 =>
+				  tables.MaxCardinalityRestriction
+				case 2 =>
+				  tables.ExactCardinalityRestriction
+		    }
+
+			def cardinalityRestrictionKind(kind: tables.CardinalityRestrictionKind)
+			: Int
+			= kind match {
+				case tables.MinCardinalityRestriction =>
+				  0
+				case tables.MaxCardinalityRestriction =>
+				  1
+				case tables.ExactCardinalityRestriction =>
+				  2
+		    }
+		    
+		    def terminologyKind(kind: Int)
 			: tables.TerminologyKind
 			= kind match {
 				case 0 =>
@@ -405,7 +432,7 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 			  else if (col.EType.name == "LiteralString") '''tables.taggedTypes.stringDataType(tuple.«col.columnName»)'''
 			  else if (col.EType.name == "LiteralDateTime") '''if (tuple.«col.columnName».isEmpty) None else tables.LiteralDateTime.parseDateTime(tuple.«col.columnName»)'''
 			  else if (col.isClassFeature) "tables.taggedTypes."+col.EType.name.lowerCaseInitialOrWord+"UUID(tuple."+col.columnName+")"
-			  else if (col.name == "kind") col.EType.name.lowerCaseInitialOrWord+"(tuple."+col.columnName+")"
+			  else if (col.name == "kind" || col.name == "restrictionKind") col.EType.name.lowerCaseInitialOrWord+"(tuple."+col.columnName+")"
 			  else "tables.taggedTypes."+col.EType.name.lowerCaseInitialOrWord+"(tuple."+col.columnName+")"»«IF (col.lowerBound == 0 && col.EType.name != "LiteralDateTime")»if («IF (col.EType.name == "LiteralNumber")»(null == tuple.«col.columnName»LiteralType || tuple.«col.columnName»LiteralType.isEmpty) && (null == tuple.«col.columnName» || tuple.«col.columnName».isEmpty)«ELSE»null == tuple.«col.columnName» || tuple.«col.columnName».isEmpty«ENDIF») None else Some(«tname»)«ELSE»«tname»«ENDIF»«ENDFOR»
 
 			def «eClass.name»Type2Tuple
@@ -420,7 +447,7 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 			  else if (col.EType.name == "LiteralNumber") '''e.«col.columnName».fold[String](null) { n => n.value }, e.«col.columnName».fold[String](null) { n => n.literalType.toString }'''
 			  else if (col.EType.name == "LiteralString") '''e.«col.columnName»'''
 			  else if (col.EType.name == "LiteralDateTime") '''e.«col.columnName».fold[String](null)(_.value)'''
-			  else if (col.name == "kind") col.EType.name.lowerCaseInitialOrWord+"(e."+col.columnName+")"
+			  else if (col.name == "kind" || col.name == "restrictionKind") col.EType.name.lowerCaseInitialOrWord+"(e."+col.columnName+")"
 			  else if (col.lowerBound == 0) '''e.«col.columnName».fold[String](null)(identity)'''
 			  else '''e.«col.columnName»'''»«tname»«ENDFOR»
 			«ENDFOR»	
@@ -541,12 +568,12 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		  = Injection(
 		  {
 		  	«FOR elit: eClass.ELiterals»
-		  	case tables.«elit.literal» => «eClass.ELiterals.indexOf(elit)»
+		  	case tables.«elit.enumLiteralName» => «eClass.ELiterals.indexOf(elit)»
 		  	«ENDFOR»
 		  },
 		  {
 		  	«FOR elit: eClass.ELiterals»
-		  	case «eClass.ELiterals.indexOf(elit)» => tables.«elit.literal»
+		  	case «eClass.ELiterals.indexOf(elit)» => tables.«elit.enumLiteralName»
 		    «ENDFOR»
 		  }
 		  )

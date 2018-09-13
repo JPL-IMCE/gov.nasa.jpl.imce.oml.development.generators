@@ -17,10 +17,8 @@
  */
 package gov.nasa.jpl.imce.oml.development.generators
 
-import gov.nasa.jpl.imce.oml.oti.provenance.ProvenancePackage
 import java.io.File
 import java.io.FileOutputStream
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.List
 import org.eclipse.emf.ecore.EClass
@@ -50,21 +48,6 @@ class OMLSpecificationTablesGenerator extends OMLUtilities {
 				System.out.println("Done")
 			else
 				System.err.println("Abnormal exit!")
-		}
-	}
-	
-	static def String locateOML2OTI(String path) {
-		val url = ProvenancePackage.getResource(path)
-		if (null !== url)
-			url.toURI.toString
-		else {
-			val binURL = ProvenancePackage.getResource("/gov/nasa/jpl/imce/oml/oti/provenance/ProvenancePackage.class")
-			if (null === binURL)
-				throw new IllegalArgumentException("locateXcore: failed to locate path: "+path)
-			val Path binPath = Paths.get(binURL.toURI)
-			val xcorePath = binPath.parent.parent.parent.parent.parent.parent.parent.parent.parent.resolve(path.substring(1))
-			val located = xcorePath.toAbsolutePath.toString
-			located
 		}
 	}
 	
