@@ -124,6 +124,11 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
 		import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxExtendsClosedWorldDefinitions
 		import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxRefinement
+		import gov.nasa.jpl.imce.oml.model.descriptions.InstanceRelationshipEnumerationRestriction
+		import gov.nasa.jpl.imce.oml.model.descriptions.InstanceRelationshipOneOfRestriction
+		import gov.nasa.jpl.imce.oml.model.descriptions.InstanceRelationshipValueRestriction
+		import gov.nasa.jpl.imce.oml.model.descriptions.InstanceRelationshipExistentialRangeRestriction
+		import gov.nasa.jpl.imce.oml.model.descriptions.InstanceRelationshipUniversalRangeRestriction
 		import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstance
 		import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceDomain
 		import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceRange
@@ -418,7 +423,7 @@ class OMLSpecificationOMLZipGenerator extends OMLUtilities {
 		  	  oml.«attr.name» = OMLTables.to«attr.EType.name»(kv.remove("«attr.columnName»"))
 		  	  «ELSE»
 		  	  val «attr.name»_value = kv.remove("«attr.columnName»")
-		  	  if (null !== «attr.name»_value && «attr.name»_value.length > 0)
+		  	  if (null !== «attr.name»_value && "null" != «attr.name»_value && «attr.name»_value.length > 0)
 		  	  	oml.«attr.name» = OMLTables.to«attr.EType.name»(«attr.name»_value)
 		  	  «ENDIF»
 		  	  «ELSEIF !attr.isClassFeature && attr.name != "uuid"»«IF attr.required»

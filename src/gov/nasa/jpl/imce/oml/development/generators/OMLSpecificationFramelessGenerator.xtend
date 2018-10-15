@@ -465,7 +465,7 @@ class OMLSpecificationFramelessGenerator extends OMLUtilities {
 		cClasses2.removeAll(cClasses1)
 		val cClasses3 = cClasses2.filter[!name.endsWith('Restriction') && !name.endsWith('ReifiedRelationshipRestriction')]
 	
-		val restrictions = cClasses.filter[name.endsWith('Restriction') && !name.endsWith('ReifiedRelationshipRestriction')]
+		val restrictions = cClasses.filter[name.endsWith('Restriction') && !name.startsWith("InstanceRelationship") && !name.endsWith('ReifiedRelationshipRestriction')]
 		
 	'''
 		«copyright»
